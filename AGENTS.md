@@ -19,6 +19,8 @@ Current key files:
 - `components/wireless/WirelessState.qml`: Lightweight wireless state provider used by `Frame.qml` to feed panel content.
 - `components/wirelessPanel/WirelessPanelShape.qml`: Dedicated visual shape renderer for the wireless panel surface and border.
 - `components/wirelessPanel/WirelessPanelContent.qml`: Dedicated content renderer for wireless labels/toggle/device count.
+- `wsl.sh`: Robust launcher for WSLg that prioritizes the real WSLg parent socket (`/mnt/wslg/runtime-dir/wayland-0`) to avoid nested-socket loops, resolves runtime/socket access, starts Hyprland in nested Wayland mode, detects the child Wayland socket dynamically, and then launches Quickshell with diagnostics/log paths.
+- `README-WSL.md`: Documentation for installation/setup on ArchLinux WSL, including nested Hyprland execution flow and troubleshooting from generated logs.
 - `mockup/screenshot.png`: Visual reference for intended appearance.
 
 ## Architecture notes

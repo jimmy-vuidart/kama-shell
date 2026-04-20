@@ -11,6 +11,7 @@ Rectangle {
     property int topLinkRadius: 10
     property int panelBorderWidth: 2
     property int panelBodyHeight: 188
+    property int concaveRadius: 8
     property color panelBorderColor: "black"
     property color panelColor: "black"
 
@@ -42,6 +43,7 @@ Rectangle {
         panelBorderWidth: root.panelBorderWidth
         panelBorderColor: root.panelBorderColor
         panelColor: root.panelColor
+        concaveRadius: root.concaveRadius
     }
 
     MouseArea {
