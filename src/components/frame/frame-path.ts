@@ -1,6 +1,6 @@
 import { shellFrameLayout } from "./frame-layout"
 
-type Point = {
+export type Point = {
   x: number
   y: number
 }
@@ -39,16 +39,11 @@ function offsetPoint(point: Point, dir: { x: number; y: number }, distance: numb
 }
 
 export function buildShellFramePolygon(width: number, height: number): Point[] {
-  const left = shellFrameLayout.outerMargin + shellFrameLayout.frameLeft
-  const top = shellFrameLayout.outerMargin + shellFrameLayout.frameTop
-  const right = width - shellFrameLayout.outerMargin - shellFrameLayout.frameRight
-  const bottom = height - shellFrameLayout.outerMargin - shellFrameLayout.frameBottom
-
   return [
-    { x: left, y: top },
-    { x: right, y: top },
-    { x: right, y: bottom },
-    { x: left, y: bottom },
+    { x: 0, y: 0 },
+    { x: width, y: 0 },
+    { x: width, y: height },
+    { x: 0, y: height },
   ]
 }
 
@@ -87,7 +82,6 @@ export function buildShellInnerRect(width: number, height: number) {
 
 export function buildShellInnerPolygon(width: number, height: number): Point[] {
   const rect = buildShellInnerRect(width, height)
-
   return [
     { x: rect.x, y: rect.y },
     { x: rect.x + rect.width, y: rect.y },

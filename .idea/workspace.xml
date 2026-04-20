@@ -4,30 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="80eeeb51-4fb0-434a-833e-1997c7dc6a06" name="Changes" comment="Add nested Wayland mode and WSL integration for Hyprland">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/wireframe.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/frame/frame-canvas.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/frame/frame-layout.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/frame/frame-path.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/integrations/system.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/services/system-state.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/todo.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/todo.md" afterDir="false" />
+    <list default="true" id="80eeeb51-4fb0-434a-833e-1997c7dc6a06" name="Changes" comment="Anneau présent">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/shell.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/shell.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/dock.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/dock.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/header.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/sidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/frame/frame-canvas.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/frame/frame-canvas.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/frame/frame-layout.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/frame/frame-layout.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/frame/frame-path.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/frame/frame-path.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/styles/main.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/styles/main.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/format.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/format.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/widgets/control-center.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/widgets/control-center.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/widgets/system-summary.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/widgets/system-summary.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="directory" />
+      <option value="repository" />
+    </option>
   </component>
   <component name="EmbeddingIndexingInfo">
     <option name="cachedIndexableFilesCount" value="21" />
@@ -36,7 +31,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="version3" />
+        <entry key="$PROJECT_DIR$" value="quickshell" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -80,7 +75,7 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "quickshell",
+    "git-widget-placeholder": "version3",
     "ignore.virus.scanning.warn.message": "true",
     "javascript.preferred.runtime.type.id": "node",
     "junie.onboarding.icon.badge.shown": "true",
@@ -120,7 +115,7 @@
       <workItem from="1776638678407" duration="620000" />
       <workItem from="1776673783499" duration="28000" />
       <workItem from="1776673837571" duration="4821000" />
-      <workItem from="1776700480999" duration="1681000" />
+      <workItem from="1776700480999" duration="2845000" />
     </task>
     <task id="LOCAL-00001" summary="Add nested Wayland mode and WSL integration for Hyprland">
       <option name="closed" value="true" />
@@ -130,7 +125,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776700508303</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Anneau présent">
+      <option name="closed" value="true" />
+      <created>1776715323618</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1776715323618</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -140,7 +143,8 @@
     <MESSAGE value="Dock" />
     <MESSAGE value="Add concave corner support to" />
     <MESSAGE value="Add nested Wayland mode and WSL integration for Hyprland" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add nested Wayland mode and WSL integration for Hyprland" />
+    <MESSAGE value="Anneau présent" />
+    <option name="LAST_COMMIT_MESSAGE" value="Anneau présent" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

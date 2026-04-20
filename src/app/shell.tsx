@@ -2,6 +2,8 @@ import { Astal } from "ags/gtk4"
 import Gtk from "gi://Gtk?version=4.0"
 
 import { FrameCanvas } from "../components/frame/frame-canvas"
+import { FrameDebugOverlay } from "../components/frame/frame-debug-overlay"
+import { FrameDebugPanel } from "../components/frame/frame-debug-panel"
 import { shellFrameLayout } from "../components/frame/frame-layout"
 import { Dock } from "../components/dock"
 import { Header } from "../components/header"
@@ -84,6 +86,18 @@ export function GlassShell() {
           marginBottom={shellFrameLayout.bottomWidgetMarginBottom}
         >
           <Dock />
+        </box>
+        <box $type="overlay" hexpand vexpand class="shell-debug-layer">
+          <FrameDebugOverlay />
+        </box>
+        <box
+          $type="overlay"
+          halign={Gtk.Align.CENTER}
+          valign={Gtk.Align.CENTER}
+          class="shell-floating shell-floating--debug"
+          canTarget={false}
+        >
+          <FrameDebugPanel />
         </box>
       </overlay>
     </window>

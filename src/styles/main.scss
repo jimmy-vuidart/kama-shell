@@ -362,3 +362,24 @@ window.shell-window {
 .dock__status {
   padding-left: 14px;
 }
+
+.frame-debug-panel {
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.82);
+  border: 1px solid rgba(255, 80, 90, 0.5);
+}
+
+.frame-debug-panel__text {
+  font-family: "JetBrainsMono Nerd Font Mono", "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: #ffecec;
+}
+
+.shell-debug-layer {
+  background: transparent;
+}
+
+.shell-floating--debug {
+  opacity: 0.92;
+}

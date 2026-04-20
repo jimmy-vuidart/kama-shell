@@ -2,8 +2,10 @@ import {
   buildShellFramePolygon,
   buildShellInnerPolygon,
   traceRoundedPolygon,
+  type Point,
 } from "./frame-path"
 import { shellFrameLayout } from "./frame-layout"
+import { initInner, innerPolygon, setFrameSize } from "./frame-debug"
 
 type DrawContext = {
   save: () => void
@@ -27,10 +29,7 @@ type DrawContext = {
   setFillRule?: (rule: number) => void
 }
 
-function drawShellFrame(cr: DrawContext, width: number, height: number) {
-  const outer = buildShellFramePolygon(width, height)
-  const inner = buildShellInnerPolygon(width, height)
-
+function drawShellFrame(cr: DrawContext, outer: Point[], inner: Point[]) {
   cr.save()
   traceRoundedPolygon(cr, outer, shellFrameLayout.frameRadius)
   traceRoundedPolygon(cr, inner, 28)
@@ -51,16 +50,29 @@ function drawShellFrame(cr: DrawContext, width: number, height: number) {
 }
 
 export function FrameCanvas() {
+  let lastWidth = 0
+  let lastHeight = 0
+
   return (
     <drawingarea
       hexpand
       vexpand
       class="shell-frame-canvas"
-      $={(self) =>
+      $={(self) => {
         self.set_draw_func((_area, cr, width, height) => {
-          drawShellFrame(cr as unknown as DrawContext, width, height)
+          if (width !== lastWidth || height !== lastHeight) {
+            lastWidth = width
+            lastHeight = height
+            setFrameSize({ width, height })
+          }
+          initInner(buildShellInnerPolygon(width, height))
+          const outer = buildShellFramePolygon(width, height)
+          const inner = innerPolygon.peek().points
+          drawShellFrame(cr as unknown as DrawContext, outer, inner)
         })
-      }
+
+        innerPolygon.subscribe(() => self.queue_draw())
+      }}
     />
   )
 }
