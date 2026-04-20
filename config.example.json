@@ -1,0 +1,24 @@
+{
+  "dev": {
+    "scanPaths": [
+      "~/Projects",
+      "~/Code"
+    ],
+    "terminalCommand": "foot",
+    "editorCommand": "code"
+  },
+  "gaming": {
+    "libraryPaths": [
+      "~/.local/share/Steam",
+      "~/.var/app/com.heroicgameslauncher.hgl/config/heroic"
+    ],
+    "additionalLaunchers": []
+  },
+  "session": {
+    "lockCommand": "loginctl lock-session",
+    "logoutCommand": "hyprctl dispatch exit",
+    "suspendCommand": "systemctl suspend",
+    "rebootCommand": "systemctl reboot",
+    "shutdownCommand": "systemctl poweroff"
+  }
+}

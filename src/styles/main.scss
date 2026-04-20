@@ -1,0 +1,300 @@
+$bg-deep: rgba(7, 16, 75, 0.92);
+$bg-panel: rgba(28, 32, 109, 0.58);
+$bg-panel-strong: rgba(48, 28, 117, 0.72);
+$stroke-soft: rgba(124, 153, 255, 0.28);
+$stroke-bright: rgba(111, 199, 255, 0.55);
+$text-primary: #f6f7ff;
+$text-secondary: rgba(232, 236, 255, 0.72);
+$blue: #45a5ff;
+$violet: #a55cff;
+$pink: #ff4da6;
+$orange: #ff8a3d;
+$green: #73ffb7;
+$radius-xl: 34px;
+$radius-lg: 26px;
+$radius-md: 20px;
+$radius-sm: 16px;
+$space-1: 10px;
+$space-2: 16px;
+$space-3: 22px;
+$space-4: 28px;
+$shadow-lg: 0 24px 90px rgba(4, 7, 44, 0.45);
+
+* {
+  font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", sans-serif;
+  color: $text-primary;
+}
+
+window.shell-window {
+  background: transparent;
+}
+
+.shell-root {
+  margin: 18px;
+  padding: 18px 18px 14px;
+  border-radius: 42px;
+  border: 1px solid rgba(125, 119, 255, 0.38);
+  background:
+    radial-gradient(circle at 12% 55%, rgba(33, 124, 255, 0.48), transparent 34%),
+    radial-gradient(circle at 92% 88%, rgba(255, 88, 52, 0.46), transparent 24%),
+    radial-gradient(circle at 84% 20%, rgba(255, 0, 140, 0.22), transparent 28%),
+    linear-gradient(125deg, rgba(4, 20, 97, 0.96), rgba(20, 9, 74, 0.96) 60%, rgba(75, 14, 72, 0.96));
+  box-shadow: $shadow-lg;
+}
+
+.header-bar {
+  min-height: 52px;
+  margin-bottom: 14px;
+}
+
+.header-bar__title-wrap {
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: rgba(46, 33, 120, 0.46);
+  border: 1px solid rgba(119, 91, 255, 0.34);
+}
+
+.header-bar__title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+.status-chip {
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.status-chip--blue {
+  background: rgba(55, 141, 255, 0.24);
+}
+
+.status-chip--pink {
+  background: rgba(255, 77, 166, 0.2);
+}
+
+.status-chip--violet {
+  background: rgba(165, 92, 255, 0.22);
+}
+
+.sidebar {
+  min-width: 132px;
+}
+
+.sidebar__rail {
+  min-width: 124px;
+  padding: 18px 14px;
+  border-radius: 32px;
+  border: 1px solid rgba(74, 170, 255, 0.36);
+  background: linear-gradient(180deg, rgba(18, 78, 196, 0.42), rgba(9, 25, 84, 0.54));
+}
+
+.sidebar__brand {
+  margin-bottom: 18px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.sidebar__item, .sidebar__settings, .dock__item, .action-grid__item {
+  border: none;
+  box-shadow: none;
+}
+
+.sidebar__item {
+  margin-bottom: 12px;
+  padding: 16px 10px;
+  border-radius: 24px;
+  background: rgba(26, 37, 114, 0.34);
+}
+
+.sidebar__item--active {
+  background: linear-gradient(180deg, rgba(124, 63, 255, 0.62), rgba(40, 95, 255, 0.46));
+  border: 1px solid rgba(111, 199, 255, 0.42);
+}
+
+.sidebar__item-icon {
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sidebar__item-label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sidebar__settings {
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(20, 31, 94, 0.54);
+}
+
+.shell-content {
+  min-width: 0;
+}
+
+.screen--single {
+  padding-right: 6px;
+}
+
+.screen__column--wide {
+  min-width: 0;
+}
+
+.card {
+  padding: 22px;
+  border-radius: $radius-xl;
+  border: 1px solid $stroke-soft;
+  background: linear-gradient(180deg, rgba(22, 36, 120, 0.5), rgba(28, 17, 84, 0.62));
+}
+
+.panel-card {
+  min-height: 320px;
+}
+
+.metrics-card {
+  min-height: 170px;
+}
+
+.control-card {
+  min-height: 350px;
+}
+
+.section-title {
+  margin-bottom: 18px;
+}
+
+.section-title__heading {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.section-title__subtitle, .metric-pill__meta, .launcher-chip__meta, .project-row__path, .game-tile__meta, .dock__date, .toggle-row__value, .info-card__body {
+  color: $text-secondary;
+}
+
+.section-title__subtitle {
+  margin-top: 6px;
+}
+
+.section-title__trailing {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(70, 86, 215, 0.18);
+}
+
+.metric-pill {
+  min-width: 120px;
+  padding: 16px;
+  border-radius: $radius-md;
+  background: rgba(52, 65, 162, 0.26);
+}
+
+.metric-pill__label, .toggle-row__label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.metric-pill__value {
+  margin-top: 10px;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.toggle-row, .project-row {
+  padding: 14px 16px;
+  border-radius: $radius-md;
+  background: rgba(48, 53, 142, 0.28);
+}
+
+.slider-row__header {
+  margin-bottom: 8px;
+}
+
+.slider-row__bar block.filled {
+  background: linear-gradient(90deg, $blue, $violet);
+}
+
+.action-grid__item {
+  min-width: 110px;
+  padding: 18px 10px;
+  border-radius: $radius-md;
+  background: rgba(79, 47, 160, 0.34);
+}
+
+.launcher-chip {
+  min-width: 120px;
+  padding: 14px 16px;
+  border-radius: $radius-md;
+  background: rgba(46, 77, 173, 0.24);
+}
+
+.launcher-chip__name, .tool-pill, .project-row__name, .game-tile__title, .info-card__title {
+  font-weight: 700;
+}
+
+.game-grid {
+  margin-top: 18px;
+}
+
+.game-tile {
+  min-width: 160px;
+}
+
+.game-tile__cover {
+  min-height: 116px;
+  margin-bottom: 12px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(85, 98, 182, 0.7), rgba(22, 31, 88, 0.78));
+}
+
+.game-tile__cover--gold { background: linear-gradient(135deg, rgba(193, 139, 35, 0.9), rgba(47, 33, 12, 0.86)); }
+.game-tile__cover--yellow { background: linear-gradient(135deg, rgba(244, 204, 42, 0.9), rgba(94, 61, 8, 0.86)); }
+.game-tile__cover--orange { background: linear-gradient(135deg, rgba(247, 113, 50, 0.9), rgba(74, 25, 8, 0.86)); }
+.game-tile__cover--blue { background: linear-gradient(135deg, rgba(57, 164, 255, 0.9), rgba(15, 38, 112, 0.86)); }
+.game-tile__cover--red { background: linear-gradient(135deg, rgba(255, 90, 57, 0.9), rgba(100, 12, 7, 0.86)); }
+.game-tile__cover--silver { background: linear-gradient(135deg, rgba(187, 193, 210, 0.9), rgba(53, 57, 71, 0.86)); }
+.game-tile__cover--violet { background: linear-gradient(135deg, rgba(165, 92, 255, 0.9), rgba(46, 22, 99, 0.86)); }
+.game-tile__cover--blank { background: linear-gradient(135deg, rgba(28, 44, 124, 0.7), rgba(20, 21, 68, 0.8)); }
+
+.tool-pill {
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(45, 66, 169, 0.3);
+}
+
+.project-row__stack, .project-row__activity {
+  min-width: 110px;
+}
+
+.info-card {
+  min-height: 110px;
+}
+
+.dock-wrap {
+  margin-top: 18px;
+}
+
+.dock {
+  padding: 18px 24px;
+  border-radius: 32px;
+  border: 1px solid rgba(145, 90, 255, 0.28);
+  background: linear-gradient(90deg, rgba(16, 47, 120, 0.62), rgba(82, 22, 90, 0.48));
+}
+
+.dock__item {
+  min-width: 72px;
+  padding: 16px 8px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dock__label, .dock__time {
+  font-weight: 700;
+}
+
+.dock__status {
+  padding-left: 14px;
+}

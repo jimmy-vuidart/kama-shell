@@ -1,60 +1,308 @@
-# AGENTS.md
+# AGENTS.md (Agent Runtime Optimized)
 
-## Project overview
+## EXECUTION MODE
 
-This repository contains a small `Quickshell` UI shell focused on rendering a full-screen decorative frame with these characteristics:
+You are an autonomous coding agent. Your goal is to iteratively build a Linux desktop shell based on:
 
-- A black frame surrounding the whole screen.
-- A transparent center area.
-- Rounded **inner** corners (the cutout is rounded, outer screen corners remain square).
-- Center click-through behavior using a `Region` mask subtraction.
-- A left-side wireless icon dock positioned around two-thirds down the frame height that reveals a hover subpanel fused to the frame, using the same frame color, right outer rounded corners, a rounded top link corner connecting frame→panel, and a layered border/content style inspired by `caelestia-dots`.
+images/maquette.png
 
-Current key files:
+You MUST:
+- act incrementally
+- keep the project runnable
+- produce visible progress every cycle
+- follow strict task decomposition
 
-- `shell.qml`: Main entry point creating one `PanelWindow` per screen.
-- `Frame.qml`: Reusable frame component responsible for visual rendering, bottom-left wireless UI (icon dock + hover subpanel), and exposing the center cutout item used by masking.
-- `components/frame/FrameBackground.qml`: Dedicated frame visual renderer (full-screen frame + rounded inner cutout draw logic).
-- `components/wireless/WirelessDock.qml`: Left-side wireless icon dock trigger.
-- `components/wireless/WirelessState.qml`: Lightweight wireless state provider used by `Frame.qml` to feed panel content.
-- `components/wirelessPanel/WirelessPanelShape.qml`: Dedicated visual shape renderer for the wireless panel surface and border.
-- `components/wirelessPanel/WirelessPanelContent.qml`: Dedicated content renderer for wireless labels/toggle/device count.
-- `wsl.sh`: Robust launcher for WSLg that prioritizes the real WSLg parent socket (`/mnt/wslg/runtime-dir/wayland-0`) to avoid nested-socket loops, resolves runtime/socket access, starts Hyprland in nested Wayland mode, detects the child Wayland socket dynamically, and then launches Quickshell with diagnostics/log paths.
-- `README-WSL.md`: Documentation for installation/setup on ArchLinux WSL, including nested Hyprland execution flow and troubleshooting from generated logs.
-- `mockup/screenshot.png`: Visual reference for intended appearance.
+---
 
-## Architecture notes
+## PRIMARY OBJECTIVE
 
-- `shell.qml` uses `Variants { model: Quickshell.screens }` to instantiate the frame on each display.
-- `PanelWindow` is anchored on all sides to span the full screen.
-- The window `mask` includes the full frame region and subtracts the center cutout region from `Frame.qml`.
-- `Frame.qml` owns frame-level composition/wiring: frame drawing, wireless dock + panel placement, panel open state, panel theming props, and `centerCutoutItem` mask alias.
-- `WirelessPanel.qml` composes `components/wirelessPanel/WirelessPanelShape.qml` and `components/wirelessPanel/WirelessPanelContent.qml` while exposing hover state used by `Frame.qml`, and reserves top headroom so the rounded top link corner is fully visible.
-- `components/wirelessPanel/WirelessPanelShape.qml` owns the emergent panel silhouette (including the rounded top link corner) and layered stroke treatment (outer border + subtle inner line) to keep the panel visually attached to the frame.
-- `components/wirelessPanel/WirelessPanelContent.qml` owns the inspired control layout (title, state rows with switches, and settings pill action).
-- QML subcomponents are organized in feature folders under `components/` and imported explicitly with local directory imports.
+Deliver a functional MVP of a desktop shell with:
 
-## Working agreement for agents
+- Left sidebar
+- Top control bar
+- Main content area (Gaming / Dev views)
+- Right control panel
+- Bottom dock
+- System widgets (CPU, RAM, Battery, Network, Audio)
 
-When making changes in this repository, keep behavior aligned with the current intent:
+---
 
-1. Preserve transparent and click-through center behavior unless explicitly requested otherwise.
-2. Preserve rounded inner corners (not rounded outer corners) unless explicitly requested otherwise.
-3. Keep `Frame.qml` as the reusable frame component (avoid inlining frame drawing back into `shell.qml`).
-4. Keep modifications minimal and consistent with existing QML style.
-5. Keep wireless controls visually attached to the frame (shared-border, emerging look), with panel color matching the frame, right outer rounded corners, a rounded top link corner between frame and panel, layered border treatment, and compact state/toggle rows + settings pill action, triggered by hover on the left-side wireless icon dock positioned around two-thirds down the frame unless explicitly requested otherwise.
-6. Prefer splitting UI logic into small QML subcomponents early and often to keep each file simple and maintainable.
-7. Prefer state/data providers (e.g. `QtObject` components) to keep presentation components focused on rendering.
+## HARD RULES
 
-## Keep this file updated
+1. ALWAYS prioritize visual fidelity to the mockup.
+2. NEVER block on system integrations → use mocks.
+3. NEVER refactor large areas unless required.
+4. ALWAYS ship something visible per iteration.
+5. KEEP tasks small and atomic.
+6. PROJECT MUST REMAIN RUNNABLE.
 
-Every time project behavior or structure changes, update this `AGENTS.md` in the same change set.
+---
 
-At minimum, refresh:
+## ITERATION LOOP (MANDATORY)
 
-- File/component responsibilities.
-- Visual/interaction guarantees (frame thickness, corner behavior, transparency, click-through).
-- Any new constraints or conventions introduced for future contributors/agents.
-- Keep component boundaries clear by extracting dense sections into focused subcomponents when features grow.
+For EACH cycle:
 
-If a change intentionally breaks a previously documented guarantee, explicitly document that guarantee as changed and why.
+1. Select ONE atomic task
+2. Implement minimal version
+3. Ensure project runs
+4. Compare with maquette
+5. Log report
+6. Move to next task
+
+---
+
+## TASK SIZE DEFINITION
+
+A valid task:
+- modifies few files
+- produces visible UI change OR functional unit
+- has clear completion criteria
+
+INVALID tasks:
+- “build whole UI”
+- “refactor entire architecture”
+- “implement all services”
+
+---
+
+## PRIORITY ORDER
+
+P0:
+- project bootstrap
+- root layout
+- sidebar
+- main panels
+- dock
+
+P1:
+- top bar
+- core components
+- navigation
+- styling system
+
+P2:
+- mock widgets
+- control center
+- views (gaming/dev)
+
+P3:
+- real system integrations
+- app scanning
+- refinements
+
+---
+
+## REQUIRED FIRST TASKS
+
+1. Initialize AGS project
+2. Create root shell window
+3. Render empty layout zones:
+   - sidebar
+   - main
+   - right panel
+   - dock
+
+DO NOT SKIP.
+
+---
+
+## VISUAL TARGET
+
+Use ONLY:
+images/maquette.png
+
+Match:
+- layout proportions
+- spacing
+- card style
+- blur / glass
+- gradients
+- rounded corners
+
+---
+
+## TECH STACK
+
+- AGS
+- TypeScript
+- GTK4
+- SCSS
+
+---
+
+## FILE STRUCTURE (ENFORCE)
+
+src/
+  components/
+  widgets/
+  views/
+  layouts/
+  services/
+  state/
+  styles/
+
+images/
+  maquette.png
+
+---
+
+## DATA STRATEGY
+
+Order:
+1. mock data
+2. fake realistic data
+3. real data
+
+Each widget MUST support:
+- mock
+- loading
+- fallback
+
+---
+
+## COMPONENT STRATEGY
+
+Build reusable primitives:
+
+- Card
+- Button
+- IconButton
+- Slider
+- Toggle
+- Section
+
+Reuse aggressively.
+
+---
+
+## UI RULES
+
+- no visual clutter
+- strong alignment
+- consistent spacing
+- short labels
+- high contrast readability
+
+---
+
+## CONTROL CENTER REQUIREMENTS
+
+Must include:
+- battery
+- volume slider
+- brightness slider
+- wifi toggle
+- bluetooth toggle
+
+---
+
+## DOCK REQUIREMENTS
+
+- centered icons
+- equal spacing
+- hover feedback (later)
+
+---
+
+## VIEW REQUIREMENTS
+
+### Gaming
+- launcher cards
+- game grid (mock ok)
+
+### Dev
+- project list
+- tool shortcuts
+
+---
+
+## SYSTEM INTEGRATION (LATE)
+
+Only after UI is stable:
+- CPU/RAM
+- Battery
+- Network
+- Audio
+
+---
+
+## BLOCKING RULE
+
+If blocked:
+- mock it
+- skip it
+- log it
+- continue
+
+DO NOT STALL.
+
+---
+
+## CODE QUALITY RULES
+
+- no dead code
+- no duplication
+- clear naming
+- small files
+
+---
+
+## DONE CRITERIA
+
+Task is DONE if:
+- visible result exists
+- no crash
+- matches mock intent
+- code is clean enough
+
+---
+
+## REPORT FORMAT (MANDATORY)
+
+After EACH task:
+
+[Task]
+<name>
+
+[Goal]
+<what you wanted>
+
+[Result]
+<what works>
+
+[Files]
+<modified files>
+
+[Visual]
+<match vs maquette>
+
+[Issues]
+<problems>
+
+[Next]
+<next task>
+
+---
+
+## SESSION SUMMARY
+
+At end:
+
+[Completed]
+...
+
+[Next]
+...
+
+[Blockers]
+...
+
+---
+
+## FINAL INSTRUCTION
+
+Start NOW with:
+
+Task: Initialize project + render empty shell layout.
+
+Do not plan further. Execute.

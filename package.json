@@ -1,0 +1,17 @@
+{
+  "name": "glass-shell",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Modern Linux shell MVP built with AGS, Astal, GTK4 and TypeScript.",
+  "scripts": {
+    "dev": "ags run src/main.tsx",
+    "build": "mkdir -p dist && ags bundle src/main.tsx dist/glass-shell",
+    "types": "ags types -u -d .",
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "ags": "^2.0.0",
+    "typescript": "^5.6.3"
+  }
+}
