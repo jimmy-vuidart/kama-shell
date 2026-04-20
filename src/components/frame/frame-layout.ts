@@ -1,0 +1,28 @@
+export const shellFrameLayout = {
+  outerMargin: 0,
+  frameLeft: 0,
+  frameTop: 0,
+  frameRight: 0,
+  frameBottom: 0,
+  frameRadius: 0,
+  topTabWidth: 250,
+  topTabHeight: 54,
+  topTabRise: 0,
+  leftDockWidth: 0,
+  leftDockHeight: 0,
+  leftDockOffsetY: 0,
+  leftDockInnerInset: 0,
+  leftDockInnerPadding: 0,
+  bottomDockWidth: 560,
+  bottomDockHeight: 84,
+  bottomDockDrop: 0,
+  contentInsetTop: 68,
+  contentInsetRight: 28,
+  contentInsetBottom: 104,
+  contentInsetLeft: 76,
+  topWidgetMarginTop: 0,
+  leftWidgetMarginStart: 0,
+  bottomWidgetMarginBottom: 0,
+} as const
+
+export type ShellFrameLayout = typeof shellFrameLayout

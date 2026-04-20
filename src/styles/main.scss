@@ -19,6 +19,15 @@ $space-2: 16px;
 $space-3: 22px;
 $space-4: 28px;
 $shadow-lg: 0 24px 90px rgba(4, 7, 44, 0.45);
+$shadow-frame: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 20px 60px rgba(3, 8, 34, 0.32);
+
+@mixin shell-surface {
+  border: 1px solid rgba(123, 150, 255, 0.34);
+  background:
+    linear-gradient(180deg, rgba(31, 44, 125, 0.34), rgba(16, 20, 74, 0.36)),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015));
+  box-shadow: $shadow-frame;
+}
 
 * {
   font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", sans-serif;
@@ -30,34 +39,61 @@ window.shell-window {
 }
 
 .shell-root {
-  margin: 18px;
-  padding: 18px 18px 14px;
-  border-radius: 42px;
-  border: 1px solid rgba(125, 119, 255, 0.38);
+  margin: 0;
   background:
-    radial-gradient(circle at 12% 55%, rgba(33, 124, 255, 0.48), transparent 34%),
-    radial-gradient(circle at 92% 88%, rgba(255, 88, 52, 0.46), transparent 24%),
-    radial-gradient(circle at 84% 20%, rgba(255, 0, 140, 0.22), transparent 28%),
-    linear-gradient(125deg, rgba(4, 20, 97, 0.96), rgba(20, 9, 74, 0.96) 60%, rgba(75, 14, 72, 0.96));
-  box-shadow: $shadow-lg;
+    radial-gradient(circle at 12% 52%, rgba(33, 124, 255, 0.34), transparent 28%),
+    radial-gradient(circle at 92% 88%, rgba(255, 88, 52, 0.3), transparent 24%),
+    radial-gradient(circle at 84% 18%, rgba(255, 0, 140, 0.14), transparent 22%),
+    linear-gradient(125deg, rgba(4, 18, 90, 0.98), rgba(17, 10, 74, 0.98) 58%, rgba(72, 17, 70, 0.9));
+}
+
+.shell-surface {
+  @include shell-surface;
+}
+
+.shell-frame-canvas {
+  min-width: 0;
+  min-height: 0;
+}
+
+.shell-overlay-layer {
+  min-width: 0;
+  min-height: 0;
+}
+
+.shell-stage {
+  min-width: 0;
+  min-height: 0;
+  background: transparent;
+}
+
+.shell-floating--top {
+  margin-top: 8px;
+}
+
+.shell-floating--left {
+  margin-left: 0;
+}
+
+.shell-floating--bottom {
+  margin-bottom: 0;
 }
 
 .header-bar {
-  min-height: 52px;
-  margin-bottom: 14px;
+  min-height: 64px;
 }
 
 .header-bar__title-wrap {
-  padding: 14px 28px;
-  border-radius: 999px;
-  background: rgba(46, 33, 120, 0.46);
-  border: 1px solid rgba(119, 91, 255, 0.34);
+  min-width: 250px;
+  padding: 18px 32px 16px;
+  border-radius: 0 0 20px 20px;
+  background: transparent;
 }
 
 .header-bar__title {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 1.4px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
 }
 
 .status-chip {
@@ -80,21 +116,22 @@ window.shell-window {
 }
 
 .sidebar {
-  min-width: 132px;
+  min-width: 116px;
 }
 
 .sidebar__rail {
-  min-width: 124px;
-  padding: 18px 14px;
-  border-radius: 32px;
-  border: 1px solid rgba(74, 170, 255, 0.36);
-  background: linear-gradient(180deg, rgba(18, 78, 196, 0.42), rgba(9, 25, 84, 0.54));
+  min-width: 108px;
+  min-height: 380px;
+  padding: 18px 10px;
+  border-radius: 24px;
+  margin-left: 0;
+  background: transparent;
 }
 
 .sidebar__brand {
-  margin-bottom: 18px;
-  font-size: 18px;
+  font-size: 12px;
   font-weight: 700;
+  color: rgba(237, 249, 255, 0.86);
 }
 
 .sidebar__item, .sidebar__settings, .dock__item, .action-grid__item {
@@ -103,19 +140,19 @@ window.shell-window {
 }
 
 .sidebar__item {
-  margin-bottom: 12px;
-  padding: 16px 10px;
-  border-radius: 24px;
-  background: rgba(26, 37, 114, 0.34);
+  padding: 14px 8px;
+  border-radius: 18px;
+  background: rgba(17, 31, 95, 0.08);
+  outline: 1px solid transparent;
 }
 
 .sidebar__item--active {
-  background: linear-gradient(180deg, rgba(124, 63, 255, 0.62), rgba(40, 95, 255, 0.46));
-  border: 1px solid rgba(111, 199, 255, 0.42);
+  background: linear-gradient(180deg, rgba(123, 79, 255, 0.52), rgba(43, 96, 255, 0.32));
+  outline-color: rgba(111, 199, 255, 0.42);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .sidebar__item-icon {
-  margin-bottom: 8px;
   font-size: 12px;
   font-weight: 700;
 }
@@ -126,13 +163,17 @@ window.shell-window {
 }
 
 .sidebar__settings {
-  padding: 14px;
-  border-radius: 20px;
-  background: rgba(20, 31, 94, 0.54);
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(20, 31, 94, 0.18);
 }
 
 .shell-content {
   min-width: 0;
+}
+
+.screen {
+  padding-top: 0;
 }
 
 .screen--single {
@@ -145,9 +186,12 @@ window.shell-window {
 
 .card {
   padding: 22px;
-  border-radius: $radius-xl;
-  border: 1px solid $stroke-soft;
-  background: linear-gradient(180deg, rgba(22, 36, 120, 0.5), rgba(28, 17, 84, 0.62));
+  border-radius: 30px;
+  border: 1px solid rgba(113, 141, 255, 0.16);
+  background:
+    linear-gradient(180deg, rgba(28, 42, 124, 0.16), rgba(24, 19, 79, 0.12)),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.012));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .panel-card {
@@ -159,7 +203,14 @@ window.shell-window {
 }
 
 .control-card {
-  min-height: 350px;
+  min-height: 0;
+}
+
+.control-card--attached {
+  padding: 18px 10px 6px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
 }
 
 .section-title {
@@ -189,7 +240,8 @@ window.shell-window {
   min-width: 120px;
   padding: 16px;
   border-radius: $radius-md;
-  background: rgba(52, 65, 162, 0.26);
+  background: rgba(52, 65, 162, 0.14);
+  border: 1px solid rgba(107, 132, 255, 0.14);
 }
 
 .metric-pill__label, .toggle-row__label {
@@ -206,11 +258,18 @@ window.shell-window {
 .toggle-row, .project-row {
   padding: 14px 16px;
   border-radius: $radius-md;
-  background: rgba(48, 53, 142, 0.28);
+  background: rgba(48, 53, 142, 0.16);
+  border: 1px solid rgba(100, 118, 236, 0.16);
 }
 
 .slider-row__header {
   margin-bottom: 8px;
+}
+
+.slider-row__bar block {
+  min-height: 8px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .slider-row__bar block.filled {
@@ -221,14 +280,16 @@ window.shell-window {
   min-width: 110px;
   padding: 18px 10px;
   border-radius: $radius-md;
-  background: rgba(79, 47, 160, 0.34);
+  background: rgba(79, 47, 160, 0.2);
+  border: 1px solid rgba(122, 101, 240, 0.18);
 }
 
 .launcher-chip {
   min-width: 120px;
   padding: 14px 16px;
   border-radius: $radius-md;
-  background: rgba(46, 77, 173, 0.24);
+  background: rgba(46, 77, 173, 0.16);
+  border: 1px solid rgba(107, 136, 255, 0.14);
 }
 
 .launcher-chip__name, .tool-pill, .project-row__name, .game-tile__title, .info-card__title {
@@ -262,7 +323,8 @@ window.shell-window {
 .tool-pill {
   padding: 10px 12px;
   border-radius: 999px;
-  background: rgba(45, 66, 169, 0.3);
+  background: rgba(45, 66, 169, 0.18);
+  border: 1px solid rgba(110, 138, 255, 0.14);
 }
 
 .project-row__stack, .project-row__activity {
@@ -274,21 +336,23 @@ window.shell-window {
 }
 
 .dock-wrap {
-  margin-top: 18px;
+  margin-top: 0;
 }
 
 .dock {
-  padding: 18px 24px;
-  border-radius: 32px;
-  border: 1px solid rgba(145, 90, 255, 0.28);
-  background: linear-gradient(90deg, rgba(16, 47, 120, 0.62), rgba(82, 22, 90, 0.48));
+  min-height: 84px;
+  min-width: 560px;
+  padding: 16px 24px 14px;
+  border-radius: 24px;
+  border-radius: 22px 22px 30px 30px;
+  background: transparent;
 }
 
 .dock__item {
   min-width: 72px;
-  padding: 16px 8px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.06);
+  padding: 14px 8px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .dock__label, .dock__time {

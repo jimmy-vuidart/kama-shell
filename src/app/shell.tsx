@@ -1,6 +1,8 @@
 import { Astal } from "ags/gtk4"
 import Gtk from "gi://Gtk?version=4.0"
 
+import { FrameCanvas } from "../components/frame/frame-canvas"
+import { shellFrameLayout } from "../components/frame/frame-layout"
 import { Dock } from "../components/dock"
 import { Header } from "../components/header"
 import { Sidebar } from "../components/sidebar"
@@ -40,14 +42,50 @@ export function GlassShell() {
       layer={Astal.Layer.TOP}
       class="shell-window"
     >
-      <box orientation={Gtk.Orientation.VERTICAL} class="shell-root" spacing={18}>
-        <Header />
-        <box hexpand vexpand class="shell-body" spacing={18}>
-          <Sidebar onNavigate={(section) => stack.set_visible_child_name(section)} />
-          {stack}
+      <overlay class="shell-root">
+        <FrameCanvas />
+        <box $type="overlay" hexpand vexpand class="shell-overlay-layer">
+          <box
+            orientation={Gtk.Orientation.VERTICAL}
+            hexpand
+            vexpand
+            class="shell-stage"
+            marginTop={shellFrameLayout.outerMargin + shellFrameLayout.frameTop + shellFrameLayout.contentInsetTop}
+            marginBottom={shellFrameLayout.outerMargin + shellFrameLayout.frameBottom + shellFrameLayout.contentInsetBottom}
+            marginStart={shellFrameLayout.outerMargin + shellFrameLayout.frameLeft + shellFrameLayout.contentInsetLeft}
+            marginEnd={shellFrameLayout.outerMargin + shellFrameLayout.frameRight + shellFrameLayout.contentInsetRight}
+          >
+            {stack}
+          </box>
         </box>
-        <Dock />
-      </box>
+        <box
+          $type="overlay"
+          halign={Gtk.Align.CENTER}
+          valign={Gtk.Align.START}
+          class="shell-floating shell-floating--top"
+          marginTop={shellFrameLayout.topWidgetMarginTop}
+        >
+          <Header />
+        </box>
+        <box
+          $type="overlay"
+          halign={Gtk.Align.START}
+          valign={Gtk.Align.CENTER}
+          class="shell-floating shell-floating--left"
+          marginStart={shellFrameLayout.leftWidgetMarginStart}
+        >
+          <Sidebar onNavigate={(section) => stack.set_visible_child_name(section)} />
+        </box>
+        <box
+          $type="overlay"
+          halign={Gtk.Align.CENTER}
+          valign={Gtk.Align.END}
+          class="shell-floating shell-floating--bottom"
+          marginBottom={shellFrameLayout.bottomWidgetMarginBottom}
+        >
+          <Dock />
+        </box>
+      </overlay>
     </window>
   )
 }

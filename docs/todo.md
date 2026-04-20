@@ -11,12 +11,14 @@
 
 ## Phase 2 — Données système réelles
 
-- [ ] brancher CPU et RAM via `/proc`
-- [ ] brancher batterie via UPower
-- [ ] brancher réseau via NetworkManager
-- [ ] brancher volume via PipeWire / WirePlumber
-- [ ] brancher luminosité via `brightnessctl` ou `/sys`
-- [ ] remplacer l’horloge mockée par un polling réel
+- [x] brancher CPU et RAM via `/proc`
+- [x] brancher batterie via UPower avec fallback `/sys`
+- [x] brancher réseau via fallback `/sys/class/net`
+- [x] brancher volume via `wpctl`
+- [x] brancher luminosité via `brightnessctl`
+- [x] remplacer l’horloge mockée par un polling réel
+- [ ] remplacer le fallback réseau par une intégration NetworkManager plus riche
+- [ ] remplacer les états Bluetooth et Wi-Fi par des intégrations DBus robustes
 
 ## Phase 3 — Gaming / Dev
 

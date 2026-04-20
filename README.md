@@ -1,6 +1,6 @@
 # Glass Shell
 
-Glass Shell est un MVP de shell Linux moderne inspiré de la maquette fournie, construit autour de Hyprland, AGS/Astal, GTK4 et TypeScript. Cette première base fournit un dépôt structuré, un bootstrap AGS exécutable, une navigation entre sections et une UI initiale fidèle à l’intention visuelle avec données mockées.
+Glass Shell est un MVP de shell Linux moderne inspiré de la maquette fournie, construit autour de Hyprland, AGS/Astal, GTK4 et TypeScript. La base actuelle fournit un dépôt structuré, un bootstrap AGS exécutable, une navigation entre sections, une UI initiale fidèle à l’intention visuelle et un premier lot de widgets branchés sur de vraies données système.
 
 ## Objectifs du MVP
 
@@ -88,21 +88,27 @@ docs/
 
 ## État d’avancement
 
-Phase 0 et début Phase 1 :
+Phase 0, Phase 1 et début Phase 2 :
 
 - squelette du dépôt créé
 - bootstrap AGS/TypeScript ajouté
 - layout shell initial inspiré de la maquette
 - navigation de base opérationnelle côté UI
-- données encore mockées pour les widgets
+- CPU et RAM branchés via `/proc`
+- batterie branchée avec tentative UPower puis fallback `/sys`
+- réseau branché avec fallback `/sys/class/net` et débit pollé
+- volume branché via `wpctl`
+- luminosité branchée via `brightnessctl`
+- horloge du dock branchée en temps réel
 
 ## Limites connues
 
-- intégrations CPU, RAM, batterie, réseau, audio et luminosité non branchées
+- les actions système ne pilotent pas encore le volume, la luminosité ou la session
+- les intégrations DBus dépendent du contexte de lancement et tombent actuellement en fallback si elles sont indisponibles
 - launcher `.desktop` non implémenté
 - scans Gaming/Dev non branchés au système de fichiers
 - actions session non connectées
-- le projet n’a pas encore été validé dans cet environnement faute de dépendances AGS/Astal installées dans le dépôt
+- l’ouverture en layer-shell dépend du compositeur et du fait de lancer le shell depuis un terminal Wayland natif
 
 ## Documentation complémentaire
 

@@ -8,9 +8,10 @@ type SidebarProps = {
 
 export function Sidebar(props: SidebarProps) {
   return (
-    <box orientation={Gtk.Orientation.VERTICAL} class="sidebar">
+    <box orientation={Gtk.Orientation.VERTICAL} class="sidebar" valign={Gtk.Align.CENTER}>
       <box orientation={Gtk.Orientation.VERTICAL} class="sidebar__rail" spacing={12}>
         <label class="sidebar__brand" label="UNIVERSE" />
+        <label class="sidebar__brand" label="DOCK" />
         {sections.map((section, index) => (
           <button
             class={`sidebar__item ${index === 0 ? "sidebar__item--active" : ""}`}
