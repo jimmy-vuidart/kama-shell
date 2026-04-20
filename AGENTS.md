@@ -12,6 +12,10 @@ You MUST:
 - produce visible progress every cycle
 - follow strict task decomposition
 
+You MUST ALSO:
+- read `LESSONS.md` at the start of every new conversation before making changes
+- append a new lesson to `LESSONS.md` when the conversation topic is completed successfully and a concrete technical insight was learned
+
 ---
 
 ## PRIMARY OBJECTIVE

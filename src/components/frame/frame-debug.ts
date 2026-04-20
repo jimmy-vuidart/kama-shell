@@ -47,7 +47,7 @@ export function removePoint(index: number) {
   })
 }
 
-export function findNearestPoint(x: number, y: number, points: Point[], maxDistance = 22) {
+export function findNearestPoint(x: number, y: number, points: Point[], maxDistance = 40) {
   let best: { index: number; point: Point; dist: number } | null = null
   points.forEach((p, i) => {
     const dist = Math.hypot(p.x - x, p.y - y)

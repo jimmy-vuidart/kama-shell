@@ -39,6 +39,7 @@ export function FrameDebugOverlay() {
       hexpand
       vexpand
       class="shell-frame-debug"
+      canTarget
       $={(self) => {
         self.set_draw_func((_area, cr, width, height) => {
           const ctx = cr as unknown as CairoCtx
