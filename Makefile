@@ -14,7 +14,7 @@ run:
 	./run.sh
 
 check:
-	qmllint shell.qml src/
+	qmllint -I src src/shell.qml src/components/*.qml src/state/*.qml
 
 fmt:
-	qmlformat -i shell.qml src/
+	qmlformat -i src/shell.qml src/
