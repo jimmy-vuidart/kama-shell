@@ -1,0 +1,48 @@
+# LESSONS.md
+
+## Quickshell / QML
+
+- Le point d'entrée réel du shell est `src/shell.qml`, pas `shell.qml` à la racine. Les scripts et la documentation doivent rester alignés là-dessus.
+- Pour une config multi-écran, `Variants { model: Quickshell.screens }` + `required property var modelData` reste le pattern de base le plus propre pour `PanelWindow`.
+- Quand un état doit être partagé entre plusieurs fenêtres ou composants répliqués, il faut le sortir dans un `pragma Singleton`. Le dock applicatif fonctionne correctement avec `src/state/DockState.qml` pour cette raison.
+- Dans un `Instantiator`, éviter `QtObject` comme delegate si on doit y placer des enfants QML comme `Connections`. Utiliser un `Item` non visuel évite l'erreur runtime `Cannot assign to non-existent default property`.
+
+## Ring / Dock
+
+- Le dock intégré au ring est plus fiable s'il est sculpté dans la géométrie du ring lui-même, au niveau du `mask`, du `blurRegion` et du tracé du cutout intérieur. Superposer une forme de dock indépendante donne vite un rendu de "deux pièces empilées".
+- Les coins bas du ring doivent rester de vrais quarts de cercle, puis le segment inférieur doit rester parfaitement horizontal jusqu'au départ de la bosse du dock.
+- Pour une bosse de dock crédible, une géométrie symétrique construite avec deux grandes `PathCubic` miroir donne un meilleur résultat que des `PathArc` ou des segments cassés.
+- La largeur visuelle de la bosse ne doit pas être confondue avec la largeur du contenu du dock. Il faut distinguer:
+  - la largeur du contenu (`contentWidth`)
+  - la largeur du sommet (`bumpWidth`)
+  - la largeur totale de la silhouette (`shapeWidth`)
+
+## État du dock
+
+- `DockState` agrège proprement deux sources:
+  - `DesktopEntries` pour les métadonnées applicatives
+  - `ToplevelManager.toplevels` pour les fenêtres ouvertes
+- L'ordre attendu du dock est:
+  - pinned
+  - séparateur conditionnel
+  - running non pinned
+- Une app pinned et lancée doit rester un seul item, enrichi avec `isRunning`, `isActive`, `windowCount` et `windows`.
+- Pour les apps pinned, la résolution de `DesktopEntry` doit tolérer les deux formes d'identifiant:
+  - `foo`
+  - `foo.desktop`
+
+## Icônes applicatives
+
+- `DesktopEntry.icon` fournit un nom ou un chemin, mais pas forcément une URL directement exploitable.
+- `Quickshell.iconPath()` est la voie normale, mais il peut renvoyer vide si le thème d'icônes Qt/Quickshell n'est pas correctement résolu au démarrage.
+- Le thème d'icônes peut être forcé explicitement via `//@ pragma IconTheme ...` au début de `src/shell.qml`.
+- Le premier chargement du dock peut arriver avant que `DesktopEntries` soit complètement prêt. Il faut écouter `DesktopEntries.applicationsChanged()` et replanifier un rebuild.
+- La résolution d'icônes doit rester générique. Éviter les fallbacks spécifiques à une application si un lookup standard basé sur `DesktopEntry.icon` et les emplacements freedesktop suffit.
+- Si un lookup asynchrone de chemin est utilisé, ne garder qu'un seul résultat exploitable. Concaténer plusieurs chemins dans une seule `Image.source` produit une URL invalide et donc aucune icône.
+- `Image` standard est plus adapté qu'`IconImage` pour afficher des chemins `file://...` explicites.
+
+## Débogage
+
+- `make check` avec `qmllint -I src ...` attrape bien les erreurs de syntaxe, mais pas les problèmes d'initialisation runtime liés à Wayland, `DesktopEntries` ou aux timings de chargement.
+- Quand Quickshell écrit dans `log.qslog`, le fichier est binaire. Utiliser `strings` pour extraire les messages lisibles.
+- Un test `QT_QPA_PLATFORM=offscreen quickshell -p ...` est utile pour valider du QML hors rendu Wayland, mais ne remplace pas un test réel pour `PanelWindow`.

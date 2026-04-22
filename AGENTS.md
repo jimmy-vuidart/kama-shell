@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Ce dépôt contient une configuration Quickshell minimale, actuellement centrée sur [`shell.qml`](/mnt/d/Projets/kama-shell/shell.qml). Les changements doivent rester compatibles avec Quickshell et avec un usage Wayland via `PanelWindow` + `WlrLayershell`.
+Ce dépôt contient une configuration Quickshell minimale, actuellement centrée sur [`src/shell.qml`](/mnt/d/Projets/kama-shell/src/shell.qml). Les changements doivent rester compatibles avec Quickshell et avec un usage Wayland via `PanelWindow` + `WlrLayershell`.
 
 ## Objectif
 
@@ -48,10 +48,26 @@ Si le projet évolue, viser cette organisation:
 
 Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 
+## Structure actuelle
+
+- `src/shell.qml`: point d'entrée Quickshell
+- `src/components/Ring.qml`: `PanelWindow` multi-écran et géométrie du ring
+- `src/components/AppDock.qml`: layout visuel du dock
+- `src/state/ShellGeometry.qml`: constantes de forme partagées entre ring et dock
+- `src/state/DockState.qml`: état global du dock, apps pinned + running via `DesktopEntries` et `ToplevelManager`
+
+Pour le dock applicatif:
+
+- garder la séparation nette entre état (`DockState`) et rendu (`AppDock`, `AppDockItem`)
+- préférer `DesktopEntries` pour les métadonnées applicatives
+- préférer `ToplevelManager` pour les fenêtres ouvertes tant que le compositeur expose correctement les toplevels
+- éviter d'introduire de nouveaux fallbacks spécifiques à une application si un fallback générique de résolution d'icônes suffit
+
 ## Vérification
 
-- Après modification, relire `shell.qml` et vérifier que les imports Quickshell sont cohérents avec les types utilisés.
+- Après modification, relire `src/shell.qml` et vérifier que les imports Quickshell sont cohérents avec les types utilisés.
 - En cas de refactor multi-écran, vérifier que chaque fenêtre reçoit bien son `screen` depuis `Quickshell.screens`.
+- Si le dock change, vérifier le rendu initial des apps pinned et des apps running, y compris la résolution des icônes au premier chargement.
 - Ne pas introduire de duplication de recommandations dans ce fichier; enrichir les sections existantes.
 
 ## Sources

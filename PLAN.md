@@ -71,7 +71,14 @@ La construction suit trois jalons mesurables :
 ### Jalon C — Shell expressif (fin Phase 13)
 
 - [ ] Dynamic Island morphant sur MPRIS / downloads / recording
-- [ ] Task dock hybride : pinned + running-not-pinned
+- [x] Task dock hybride : pinned + running-not-pinned
+
+État actuel du dock:
+
+- intégré visuellement au bas du ring, avec une bosse centrale sculptée dans la géométrie du ring
+- rendu séparé de l'état, via `src/components/AppDock.qml` + `src/state/DockState.qml`
+- apps pinned et apps lancées agrégées via `DesktopEntries` et `ToplevelManager`
+- résolution d'icônes basée sur `DesktopEntry.icon`, avec recherche dans les emplacements standards d'icônes si le thème Qt ne résout pas immédiatement
 
 ---
 

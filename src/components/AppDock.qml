@@ -1,18 +1,12 @@
 import QtQuick
+import QtQuick.Controls
 
 import "../state"
 
 Item {
     id: root
 
-    property var items: [
-        { kind: "app", label: "F", pinned: true, running: false, active: false },
-        { kind: "app", label: "W", pinned: true, running: true, active: true },
-        { kind: "app", label: "T", pinned: true, running: false, active: false },
-        { kind: "separator" },
-        { kind: "app", label: "S", pinned: false, running: true, active: false },
-        { kind: "app", label: "C", pinned: false, running: true, active: false }
-    ]
+    property var items: DockState.items
 
     readonly property int itemCount: items.length
     readonly property int gapCount: Math.max(0, itemCount - 1)
@@ -36,12 +30,53 @@ Item {
         contentWidth + (ShellGeometry.dockShapeSidePadding * 2),
         bumpWidth + ShellGeometry.dockShapeExtraWidth
     )
+    property var contextItem: null
 
     implicitWidth: Math.max(
         contentWidth + (ShellGeometry.dockSidePadding * 2),
         ShellGeometry.dockMinWidth
     )
     implicitHeight: ShellGeometry.dockHeight
+
+    function openContextMenu(item, x, y) {
+        contextItem = item
+        contextMenu.x = x
+        contextMenu.y = y
+        contextMenu.open()
+    }
+
+    function closeContextMenu() {
+        contextMenu.close()
+        contextItem = null
+    }
+
+    Menu {
+        id: contextMenu
+
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside | Popup.CloseOnReleaseOutside
+        onClosed: root.contextItem = null
+
+        MenuItem {
+            readonly property bool isPinnedItem: root.contextItem && root.contextItem.isPinned
+
+            text: isPinnedItem ? "Désépingler" : "Épingler"
+            enabled: root.contextItem && DockState.canChangePinState(root.contextItem)
+
+            onTriggered: {
+                if (!root.contextItem) {
+                    return
+                }
+
+                if (root.contextItem.isPinned) {
+                    DockState.unpinItem(root.contextItem)
+                } else {
+                    DockState.pinItem(root.contextItem)
+                }
+
+                root.closeContextMenu()
+            }
+        }
+    }
 
     Row {
         anchors {
@@ -66,14 +101,25 @@ Item {
                 }
 
                 AppDockItem {
+                    id: appItem
+
                     anchors.centerIn: parent
                     width: ShellGeometry.dockItemSize
                     height: ShellGeometry.dockItemSize
                     visible: modelData.kind === "app"
                     label: modelData.label || "?"
-                    pinned: modelData.pinned || false
-                    running: modelData.running || false
-                    active: modelData.active || false
+                    iconSource: modelData.iconSource || ""
+                    pinned: modelData.isPinned || false
+                    running: modelData.isRunning || false
+                    active: modelData.isActive || false
+                    onClicked: {
+                        root.closeContextMenu()
+                        DockState.activateItem(modelData)
+                    }
+                    onSecondaryClicked: function(x, y) {
+                        const point = appItem.mapToItem(root, x, y)
+                        root.openContextMenu(modelData, point.x, point.y)
+                    }
                 }
             }
         }
