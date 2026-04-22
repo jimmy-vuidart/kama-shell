@@ -142,13 +142,17 @@ Singleton {
 
         const targetWindow = root.preferredWindow(item.windows || [])
 
-        if (targetWindow) {
+        if (targetWindow && !item.isActive) {
             targetWindow.activate()
             return
         }
 
-        if (item.desktopEntry) {
-            item.desktopEntry.execute()
+        if (!targetWindow) {
+            const entry = item.desktopEntry || root.resolveDesktopEntry(root.itemDesktopId(item))
+
+            if (entry) {
+                entry.execute()
+            }
         }
     }
 
@@ -160,6 +164,124 @@ Singleton {
         }
 
         return windows.length > 0 ? windows[0] : null
+    }
+
+    function canChangePinState(item) {
+        return root.itemDesktopId(item).length > 0
+    }
+
+    function pinItem(item) {
+        const desktopId = root.itemDesktopId(item)
+
+        if (!desktopId.length || root.isPinnedDesktopId(desktopId)) {
+            return
+        }
+
+        root.pinnedApps = root.pinnedApps.concat([{
+            desktopId: desktopId,
+            fallbackLabel: root.fallbackLabelForItem(item)
+        }])
+        root.queueRebuild()
+    }
+
+    function unpinItem(item) {
+        const desktopId = root.itemDesktopId(item)
+
+        if (!desktopId.length) {
+            return
+        }
+
+        const nextPinnedApps = []
+
+        for (let i = 0; i < root.pinnedApps.length; i++) {
+            if (!root.desktopIdsMatch(root.pinnedApps[i].desktopId, desktopId)) {
+                nextPinnedApps.push(root.pinnedApps[i])
+            }
+        }
+
+        if (nextPinnedApps.length === root.pinnedApps.length) {
+            return
+        }
+
+        root.pinnedApps = nextPinnedApps
+        root.queueRebuild()
+    }
+
+    function isPinnedDesktopId(desktopId) {
+        for (let i = 0; i < root.pinnedApps.length; i++) {
+            if (root.desktopIdsMatch(root.pinnedApps[i].desktopId, desktopId)) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    function desktopIdsMatch(left, right) {
+        const normalizedLeft = root.normalizedDesktopId(left)
+        const normalizedRight = root.normalizedDesktopId(right)
+
+        return normalizedLeft.length > 0 && normalizedLeft === normalizedRight
+    }
+
+    function normalizedDesktopId(value) {
+        const normalized = String(value || "").trim()
+
+        if (!normalized.length) {
+            return ""
+        }
+
+        return normalized.endsWith(".desktop") ? normalized : normalized + ".desktop"
+    }
+
+    function itemDesktopId(item) {
+        if (!item || item.kind !== "app") {
+            return ""
+        }
+
+        if (item.desktopEntry && item.desktopEntry.id) {
+            return item.desktopEntry.id
+        }
+
+        const itemDesktopId = String(item.desktopId || "").trim()
+
+        if (itemDesktopId.length) {
+            return itemDesktopId
+        }
+
+        const windows = item.windows || []
+
+        for (let i = 0; i < windows.length; i++) {
+            const entry = root.resolveDesktopEntryForToplevel(windows[i])
+
+            if (entry && entry.id) {
+                return entry.id
+            }
+        }
+
+        return ""
+    }
+
+    function fallbackLabelForItem(item) {
+        if (!item || item.kind !== "app") {
+            return "?"
+        }
+
+        if (item.desktopEntry && item.desktopEntry.name) {
+            return item.desktopEntry.name
+        }
+
+        const windows = item.windows || []
+
+        for (let i = 0; i < windows.length; i++) {
+            const fallbackLabel = root.fallbackLabelForToplevel(windows[i])
+
+            if (fallbackLabel && String(fallbackLabel).trim().length) {
+                return fallbackLabel
+            }
+        }
+
+        return String(item.label || "?")
     }
 
     function resolveDesktopEntryForToplevel(toplevel) {

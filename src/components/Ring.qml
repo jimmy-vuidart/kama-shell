@@ -134,6 +134,10 @@ Variants {
                     }
                     intersection: Intersection.Subtract
                 }
+
+                Region {
+                    item: dock
+                }
             }
 
             BackgroundEffect.blurRegion: Region {
