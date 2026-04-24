@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+APP_DIR="${KAMA_SHELL_APP_DIR:-/usr/share/kama-shell}"
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+SESSION_CONFIG="${KAMA_SHELL_SESSION_CONFIG:-$CONFIG_HOME/kama-shell/session.conf}"
+
+if [[ "$APP_DIR" == "__KAMA_SHELL_APP_DIR__" ]]; then
+    APP_DIR=$(cd -- "$SCRIPT_DIR/.." && pwd)
+fi
+
+RUNNER="$APP_DIR/run.sh"
+
+if [[ ! -x "$RUNNER" ]]; then
+    echo "Runner introuvable ou non exécutable: $RUNNER" >&2
+    exit 1
+fi
+
+if [[ -f "$SESSION_CONFIG" ]]; then
+    # User-owned session overrides.
+    # shellcheck disable=SC1090
+    source "$SESSION_CONFIG"
+fi
+
+apply_keyboard_config() {
+    if ! command -v kwriteconfig6 >/dev/null 2>&1; then
+        return
+    fi
+
+    if [[ -z "${KAMA_XKB_LAYOUT:-}" ]] \
+        && [[ -z "${KAMA_XKB_MODEL:-}" ]] \
+        && [[ -z "${KAMA_XKB_VARIANT:-}" ]] \
+        && [[ -z "${KAMA_XKB_OPTIONS:-}" ]]; then
+        return
+    fi
+
+    kwriteconfig6 --file kxkbrc --group Layout --key Use true
+
+    if [[ -n "${KAMA_XKB_LAYOUT:-}" ]]; then
+        kwriteconfig6 --file kxkbrc --group Layout --key LayoutList "$KAMA_XKB_LAYOUT"
+    fi
+
+    if [[ -n "${KAMA_XKB_MODEL:-}" ]]; then
+        kwriteconfig6 --file kxkbrc --group Layout --key Model "$KAMA_XKB_MODEL"
+    fi
+
+    if [[ -n "${KAMA_XKB_VARIANT:-}" ]]; then
+        kwriteconfig6 --file kxkbrc --group Layout --key VariantList "$KAMA_XKB_VARIANT"
+    fi
+
+    if [[ -n "${KAMA_XKB_OPTIONS:-}" ]]; then
+        kwriteconfig6 --file kxkbrc --group Layout --key Options "$KAMA_XKB_OPTIONS"
+    fi
+}
+
+export XDG_CURRENT_DESKTOP=KamaShell
+export XDG_SESSION_DESKTOP=kama-shell
+export DESKTOP_SESSION=kama-shell
+export KAMA_SESSION=1
+export QT_WAYLAND_SHELL_INTEGRATION=layer-shell
+
+apply_keyboard_config
+
+KWIN_ARGS=(
+    --xwayland
+    --no-lockscreen
+    --desktopfile
+    kama-shell
+    --exit-with-session
+    "$RUNNER"
+)
+
+if [[ -n "${KAMA_WAYLAND_SOCKET:-}" ]]; then
+    KWIN_ARGS+=(
+        --socket
+        "$KAMA_WAYLAND_SOCKET"
+    )
+fi
+
+exec kwin_wayland "${KWIN_ARGS[@]}" "$@"

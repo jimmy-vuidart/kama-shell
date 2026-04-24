@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Kama Shell
+Comment=Session Wayland minimale avec KWin et Kama Shell
+Exec=@PREFIX@/bin/start-kama-shell-session
+TryExec=@PREFIX@/bin/start-kama-shell-session
+DesktopNames=KamaShell
+X-KDE-PluginInfo-Version=1.0

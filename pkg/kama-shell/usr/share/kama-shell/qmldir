@@ -1,0 +1,2 @@
+module KamaShell
+# Les sous-répertoires seront déclarés dans leurs propres qmldir via Phase 1+

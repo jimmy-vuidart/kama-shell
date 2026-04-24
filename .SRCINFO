@@ -1,0 +1,11 @@
+pkgbase = kama-shell
+	pkgdesc = Minimal Quickshell session running on KWin Wayland
+	pkgver = 0.1.0
+	pkgrel = 1
+	arch = any
+	license = custom
+	depends = kwin
+	depends = noctalia-qs
+	depends = plasma-workspace
+
+pkgname = kama-shell

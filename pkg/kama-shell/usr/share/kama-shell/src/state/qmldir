@@ -1,0 +1,2 @@
+singleton ShellGeometry 1.0 ShellGeometry.qml
+singleton DockState 1.0 DockState.qml
