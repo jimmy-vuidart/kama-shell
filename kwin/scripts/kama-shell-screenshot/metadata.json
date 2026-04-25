@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "noreply@example.invalid",
+                "Name": "Kama Shell"
+            }
+        ],
+        "Description": "Copies a full-screen screenshot to the clipboard",
+        "Icon": "camera-photo",
+        "Id": "kama-shell-screenshot",
+        "License": "MIT",
+        "Name": "Kama Shell Screenshot"
+    },
+    "X-Plasma-API": "javascript"
+}

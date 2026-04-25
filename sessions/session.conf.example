@@ -3,6 +3,15 @@
 # Copy to:
 #   ~/.config/kama-shell/session.conf
 #
+# For the debug session only, you can also create:
+#   ~/.config/kama-shell/debug-session.conf
+# Example debug toggles:
+#   KAMA_QS_VERBOSE=2
+#   KAMA_QS_LOG_TIMES=1
+#   KAMA_QS_DEBUG_PORT=3768
+#   KAMA_QS_WAIT_FOR_DEBUG=1
+#   KAMA_RUN_LOG_FILE=/path/to/kama-shell.log
+#
 # Keyboard layout examples:
 #   KAMA_XKB_LAYOUT=fr
 #   KAMA_XKB_LAYOUT=us,fr

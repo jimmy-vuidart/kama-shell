@@ -7,6 +7,7 @@ APP_DIR="${KAMA_SHELL_APP_DIR:-__KAMA_SHELL_APP_DIR__}"
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 SESSION_CONFIG="${KAMA_SHELL_SESSION_CONFIG:-$CONFIG_HOME/kama-shell/session.conf}"
+DEBUG_SESSION_CONFIG="${KAMA_SHELL_DEBUG_SESSION_CONFIG:-$CONFIG_HOME/kama-shell/debug-session.conf}"
 
 if [[ "$APP_DIR" == "__KAMA_SHELL_APP_DIR__" ]]; then
     APP_DIR=$(cd -- "$SCRIPT_DIR/.." && pwd)
@@ -19,14 +20,20 @@ KWIN_SCRIPT_TARGET="$DATA_HOME/kwin/scripts/$KWIN_SCRIPT_ID"
 SCREENSHOT_HELPER="$APP_DIR/scripts/copy-screenshot-to-clipboard.sh"
 
 if [[ ! -x "$RUNNER" ]]; then
-    echo "Runner introuvable ou non exécutable: $RUNNER" >&2
+    echo "Runner introuvable ou non executable: $RUNNER" >&2
     exit 1
 fi
 
 if [[ -f "$SESSION_CONFIG" ]]; then
-    # User-owned session overrides.
+    # User-owned session overrides shared with the regular session.
     # shellcheck disable=SC1090
     source "$SESSION_CONFIG"
+fi
+
+if [[ -f "$DEBUG_SESSION_CONFIG" ]]; then
+    # User-owned overrides specific to the debug session.
+    # shellcheck disable=SC1090
+    source "$DEBUG_SESSION_CONFIG"
 fi
 
 apply_keyboard_config() {
@@ -75,9 +82,13 @@ install_kwin_script() {
 }
 
 export XDG_CURRENT_DESKTOP=KamaShell
-export XDG_SESSION_DESKTOP=kama-shell
-export DESKTOP_SESSION=kama-shell
+export XDG_SESSION_DESKTOP=kama-shell-debug
+export DESKTOP_SESSION=kama-shell-debug
 export KAMA_SESSION=1
+export KAMA_DEV="${KAMA_DEV:-1}"
+export KAMA_QS_LOG_TIMES="${KAMA_QS_LOG_TIMES:-1}"
+export KAMA_QS_VERBOSE="${KAMA_QS_VERBOSE:-2}"
+export KAMA_RUN_LOG_FILE="${KAMA_RUN_LOG_FILE:-$APP_DIR/logs/kama-shell.log}"
 export QT_WAYLAND_SHELL_INTEGRATION=layer-shell
 
 apply_keyboard_config
@@ -87,7 +98,7 @@ KWIN_ARGS=(
     --xwayland
     --no-lockscreen
     --desktopfile
-    kama-shell
+    kama-shell-debug
     --exit-with-session
     "$RUNNER"
 )

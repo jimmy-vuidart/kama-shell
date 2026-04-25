@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Kama Shell (Debug)
+Comment=Session Wayland de debug utilisant le code source de Kama Shell
+Exec=@PREFIX@/bin/start-kama-shell-debug-session
+TryExec=@PREFIX@/bin/start-kama-shell-debug-session
+DesktopNames=KamaShell
+X-KDE-PluginInfo-Version=1.0

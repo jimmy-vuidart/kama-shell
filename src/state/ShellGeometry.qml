@@ -6,6 +6,7 @@ import QtQuick
 Singleton {
     readonly property int frameInset: 32
     readonly property int frameBorderInset: frameInset + 1
+    readonly property int workAreaInset: frameBorderInset
     readonly property int cornerRadius: 48
 
     readonly property int dockHeight: 88

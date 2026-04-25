@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+SESSION_BIN="$SCRIPT_DIR/kama-shell-debug-session"
+
+if [[ ! -x "$SESSION_BIN" ]]; then
+    echo "Session launcher introuvable: $SESSION_BIN" >&2
+    exit 1
+fi
+
+if [[ -x /usr/lib/plasma-dbus-run-session-if-needed ]]; then
+    exec /usr/lib/plasma-dbus-run-session-if-needed "$SESSION_BIN" "$@"
+fi
+
+if [[ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]] && command -v dbus-run-session >/dev/null 2>&1; then
+    exec dbus-run-session "$SESSION_BIN" "$@"
+fi
+
+exec "$SESSION_BIN" "$@"

@@ -8,6 +8,17 @@ export KAMA_DEV=${KAMA_DEV:-1}
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 SHELL_ENTRY="$SCRIPT_DIR/src/shell.qml"
+LOG_FILE="${KAMA_RUN_LOG_FILE:-}"
+
+setup_logging() {
+    if [[ -z "$LOG_FILE" ]]; then
+        return
+    fi
+
+    mkdir -p -- "$(dirname -- "$LOG_FILE")"
+    touch "$LOG_FILE"
+    exec >>"$LOG_FILE" 2>&1
+}
 
 is_gnome_session() {
     local desktop="${XDG_CURRENT_DESKTOP:-}"
@@ -18,7 +29,32 @@ is_gnome_session() {
 }
 
 run_quickshell() {
-    exec quickshell -p "$SHELL_ENTRY" "$@"
+    local quickshell_args=()
+    local verbose_count=0
+    local i
+
+    if [[ "${KAMA_QS_LOG_TIMES:-0}" == "1" ]]; then
+        quickshell_args+=(--log-times)
+    fi
+
+    if [[ -n "${KAMA_QS_LOG_RULES:-}" ]]; then
+        quickshell_args+=(--log-rules "$KAMA_QS_LOG_RULES")
+    fi
+
+    if [[ -n "${KAMA_QS_DEBUG_PORT:-}" ]]; then
+        quickshell_args+=(--debug "$KAMA_QS_DEBUG_PORT")
+    fi
+
+    if [[ "${KAMA_QS_WAIT_FOR_DEBUG:-0}" == "1" ]]; then
+        quickshell_args+=(--waitfordebug)
+    fi
+
+    verbose_count=${KAMA_QS_VERBOSE:-0}
+    for ((i = 0; i < verbose_count; i++)); do
+        quickshell_args+=(-v)
+    done
+
+    exec quickshell "${quickshell_args[@]}" -p "$SHELL_ENTRY" "$@"
 }
 
 run_nested_hyprland() {
@@ -72,11 +108,14 @@ EOF
 }
 
 if [[ "${KAMA_NESTED_HYPRLAND:-0}" == "1" ]]; then
+    setup_logging
     run_quickshell "$@"
 fi
 
 if [[ -n "${WAYLAND_DISPLAY:-}" ]] && is_gnome_session; then
+    setup_logging
     run_nested_hyprland "$@"
 fi
 
+setup_logging
 run_quickshell "$@"
