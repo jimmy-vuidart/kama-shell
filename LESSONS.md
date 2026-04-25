@@ -16,6 +16,20 @@
   - la largeur du contenu (`contentWidth`)
   - la largeur du sommet (`bumpWidth`)
   - la largeur totale de la silhouette (`shapeWidth`)
+- Pour un widget rétractable réutilisable dans le ring, mieux vaut interpoler une seule géométrie entre deux états:
+  - un état compact avec petite bosse centrale (`dockRestWidth`, `dockRestHeight`, `dockRestFlatWidth`)
+  - un état ouvert calé sur la vraie taille du widget
+- Le pattern le plus robuste pour ce type de panneau est:
+  - une petite affordance visible au repos intégrée à la bordure
+  - une zone de hover invisible qui descend jusqu'au bas de l'écran
+  - une propriété d'animation scalaire unique (`dockReveal`) pilotant à la fois la silhouette du ring et le contenu du widget
+- Le contenu visible du widget doit rester dans un conteneur dédié et `clip: true`, séparé de la zone de hover. Cela évite qu'un panneau caché reste cliquable ou déborde visuellement pendant l'animation.
+- Pour l'affordance compacte, une mini-icône QML autonome sans fond est préférable à une image externe: elle reste stable au chargement, ne dépend d'aucun thème et peut être repositionnée de quelques pixels pour s'aligner visuellement avec la bosse.
+- Quand ce mécanisme sera réutilisé pour d'autres widgets, conserver la même architecture:
+  - géométrie compacte dans `ShellGeometry`
+  - reveal progress unique
+  - hover zone indépendante
+  - widget réel animé séparément de son indicateur compact
 
 ## État du dock
 

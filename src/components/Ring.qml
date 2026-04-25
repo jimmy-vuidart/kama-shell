@@ -61,16 +61,18 @@ Variants {
                 property bool dockShouldShow: dockHoverArea.containsMouse || dock.hovered || dock.contextMenuVisible
                 property real dockReveal: dockShouldShow ? 1 : 0
                 readonly property real dockRestCenter: window.width / 2
-                readonly property real dockShapeLeft: dockRestCenter - ((dock.shapeWidth * dockReveal) / 2)
-                readonly property real dockShapeRight: dockRestCenter + ((dock.shapeWidth * dockReveal) / 2)
-                readonly property real dockTop: window.height - ShellGeometry.frameInset - (ShellGeometry.dockHeight * dockReveal)
+                readonly property real dockCurrentShapeWidth: ShellGeometry.dockRestWidth + ((dock.shapeWidth - ShellGeometry.dockRestWidth) * dockReveal)
+                readonly property real dockCurrentHeight: ShellGeometry.dockRestHeight + ((ShellGeometry.dockHeight - ShellGeometry.dockRestHeight) * dockReveal)
+                readonly property real dockShapeLeft: dockRestCenter - (dockCurrentShapeWidth / 2)
+                readonly property real dockShapeRight: dockRestCenter + (dockCurrentShapeWidth / 2)
+                readonly property real dockTop: window.height - ShellGeometry.frameInset - dockCurrentHeight
                 readonly property real dockSlopeStartLeft: dockShapeLeft
                 readonly property real dockSlopeStartRight: dockShapeRight
-                readonly property real dockPeakY: window.innerBottom - ((window.innerBottom - (dockTop + 2)) * dockReveal)
-                readonly property real dockFlatHalfWidth: Math.max(52, dock.bumpWidth * 0.32) * dockReveal
+                readonly property real dockPeakY: dockTop + 2
+                readonly property real dockFlatHalfWidth: (ShellGeometry.dockRestFlatWidth / 2) + ((Math.max(52, dock.bumpWidth * 0.32) - (ShellGeometry.dockRestFlatWidth / 2)) * dockReveal)
                 readonly property real dockTopFlatLeft: (window.width / 2) - dockFlatHalfWidth
                 readonly property real dockTopFlatRight: (window.width / 2) + dockFlatHalfWidth
-                readonly property real dockCurveRun: Math.max(0, (dockSlopeStartRight - dockTopFlatRight) * 0.42)
+                readonly property real dockCurveRun: Math.max(10, (dockSlopeStartRight - dockTopFlatRight) * 0.42)
 
                 Behavior on dockReveal {
                     NumberAnimation {
@@ -436,6 +438,44 @@ Variants {
                             bottom: parent.bottom
                         }
                         revealProgress: window.dockReveal
+                    }
+                }
+
+                Item {
+                    anchors {
+                        horizontalCenter: parent.horizontalCenter
+                        bottom: parent.bottom
+                        bottomMargin: ShellGeometry.frameInset + 3
+                    }
+                    width: ShellGeometry.dockRestWidth - 18
+                    height: ShellGeometry.dockRestHeight - 6
+                    opacity: 1 - window.dockReveal
+                    visible: opacity > 0
+
+                    Item {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.verticalCenterOffset: 3
+                        width: ShellGeometry.dockRestIconSize
+                        height: ShellGeometry.dockRestIconSize
+
+                        Repeater {
+                            model: 4
+
+                            delegate: Rectangle {
+                                required property int index
+
+                                readonly property real cellSize: 5
+                                readonly property real cellGap: 2
+
+                                width: cellSize
+                                height: cellSize
+                                radius: 1.5
+                                x: (index % 2) * (cellSize + cellGap)
+                                y: Math.floor(index / 2) * (cellSize + cellGap)
+                                color: Qt.rgba(0.95, 0.98, 1, 0.88)
+                            }
+                        }
                     }
                 }
 

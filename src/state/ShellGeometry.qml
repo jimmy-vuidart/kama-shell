@@ -21,6 +21,10 @@ Singleton {
     readonly property int dockBumpContentPadding: 28
     readonly property int dockShapeExtraWidth: 232
     readonly property int dockBumpHeight: 34
+    readonly property int dockRestWidth: 72
+    readonly property int dockRestHeight: 24
+    readonly property int dockRestFlatWidth: 22
+    readonly property int dockRestIconSize: 16
     readonly property int dockItemSize: 48
     readonly property int dockItemGap: 14
     readonly property int dockPadding: 20
