@@ -74,6 +74,19 @@ install_kwin_script() {
     fi
 }
 
+apply_kwin_effect_config() {
+    if ! command -v kwriteconfig6 >/dev/null 2>&1; then
+        return
+    fi
+
+    if [[ "${KAMA_KWIN_BLUR:-1}" != "1" ]]; then
+        return
+    fi
+
+    kwriteconfig6 --file kwinrc --group Plugins --key blurEnabled true
+    kwriteconfig6 --file kwinrc --group Plugins --key backgroundcontrastEnabled true
+}
+
 export XDG_CURRENT_DESKTOP=KamaShell
 export XDG_SESSION_DESKTOP=kama-shell
 export DESKTOP_SESSION=kama-shell
@@ -82,6 +95,7 @@ export QT_WAYLAND_SHELL_INTEGRATION=layer-shell
 
 apply_keyboard_config
 install_kwin_script
+apply_kwin_effect_config
 
 KWIN_ARGS=(
     --xwayland

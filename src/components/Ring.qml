@@ -58,16 +58,26 @@ Variants {
                 readonly property real innerTop: ShellGeometry.frameInset
                 readonly property real innerRight: window.width - ShellGeometry.frameInset
                 readonly property real innerBottom: window.height - ShellGeometry.frameInset
-                readonly property real dockShapeLeft: (window.width - dock.shapeWidth) / 2
-                readonly property real dockShapeRight: dockShapeLeft + dock.shapeWidth
-                readonly property real dockTop: window.height - ShellGeometry.frameInset - ShellGeometry.dockHeight
+                property bool dockShouldShow: dockHoverArea.containsMouse || dock.hovered || dock.contextMenuVisible
+                property real dockReveal: dockShouldShow ? 1 : 0
+                readonly property real dockRestCenter: window.width / 2
+                readonly property real dockShapeLeft: dockRestCenter - ((dock.shapeWidth * dockReveal) / 2)
+                readonly property real dockShapeRight: dockRestCenter + ((dock.shapeWidth * dockReveal) / 2)
+                readonly property real dockTop: window.height - ShellGeometry.frameInset - (ShellGeometry.dockHeight * dockReveal)
                 readonly property real dockSlopeStartLeft: dockShapeLeft
                 readonly property real dockSlopeStartRight: dockShapeRight
-                readonly property real dockPeakY: dockTop + 2
-                readonly property real dockFlatHalfWidth: Math.max(52, dock.bumpWidth * 0.32)
+                readonly property real dockPeakY: window.innerBottom - ((window.innerBottom - (dockTop + 2)) * dockReveal)
+                readonly property real dockFlatHalfWidth: Math.max(52, dock.bumpWidth * 0.32) * dockReveal
                 readonly property real dockTopFlatLeft: (window.width / 2) - dockFlatHalfWidth
                 readonly property real dockTopFlatRight: (window.width / 2) + dockFlatHalfWidth
-                readonly property real dockCurveRun: Math.max(46, (dockSlopeStartRight - dockTopFlatRight) * 0.42)
+                readonly property real dockCurveRun: Math.max(0, (dockSlopeStartRight - dockTopFlatRight) * 0.42)
+
+                Behavior on dockReveal {
+                    NumberAnimation {
+                        duration: 220
+                        easing.type: Easing.InOutCubic
+                    }
+                }
 
                 component InnerCutout: Item {
                     Shape {
@@ -175,7 +185,11 @@ Variants {
                     }
 
                     Region {
-                        item: dock
+                        item: dockContainer
+                    }
+
+                    Region {
+                        item: dockHoverZone
                     }
                 }
 
@@ -212,10 +226,11 @@ Variants {
                     ShapePath {
                         fillGradient: LinearGradient {
                             x1: 0; y1: 0
-                            x2: window.width; y2: window.height
-                            GradientStop { position: 0.0; color: Qt.rgba(0.9, 0.95, 1, 0.005) }
-                            GradientStop { position: 0.5; color: Qt.rgba(0.9, 0.95, 1, 0.005) }
-                            GradientStop { position: 1.0; color: Qt.rgba(0.9, 0.95, 1, 0.005) }
+                            x2: 0; y2: window.height
+                            GradientStop { position: 0.0; color: Qt.rgba(1, 1, 1, ShellGeometry.glassTopHighlightAlpha) }
+                            GradientStop { position: 0.18; color: Qt.rgba(0.92, 0.98, 1, ShellGeometry.glassTintAlpha) }
+                            GradientStop { position: 0.62; color: Qt.rgba(0.78, 0.86, 0.94, 0.13) }
+                            GradientStop { position: 1.0; color: Qt.rgba(0.16, 0.19, 0.24, ShellGeometry.glassBottomShadeAlpha) }
                         }
                         strokeColor: "transparent"
                         strokeWidth: 0
@@ -293,7 +308,7 @@ Variants {
                     }
 
                     ShapePath {
-                        strokeColor: Qt.rgba(0.92, 0.96, 1, 0.5)
+                        strokeColor: Qt.rgba(0.92, 0.97, 1, ShellGeometry.glassBorderAlpha)
                         strokeWidth: 1.2
                         fillColor: "transparent"
 
@@ -355,8 +370,8 @@ Variants {
                     }
 
                     ShapePath {
-                        strokeColor: Qt.rgba(1, 1, 1, 0.4)
-                        strokeWidth: 0.8
+                        strokeColor: Qt.rgba(1, 1, 1, ShellGeometry.glassInnerHighlightAlpha)
+                        strokeWidth: 1
                         fillColor: "transparent"
 
                         PathMove {
@@ -372,14 +387,74 @@ Variants {
                             direction: PathArc.Clockwise
                         }
                     }
+
+                    ShapePath {
+                        strokeColor: Qt.rgba(0.05, 0.08, 0.12, 0.2)
+                        strokeWidth: 1
+                        fillColor: "transparent"
+
+                        PathMove {
+                            x: ShellGeometry.frameInset + ShellGeometry.cornerRadius; y: window.innerBottom - 0.5
+                        }
+                        PathLine {
+                            x: window.dockSlopeStartLeft; y: window.innerBottom - 0.5
+                        }
+                        PathCubic {
+                            x: window.dockTopFlatLeft; y: window.dockPeakY + 0.5
+                            control1X: window.dockSlopeStartLeft + window.dockCurveRun; control1Y: window.innerBottom - 0.5
+                            control2X: window.dockTopFlatLeft - (window.dockCurveRun * 0.55); control2Y: window.dockPeakY + 0.5
+                        }
+                        PathLine {
+                            x: window.dockTopFlatRight; y: window.dockPeakY + 0.5
+                        }
+                        PathCubic {
+                            x: window.dockSlopeStartRight; y: window.innerBottom - 0.5
+                            control1X: window.dockTopFlatRight + (window.dockCurveRun * 0.55); control1Y: window.dockPeakY + 0.5
+                            control2X: window.dockSlopeStartRight - window.dockCurveRun; control2Y: window.innerBottom - 0.5
+                        }
+                        PathLine {
+                            x: window.innerRight - ShellGeometry.cornerRadius; y: window.innerBottom - 0.5
+                        }
+                    }
                 }
 
-                AppDock {
-                    id: dock
+                Item {
+                    id: dockContainer
                     anchors {
                         horizontalCenter: parent.horizontalCenter
                         bottom: parent.bottom
                         bottomMargin: ShellGeometry.frameInset
+                    }
+                    width: dock.implicitWidth
+                    height: dock.implicitHeight * window.dockReveal
+                    clip: true
+
+                    AppDock {
+                        id: dock
+                        anchors {
+                            horizontalCenter: parent.horizontalCenter
+                            bottom: parent.bottom
+                        }
+                        revealProgress: window.dockReveal
+                    }
+                }
+
+                Item {
+                    id: dockHoverZone
+
+                    anchors {
+                        horizontalCenter: parent.horizontalCenter
+                        bottom: parent.bottom
+                        bottomMargin: 0
+                    }
+                    width: Math.max(dock.shapeWidth, ShellGeometry.dockMinWidth + 72)
+                    height: ShellGeometry.frameInset + ShellGeometry.dockHoverZoneHeight
+
+                    MouseArea {
+                        id: dockHoverArea
+                        anchors.fill: parent
+                        acceptedButtons: Qt.NoButton
+                        hoverEnabled: true
                     }
                 }
             }

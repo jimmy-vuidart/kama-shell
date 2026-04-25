@@ -9,6 +9,7 @@ Item {
     id: root
 
     property var items: DockState.items
+    property real revealProgress: 1
 
     readonly property int itemCount: items.length
     readonly property int gapCount: Math.max(0, itemCount - 1)
@@ -39,12 +40,17 @@ Item {
     property var contextItem: null
     readonly property string sessionId: Quickshell.env("XDG_SESSION_ID") || ""
     readonly property bool logoutAvailable: sessionId.length > 0
+    readonly property bool hovered: dockHoverHandler.hovered
+    readonly property bool contextMenuVisible: contextMenu.visible
 
     implicitWidth: Math.max(
         contentWidth + (ShellGeometry.dockSidePadding * 2),
         ShellGeometry.dockMinWidth
     )
     implicitHeight: ShellGeometry.dockHeight
+    opacity: revealProgress
+    scale: 0.94 + (revealProgress * 0.06)
+    transformOrigin: Item.Bottom
 
     function openContextMenu(item, x, y) {
         contextItem = item
@@ -101,11 +107,15 @@ Item {
         running: false
     }
 
+    HoverHandler {
+        id: dockHoverHandler
+    }
+
     Row {
         anchors {
             horizontalCenter: parent.horizontalCenter
             bottom: parent.bottom
-            bottomMargin: ShellGeometry.dockPadding - 8
+            bottomMargin: (ShellGeometry.dockPadding - 8) - ((1 - root.revealProgress) * ShellGeometry.dockRevealOffset)
         }
         spacing: ShellGeometry.dockItemGap
 
