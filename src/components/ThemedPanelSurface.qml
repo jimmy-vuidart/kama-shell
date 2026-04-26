@@ -26,7 +26,7 @@ Item {
             GradientStop { position: 0.58; color: ShellTheme.panelFillMiddle }
             GradientStop { position: 1.0; color: ShellTheme.panelFillBottom }
         }
-        border.width: 1
+        border.width: ShellTheme.surfaceBorderWidth
         border.color: ShellTheme.panelBorderOuter
     }
 
@@ -38,7 +38,7 @@ Item {
         radius: Math.max(0, root.radius - 1)
         antialiasing: true
         color: "transparent"
-        border.width: 1
+        border.width: ShellTheme.surfaceBorderWidth
         border.color: ShellTheme.panelBorder
     }
 

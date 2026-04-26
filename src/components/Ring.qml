@@ -124,6 +124,73 @@ Variants {
                     }
                 }
 
+                component RingOutlinePath: ShapePath {
+                    property color outlineColor: "transparent"
+                    property real outlineWidth: 1
+
+                    strokeColor: outlineColor
+                    strokeWidth: outlineWidth
+                    fillColor: "transparent"
+                    capStyle: ShapePath.RoundCap
+                    joinStyle: ShapePath.RoundJoin
+
+                    PathMove {
+                        x: ShellGeometry.frameBorderInset + ShellGeometry.cornerRadius; y: ShellGeometry.frameBorderInset
+                    }
+                    PathLine {
+                        x: window.width - ShellGeometry.frameBorderInset - ShellGeometry.cornerRadius; y: ShellGeometry.frameBorderInset
+                    }
+                    PathArc {
+                        x: window.width - ShellGeometry.frameBorderInset; y: ShellGeometry.frameBorderInset + ShellGeometry.cornerRadius
+                        radiusX: ShellGeometry.cornerRadius; radiusY: ShellGeometry.cornerRadius
+                        useLargeArc: false
+                        direction: PathArc.Clockwise
+                    }
+                    PathLine {
+                        x: window.innerRight - 1; y: window.innerBottom - 1 - ShellGeometry.cornerRadius
+                    }
+                    PathArc {
+                        x: window.innerRight - 1 - ShellGeometry.cornerRadius; y: window.innerBottom - 1
+                        radiusX: ShellGeometry.cornerRadius; radiusY: ShellGeometry.cornerRadius
+                        useLargeArc: false
+                        direction: PathArc.Clockwise
+                    }
+                    PathLine {
+                        x: window.dockSlopeStartRight - 1; y: window.innerBottom - 1
+                    }
+                    PathCubic {
+                        x: window.dockTopFlatRight - 1; y: window.dockPeakY + 1
+                        control1X: window.dockSlopeStartRight - 1 - window.dockCurveRun; control1Y: window.innerBottom - 1
+                        control2X: window.dockTopFlatRight - 1 + (window.dockCurveRun * 0.55); control2Y: window.dockPeakY + 1
+                    }
+                    PathLine {
+                        x: window.dockTopFlatLeft + 1; y: window.dockPeakY + 1
+                    }
+                    PathCubic {
+                        x: window.dockSlopeStartLeft + 1; y: window.innerBottom - 1
+                        control1X: window.dockTopFlatLeft + 1 - (window.dockCurveRun * 0.55); control1Y: window.dockPeakY + 1
+                        control2X: window.dockSlopeStartLeft + 1 + window.dockCurveRun; control2Y: window.innerBottom - 1
+                    }
+                    PathLine {
+                        x: window.innerLeft + ShellGeometry.cornerRadius + 1; y: window.innerBottom - 1
+                    }
+                    PathArc {
+                        x: window.innerLeft + 1; y: window.innerBottom - 1 - ShellGeometry.cornerRadius
+                        radiusX: ShellGeometry.cornerRadius; radiusY: ShellGeometry.cornerRadius
+                        useLargeArc: false
+                        direction: PathArc.Clockwise
+                    }
+                    PathLine {
+                        x: ShellGeometry.frameBorderInset; y: ShellGeometry.frameBorderInset + ShellGeometry.cornerRadius
+                    }
+                    PathArc {
+                        x: ShellGeometry.frameBorderInset + ShellGeometry.cornerRadius; y: ShellGeometry.frameBorderInset
+                        radiusX: ShellGeometry.cornerRadius; radiusY: ShellGeometry.cornerRadius
+                        useLargeArc: false
+                        direction: PathArc.Clockwise
+                    }
+                }
+
                 mask: Region {
                     width: window.width
                     height: window.height
@@ -264,72 +331,22 @@ Variants {
                         }
                     }
 
-                    ShapePath {
-                        strokeColor: ShellTheme.panelBorder
-                        strokeWidth: ShellTheme.panelBorderWidth
-                        fillColor: "transparent"
+                    RingOutlinePath {
+                        outlineColor: ShellTheme.panelBorderSupport
+                        outlineWidth: ShellTheme.panelBorderSupportWidth
+                    }
 
-                        PathMove {
-                            x: ShellGeometry.frameBorderInset + ShellGeometry.cornerRadius; y: ShellGeometry.frameBorderInset
-                        }
-                        PathLine {
-                            x: window.width - ShellGeometry.frameBorderInset - ShellGeometry.cornerRadius; y: ShellGeometry.frameBorderInset
-                        }
-                        PathArc {
-                            x: window.width - ShellGeometry.frameBorderInset; y: ShellGeometry.frameBorderInset + ShellGeometry.cornerRadius
-                            radiusX: ShellGeometry.cornerRadius; radiusY: ShellGeometry.cornerRadius
-                            useLargeArc: false
-                            direction: PathArc.Clockwise
-                        }
-                        PathLine {
-                            x: window.innerRight - 1; y: window.innerBottom - 1 - ShellGeometry.cornerRadius
-                        }
-                        PathArc {
-                            x: window.innerRight - 1 - ShellGeometry.cornerRadius; y: window.innerBottom - 1
-                            radiusX: ShellGeometry.cornerRadius; radiusY: ShellGeometry.cornerRadius
-                            useLargeArc: false
-                            direction: PathArc.Clockwise
-                        }
-                        PathLine {
-                            x: window.dockSlopeStartRight - 1; y: window.innerBottom - 1
-                        }
-                        PathCubic {
-                            x: window.dockTopFlatRight - 1; y: window.dockPeakY + 1
-                            control1X: window.dockSlopeStartRight - 1 - window.dockCurveRun; control1Y: window.innerBottom - 1
-                            control2X: window.dockTopFlatRight - 1 + (window.dockCurveRun * 0.55); control2Y: window.dockPeakY + 1
-                        }
-                        PathLine {
-                            x: window.dockTopFlatLeft + 1; y: window.dockPeakY + 1
-                        }
-                        PathCubic {
-                            x: window.dockSlopeStartLeft + 1; y: window.innerBottom - 1
-                            control1X: window.dockTopFlatLeft + 1 - (window.dockCurveRun * 0.55); control1Y: window.dockPeakY + 1
-                            control2X: window.dockSlopeStartLeft + 1 + window.dockCurveRun; control2Y: window.innerBottom - 1
-                        }
-                        PathLine {
-                            x: window.innerLeft + ShellGeometry.cornerRadius + 1; y: window.innerBottom - 1
-                        }
-                        PathArc {
-                            x: window.innerLeft + 1; y: window.innerBottom - 1 - ShellGeometry.cornerRadius
-                            radiusX: ShellGeometry.cornerRadius; radiusY: ShellGeometry.cornerRadius
-                            useLargeArc: false
-                            direction: PathArc.Clockwise
-                        }
-                        PathLine {
-                            x: ShellGeometry.frameBorderInset; y: ShellGeometry.frameBorderInset + ShellGeometry.cornerRadius
-                        }
-                        PathArc {
-                            x: ShellGeometry.frameBorderInset + ShellGeometry.cornerRadius; y: ShellGeometry.frameBorderInset
-                            radiusX: ShellGeometry.cornerRadius; radiusY: ShellGeometry.cornerRadius
-                            useLargeArc: false
-                            direction: PathArc.Clockwise
-                        }
+                    RingOutlinePath {
+                        outlineColor: ShellTheme.panelBorder
+                        outlineWidth: ShellTheme.panelBorderWidth
                     }
 
                     ShapePath {
                         strokeColor: ShellTheme.panelBorderHighlight
-                        strokeWidth: 1
+                        strokeWidth: ShellTheme.panelHighlightWidth
                         fillColor: "transparent"
+                        capStyle: ShapePath.RoundCap
+                        joinStyle: ShapePath.RoundJoin
 
                         PathMove {
                             x: ShellGeometry.frameInset + 0.5 + ShellGeometry.cornerRadius; y: ShellGeometry.frameInset + 0.5
@@ -345,34 +362,6 @@ Variants {
                         }
                     }
 
-                    ShapePath {
-                        strokeColor: ShellTheme.panelBorderShadow
-                        strokeWidth: 1
-                        fillColor: "transparent"
-
-                        PathMove {
-                            x: ShellGeometry.frameInset + ShellGeometry.cornerRadius; y: window.innerBottom - 0.5
-                        }
-                        PathLine {
-                            x: window.dockSlopeStartLeft; y: window.innerBottom - 0.5
-                        }
-                        PathCubic {
-                            x: window.dockTopFlatLeft; y: window.dockPeakY + 0.5
-                            control1X: window.dockSlopeStartLeft + window.dockCurveRun; control1Y: window.innerBottom - 0.5
-                            control2X: window.dockTopFlatLeft - (window.dockCurveRun * 0.55); control2Y: window.dockPeakY + 0.5
-                        }
-                        PathLine {
-                            x: window.dockTopFlatRight; y: window.dockPeakY + 0.5
-                        }
-                        PathCubic {
-                            x: window.dockSlopeStartRight; y: window.innerBottom - 0.5
-                            control1X: window.dockTopFlatRight + (window.dockCurveRun * 0.55); control1Y: window.dockPeakY + 0.5
-                            control2X: window.dockSlopeStartRight - window.dockCurveRun; control2Y: window.innerBottom - 0.5
-                        }
-                        PathLine {
-                            x: window.innerRight - ShellGeometry.cornerRadius; y: window.innerBottom - 0.5
-                        }
-                    }
                 }
 
                 ExpandableEdgeWidget {

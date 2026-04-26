@@ -16,6 +16,7 @@ Rectangle {
     width: 48
     height: 48
     radius: ShellTheme.controlRadius
+    antialiasing: true
     color: "transparent"
     gradient: Gradient {
         GradientStop {
@@ -27,7 +28,7 @@ Rectangle {
             color: root.active ? ShellTheme.controlFillBottomActive : ShellTheme.controlFillBottom
         }
     }
-    border.width: 1
+    border.width: ShellTheme.controlBorderWidth
     border.color: active ? ShellTheme.controlBorderActive : ShellTheme.controlBorder
 
     Rectangle {
@@ -41,6 +42,7 @@ Rectangle {
         }
         height: 1
         radius: 1
+        antialiasing: true
         color: ShellTheme.controlTopHighlight
     }
 
@@ -55,6 +57,7 @@ Rectangle {
         }
         height: 1
         radius: 1
+        antialiasing: true
         color: ShellTheme.controlBottomShadow
     }
 
@@ -67,6 +70,7 @@ Rectangle {
         width: root.running ? (root.active ? 18 : 10) : 0
         height: 3
         radius: 2
+        antialiasing: true
         color: root.active ? ShellTheme.runningIndicatorActive : ShellTheme.runningIndicator
         visible: width > 0
     }

@@ -50,7 +50,10 @@ Singleton {
 
     readonly property color panelBorderOuter: isFfxiv
         ? Qt.rgba(18 / 255, 13 / 255, 8 / 255, 1)
-        : Qt.rgba(0.92, 0.97, 1, glassBorderAlpha)
+        : Qt.rgba(7 / 255, 16 / 255, 24 / 255, 0.34)
+    readonly property color panelBorderSupport: isFfxiv
+        ? Qt.rgba(9 / 255, 7 / 255, 5 / 255, 0.78)
+        : Qt.rgba(0.92, 0.97, 1, 0.18)
     readonly property color panelBorder: isFfxiv
         ? Qt.rgba(199 / 255, 159 / 255, 83 / 255, 0.97)
         : Qt.rgba(0.92, 0.97, 1, glassBorderAlpha)
@@ -70,7 +73,11 @@ Singleton {
         ? Qt.rgba(1, 1, 1, 0.035)
         : Qt.rgba(1, 1, 1, 0.06)
 
-    readonly property real panelBorderWidth: isFfxiv ? 1.35 : 1.2
+    readonly property real panelBorderSupportWidth: isFfxiv ? 3.4 : 2.8
+    readonly property real panelBorderWidth: isFfxiv ? 2.1 : 1.8
+    readonly property real panelHighlightWidth: isFfxiv ? 1.35 : 1.2
+    readonly property int surfaceBorderWidth: 2
+    readonly property int controlBorderWidth: 2
     readonly property int panelRadius: isFfxiv ? 7 : 24
     readonly property int panelPadding: isFfxiv ? 14 : 18
 
