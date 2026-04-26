@@ -8,13 +8,7 @@ import QtQuick
 Singleton {
     id: root
 
-    property var pinnedApps: [
-        { desktopId: "zen.desktop", fallbackLabel: "Z" },
-        { desktopId: "org.gnome.Console.desktop", fallbackLabel: "T" },
-        { desktopId: "org.gnome.Nautilus.desktop", fallbackLabel: "N" },
-        { desktopId: "steam.desktop", fallbackLabel: "S" }
-    ]
-
+    property var pinnedApps: []
     property var items: []
     property var iconLookupCache: ({})
     property var iconLookupsInFlight: ({})
@@ -27,6 +21,11 @@ Singleton {
 
     function queueRebuild() {
         Qt.callLater(root.rebuildItems)
+    }
+
+    function applyPinnedAppsFromConfig() {
+        root.pinnedApps = ShellConfig.clonePinnedApps(ShellConfig.dockPinnedApps)
+        root.queueRebuild()
     }
 
     function rebuildItems() {
@@ -462,7 +461,7 @@ Singleton {
         return slashIndex >= 0 ? normalized.slice(slashIndex + 1) : normalized
     }
 
-    Component.onCompleted: root.queueRebuild()
+    Component.onCompleted: root.applyPinnedAppsFromConfig()
 
     component IconLookupProcess: Process {
         id: process
@@ -522,6 +521,14 @@ done
 
         function onApplicationsChanged() {
             root.queueRebuild()
+        }
+    }
+
+    Connections {
+        target: ShellConfig
+
+        function onDockPinnedAppsChanged() {
+            root.applyPinnedAppsFromConfig()
         }
     }
 

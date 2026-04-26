@@ -7,11 +7,6 @@ Singleton {
     readonly property int frameInset: 16
     readonly property int frameBorderInset: frameInset + 1
     readonly property int cornerRadius: 48
-    readonly property real glassTintAlpha: 0.18
-    readonly property real glassTopHighlightAlpha: 0.34
-    readonly property real glassBottomShadeAlpha: 0.18
-    readonly property real glassBorderAlpha: 0.52
-    readonly property real glassInnerHighlightAlpha: 0.46
 
     readonly property int dockHeight: 88
     readonly property int dockMinWidth: 232

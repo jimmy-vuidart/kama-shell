@@ -1,5 +1,7 @@
 import QtQuick
 
+import "../state"
+
 Rectangle {
     id: root
 
@@ -13,10 +15,48 @@ Rectangle {
 
     width: 48
     height: 48
-    radius: 24
-    color: active ? Qt.rgba(1, 1, 1, 0.24) : Qt.rgba(1, 1, 1, 0.11)
+    radius: ShellTheme.controlRadius
+    color: "transparent"
+    gradient: Gradient {
+        GradientStop {
+            position: 0.0
+            color: root.active ? ShellTheme.controlFillTopActive : ShellTheme.controlFillTop
+        }
+        GradientStop {
+            position: 1.0
+            color: root.active ? ShellTheme.controlFillBottomActive : ShellTheme.controlFillBottom
+        }
+    }
     border.width: 1
-    border.color: active ? Qt.rgba(1, 1, 1, 0.5) : Qt.rgba(1, 1, 1, 0.18)
+    border.color: active ? ShellTheme.controlBorderActive : ShellTheme.controlBorder
+
+    Rectangle {
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+            leftMargin: Math.min(10, root.radius)
+            rightMargin: Math.min(10, root.radius)
+            topMargin: 1
+        }
+        height: 1
+        radius: 1
+        color: ShellTheme.controlTopHighlight
+    }
+
+    Rectangle {
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+            leftMargin: Math.min(10, root.radius)
+            rightMargin: Math.min(10, root.radius)
+            bottomMargin: 1
+        }
+        height: 1
+        radius: 1
+        color: ShellTheme.controlBottomShadow
+    }
 
     Rectangle {
         anchors {
@@ -27,7 +67,7 @@ Rectangle {
         width: root.running ? (root.active ? 18 : 10) : 0
         height: 3
         radius: 2
-        color: root.active ? Qt.rgba(0.86, 0.95, 1, 0.95) : Qt.rgba(0.86, 0.95, 1, 0.5)
+        color: root.active ? ShellTheme.runningIndicatorActive : ShellTheme.runningIndicator
         visible: width > 0
     }
 
@@ -49,9 +89,11 @@ Rectangle {
     Text {
         anchors.centerIn: parent
         text: root.label
-        color: Qt.rgba(0.95, 0.98, 1, 0.96)
-        font.pixelSize: 18
-        font.weight: 700
+        color: ShellTheme.textPrimary
+        font.pixelSize: ShellTheme.isFfxiv ? 17 : 18
+        font.weight: ShellTheme.controlTextWeight
+        style: ShellTheme.controlTextStyle
+        styleColor: ShellTheme.textShadow
         visible: root.iconSource.length === 0 || iconImage.status !== Image.Ready
     }
 

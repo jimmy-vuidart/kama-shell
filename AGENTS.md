@@ -53,6 +53,8 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/shell.qml`: point d'entrée Quickshell
 - `src/components/Ring.qml`: `PanelWindow` multi-écran et géométrie du ring
 - `src/components/AppDock.qml`: layout visuel du dock
+- `src/state/ShellConfig.qml`: configuration utilisateur lue depuis `~/.config/kama-shell/kama.conf`
+- `src/state/ShellTheme.qml`: thème visuel actif, actuellement `glassmorphism` et futur `ffxiv`
 - `src/state/ShellGeometry.qml`: constantes de forme partagées entre ring et dock
 - `src/state/DockState.qml`: état global du dock, apps pinned + running via `DesktopEntries` et `ToplevelManager`
 
@@ -63,11 +65,19 @@ Pour le dock applicatif:
 - préférer `ToplevelManager` pour les fenêtres ouvertes tant que le compositeur expose correctement les toplevels
 - éviter d'introduire de nouveaux fallbacks spécifiques à une application si un fallback générique de résolution d'icônes suffit
 
+## Documentation
+
+- Maintenir la documentation au fil de l'eau dans le même changement que le code: structure actuelle, clés de configuration, exemples et comportements rechargeables doivent rester alignés.
+- Quand une clé de `~/.config/kama-shell/kama.conf` est ajoutée, renommée, supprimée ou change de comportement, mettre à jour `config/kama.conf.example` dans le même patch.
+- Quand un fichier QML, singleton, composant ou script devient un point d'extension durable, mettre à jour la section "Structure actuelle" sans attendre une passe de documentation séparée.
+- Mettre à jour `PLAN.md` ou `LESSONS.md` uniquement si le changement invalide un plan, confirme une leçon durable, ou documente un écart important; éviter d'y recopier les détails déjà présents dans `AGENTS.md`.
+
 ## Vérification
 
 - Après modification, relire `src/shell.qml` et vérifier que les imports Quickshell sont cohérents avec les types utilisés.
 - En cas de refactor multi-écran, vérifier que chaque fenêtre reçoit bien son `screen` depuis `Quickshell.screens`.
 - Si le dock change, vérifier le rendu initial des apps pinned et des apps running, y compris la résolution des icônes au premier chargement.
+- Si une configuration utilisateur change, vérifier que l'exemple correspondant et le comportement de reload attendu sont documentés.
 - Ne pas introduire de duplication de recommandations dans ce fichier; enrichir les sections existantes.
 
 ## Sources

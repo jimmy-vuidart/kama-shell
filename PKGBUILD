@@ -41,4 +41,6 @@ package() {
 
     install -m 644 "$repo_dir/sessions/session.conf.example" \
         "$docdir/session.conf.example"
+    install -m 644 "$repo_dir/config/kama.conf.example" \
+        "$docdir/kama.conf.example"
 }

@@ -1,10 +1,12 @@
 import QtQuick
 
+import "../state"
+
 Rectangle {
     width: 1
     height: 34
     radius: 1
-    color: Qt.rgba(1, 1, 1, 0.18)
+    color: ShellTheme.separatorLine
 
     Rectangle {
         anchors {
@@ -15,6 +17,6 @@ Rectangle {
             bottomMargin: 6
         }
         radius: 2
-        color: Qt.rgba(1, 1, 1, 0.08)
+        color: ShellTheme.separatorGlow
     }
 }

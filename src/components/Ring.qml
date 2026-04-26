@@ -184,10 +184,10 @@ Variants {
                         fillGradient: LinearGradient {
                             x1: 0; y1: 0
                             x2: 0; y2: window.height
-                            GradientStop { position: 0.0; color: Qt.rgba(1, 1, 1, ShellGeometry.glassTopHighlightAlpha) }
-                            GradientStop { position: 0.18; color: Qt.rgba(0.92, 0.98, 1, ShellGeometry.glassTintAlpha) }
-                            GradientStop { position: 0.62; color: Qt.rgba(0.78, 0.86, 0.94, 0.13) }
-                            GradientStop { position: 1.0; color: Qt.rgba(0.16, 0.19, 0.24, ShellGeometry.glassBottomShadeAlpha) }
+                            GradientStop { position: 0.0; color: ShellTheme.panelFillTop }
+                            GradientStop { position: 0.16; color: ShellTheme.panelFillUpper }
+                            GradientStop { position: 0.62; color: ShellTheme.panelFillMiddle }
+                            GradientStop { position: 1.0; color: ShellTheme.panelFillBottom }
                         }
                         strokeColor: "transparent"
                         strokeWidth: 0
@@ -265,8 +265,8 @@ Variants {
                     }
 
                     ShapePath {
-                        strokeColor: Qt.rgba(0.92, 0.97, 1, ShellGeometry.glassBorderAlpha)
-                        strokeWidth: 1.2
+                        strokeColor: ShellTheme.panelBorder
+                        strokeWidth: ShellTheme.panelBorderWidth
                         fillColor: "transparent"
 
                         PathMove {
@@ -327,7 +327,7 @@ Variants {
                     }
 
                     ShapePath {
-                        strokeColor: Qt.rgba(1, 1, 1, ShellGeometry.glassInnerHighlightAlpha)
+                        strokeColor: ShellTheme.panelBorderHighlight
                         strokeWidth: 1
                         fillColor: "transparent"
 
@@ -346,7 +346,7 @@ Variants {
                     }
 
                     ShapePath {
-                        strokeColor: Qt.rgba(0.05, 0.08, 0.12, 0.2)
+                        strokeColor: ShellTheme.panelBorderShadow
                         strokeWidth: 1
                         fillColor: "transparent"
 
@@ -413,7 +413,7 @@ Variants {
                                         radius: 1.5
                                         x: (index % 2) * (cellSize + cellGap)
                                         y: Math.floor(index / 2) * (cellSize + cellGap)
-                                        color: Qt.rgba(0.95, 0.98, 1, 0.88)
+                                        color: ShellTheme.glyphColor
                                     }
                                 }
                             }

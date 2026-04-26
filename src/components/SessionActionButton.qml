@@ -1,5 +1,7 @@
 import QtQuick
 
+import "../state"
+
 Rectangle {
     id: root
 
@@ -10,22 +12,58 @@ Rectangle {
 
     width: 68
     height: 48
-    radius: 24
-    color: critical
-        ? Qt.rgba(0.72, 0.18, 0.24, busy ? 0.44 : 0.32)
-        : Qt.rgba(1, 1, 1, busy ? 0.2 : 0.12)
+    radius: ShellTheme.controlRadius
+    color: "transparent"
+    gradient: Gradient {
+        GradientStop {
+            position: 0.0
+            color: root.critical ? ShellTheme.criticalControlFillTop : ShellTheme.controlFillTop
+        }
+        GradientStop {
+            position: 1.0
+            color: root.critical ? ShellTheme.criticalControlFillBottom : ShellTheme.controlFillBottom
+        }
+    }
     border.width: 1
-    border.color: critical
-        ? Qt.rgba(1, 0.76, 0.8, busy ? 0.55 : 0.4)
-        : Qt.rgba(1, 1, 1, 0.2)
-    opacity: enabled ? 1 : 0.45
+    border.color: critical ? ShellTheme.criticalControlBorder : ShellTheme.controlBorder
+    opacity: enabled ? (busy ? 0.82 : 1) : 0.45
+
+    Rectangle {
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+            leftMargin: Math.min(10, root.radius)
+            rightMargin: Math.min(10, root.radius)
+            topMargin: 1
+        }
+        height: 1
+        radius: 1
+        color: ShellTheme.controlTopHighlight
+    }
+
+    Rectangle {
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+            leftMargin: Math.min(10, root.radius)
+            rightMargin: Math.min(10, root.radius)
+            bottomMargin: 1
+        }
+        height: 1
+        radius: 1
+        color: ShellTheme.controlBottomShadow
+    }
 
     Text {
         anchors.centerIn: parent
         text: root.busy ? "..." : root.label
-        color: Qt.rgba(0.98, 0.98, 1, 0.96)
+        color: ShellTheme.textPrimary
         font.pixelSize: 13
-        font.weight: 700
+        font.weight: ShellTheme.controlTextWeight
+        style: ShellTheme.controlTextStyle
+        styleColor: ShellTheme.textShadow
     }
 
     MouseArea {
