@@ -12,6 +12,7 @@ Singleton {
     property var items: []
     property var iconLookupCache: ({})
     property var iconLookupsInFlight: ({})
+    readonly property var toplevels: ToplevelManager.toplevels.values
     readonly property string userIconsDir: Quickshell.env("HOME")
         ? Quickshell.env("HOME") + "/.local/share/icons"
         : ""
@@ -121,14 +122,14 @@ Singleton {
     function currentToplevels() {
         const result = []
 
-        for (let i = 0; i < toplevelTracker.count; i++) {
-            const watcher = toplevelTracker.objectAt(i)
+        for (let i = 0; i < root.toplevels.length; i++) {
+            const toplevel = root.toplevels[i]
 
-            if (!watcher || !watcher.toplevel || watcher.toplevel.parent) {
+            if (!toplevel || toplevel.parent) {
                 continue
             }
 
-            result.push(watcher.toplevel)
+            result.push(toplevel)
         }
 
         return result
@@ -532,14 +533,26 @@ done
         }
     }
 
+    Connections {
+        target: ToplevelManager.toplevels
+
+        function onObjectInsertedPost() { root.queueRebuild() }
+        function onObjectRemovedPost() { root.queueRebuild() }
+        function onValuesChanged() { root.queueRebuild() }
+    }
+
+    Connections {
+        target: ToplevelManager
+
+        function onActiveToplevelChanged() { root.queueRebuild() }
+    }
+
     Instantiator {
-        id: toplevelTracker
-        model: ToplevelManager.toplevels
+        model: root.toplevels
 
         delegate: Item {
             required property Toplevel modelData
 
-            readonly property Toplevel toplevel: modelData
             visible: false
             width: 0
             height: 0

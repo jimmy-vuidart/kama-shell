@@ -52,10 +52,12 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 
 - `src/shell.qml`: point d'entrée Quickshell
 - `src/components/Ring.qml`: `PanelWindow` multi-écran et géométrie du ring
+- `src/components/HomePanel.qml`: contenu visuel du panel maison, intégré dans le `PanelWindow` du ring
+- `src/components/HomeRoomRow.qml`, `HomeDeviceControl.qml`, `HouseIcon.qml`: primitives visuelles du panel maison
 - `src/components/AppDock.qml`: layout visuel du dock
 - `src/state/ShellConfig.qml`: configuration utilisateur lue depuis `~/.config/kama-shell/kama.conf`
 - `src/state/ShellTheme.qml`: thème visuel actif, actuellement `glassmorphism` et futur `ffxiv`
-- `src/state/ShellGeometry.qml`: constantes de forme partagées entre ring et dock
+- `src/state/ShellGeometry.qml`: constantes de forme partagées entre ring, dock et panel maison
 - `src/state/DockState.qml`: état global du dock, apps pinned + running via `DesktopEntries` et `ToplevelManager`
 
 Pour le dock applicatif:

@@ -35,6 +35,18 @@ Variants {
                 readonly property real dockTopFlatLeft: (window.width / 2) - dockFlatHalfWidth
                 readonly property real dockTopFlatRight: (window.width / 2) + dockFlatHalfWidth
                 readonly property real dockCurveRun: Math.max(10, (dockSlopeStartRight - dockTopFlatRight) * 0.42)
+                readonly property real homePanelTop: ShellGeometry.homePanelTopFor(window.height)
+                readonly property real homePanelShapeDepth: ShellGeometry.homePanelBumpDepth
+                    + ((ShellGeometry.homePanelExpandedWidth - ShellGeometry.frameInset - ShellGeometry.homePanelBumpDepth) * homePanel.revealProgress)
+                readonly property real homePanelShapeLeft: window.innerRight - homePanelShapeDepth
+                readonly property real homePanelShapeRight: window.innerRight
+                readonly property real homePanelShapeTop: homePanelTop
+                readonly property real homePanelShapeBottom: homePanelShapeTop + homePanel.currentHeight
+                readonly property real homePanelShapeRadius: Math.min(
+                    ShellGeometry.homePanelShapeRadius,
+                    homePanelShapeDepth,
+                    homePanel.currentHeight / 2
+                )
 
                 component InnerCutout: Item {
                     Shape {
@@ -61,8 +73,40 @@ Variants {
                                 direction: PathArc.Clockwise
                             }
                             PathLine {
-                                x: window.width - ShellGeometry.frameInset
-                                y: window.height - ShellGeometry.frameInset - ShellGeometry.cornerRadius
+                                x: window.homePanelShapeRight
+                                y: window.homePanelShapeTop
+                            }
+                            PathLine {
+                                x: window.homePanelShapeLeft + window.homePanelShapeRadius
+                                y: window.homePanelShapeTop
+                            }
+                            PathCubic {
+                                x: window.homePanelShapeLeft
+                                y: window.homePanelShapeTop + window.homePanelShapeRadius
+                                control1X: window.homePanelShapeLeft + (window.homePanelShapeRadius * 0.45)
+                                control1Y: window.homePanelShapeTop
+                                control2X: window.homePanelShapeLeft
+                                control2Y: window.homePanelShapeTop + (window.homePanelShapeRadius * 0.45)
+                            }
+                            PathLine {
+                                x: window.homePanelShapeLeft
+                                y: window.homePanelShapeBottom - window.homePanelShapeRadius
+                            }
+                            PathCubic {
+                                x: window.homePanelShapeLeft + window.homePanelShapeRadius
+                                y: window.homePanelShapeBottom
+                                control1X: window.homePanelShapeLeft
+                                control1Y: window.homePanelShapeBottom - (window.homePanelShapeRadius * 0.45)
+                                control2X: window.homePanelShapeLeft + (window.homePanelShapeRadius * 0.45)
+                                control2Y: window.homePanelShapeBottom
+                            }
+                            PathLine {
+                                x: window.homePanelShapeRight
+                                y: window.homePanelShapeBottom
+                            }
+                            PathLine {
+                                x: window.innerRight
+                                y: window.innerBottom - ShellGeometry.cornerRadius
                             }
                             PathArc {
                                 x: window.innerRight - ShellGeometry.cornerRadius
@@ -147,6 +191,28 @@ Variants {
                         direction: PathArc.Clockwise
                     }
                     PathLine {
+                        x: window.homePanelShapeRight - 1; y: window.homePanelShapeTop + 1
+                    }
+                    PathLine {
+                        x: window.homePanelShapeLeft + window.homePanelShapeRadius; y: window.homePanelShapeTop + 1
+                    }
+                    PathCubic {
+                        x: window.homePanelShapeLeft + 1; y: window.homePanelShapeTop + window.homePanelShapeRadius
+                        control1X: window.homePanelShapeLeft + (window.homePanelShapeRadius * 0.45); control1Y: window.homePanelShapeTop + 1
+                        control2X: window.homePanelShapeLeft + 1; control2Y: window.homePanelShapeTop + (window.homePanelShapeRadius * 0.45)
+                    }
+                    PathLine {
+                        x: window.homePanelShapeLeft + 1; y: window.homePanelShapeBottom - window.homePanelShapeRadius
+                    }
+                    PathCubic {
+                        x: window.homePanelShapeLeft + window.homePanelShapeRadius; y: window.homePanelShapeBottom - 1
+                        control1X: window.homePanelShapeLeft + 1; control1Y: window.homePanelShapeBottom - (window.homePanelShapeRadius * 0.45)
+                        control2X: window.homePanelShapeLeft + (window.homePanelShapeRadius * 0.45); control2Y: window.homePanelShapeBottom - 1
+                    }
+                    PathLine {
+                        x: window.homePanelShapeRight - 1; y: window.homePanelShapeBottom - 1
+                    }
+                    PathLine {
                         x: window.innerRight - 1; y: window.innerBottom - 1 - ShellGeometry.cornerRadius
                     }
                     PathArc {
@@ -214,6 +280,10 @@ Variants {
 
                     Region {
                         item: dockWidget.hoverItem
+                    }
+
+                    Region {
+                        item: homePanel
                     }
                 }
 
@@ -285,6 +355,28 @@ Variants {
                             radiusX: ShellGeometry.cornerRadius; radiusY: ShellGeometry.cornerRadius
                             useLargeArc: false
                             direction: PathArc.Clockwise
+                        }
+                        PathLine {
+                            x: window.homePanelShapeRight; y: window.homePanelShapeTop
+                        }
+                        PathLine {
+                            x: window.homePanelShapeLeft + window.homePanelShapeRadius; y: window.homePanelShapeTop
+                        }
+                        PathCubic {
+                            x: window.homePanelShapeLeft; y: window.homePanelShapeTop + window.homePanelShapeRadius
+                            control1X: window.homePanelShapeLeft + (window.homePanelShapeRadius * 0.45); control1Y: window.homePanelShapeTop
+                            control2X: window.homePanelShapeLeft; control2Y: window.homePanelShapeTop + (window.homePanelShapeRadius * 0.45)
+                        }
+                        PathLine {
+                            x: window.homePanelShapeLeft; y: window.homePanelShapeBottom - window.homePanelShapeRadius
+                        }
+                        PathCubic {
+                            x: window.homePanelShapeLeft + window.homePanelShapeRadius; y: window.homePanelShapeBottom
+                            control1X: window.homePanelShapeLeft; control1Y: window.homePanelShapeBottom - (window.homePanelShapeRadius * 0.45)
+                            control2X: window.homePanelShapeLeft + (window.homePanelShapeRadius * 0.45); control2Y: window.homePanelShapeBottom
+                        }
+                        PathLine {
+                            x: window.homePanelShapeRight; y: window.homePanelShapeBottom
                         }
                         PathLine {
                             x: window.innerRight; y: window.innerBottom - ShellGeometry.cornerRadius
@@ -362,6 +454,31 @@ Variants {
                         }
                     }
 
+                }
+
+                HomePanel {
+                    id: homePanel
+
+                    x: window.width - currentWidth
+                    y: window.homePanelTop
+                }
+
+                HouseIcon {
+                    id: homeCompactIcon
+
+                    x: window.innerRight - (ShellGeometry.homePanelBumpDepth / 2) - (width / 2)
+                    y: window.homePanelTop + (ShellGeometry.homePanelBumpHeight / 2) - (height / 2)
+                    width: ShellGeometry.homePanelHandleIconSize
+                    height: ShellGeometry.homePanelHandleIconSize
+                    opacity: 1 - Math.min(1, homePanel.revealProgress * 1.35)
+                    visible: opacity > 0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutCubic
+                        }
+                    }
                 }
 
                 ExpandableEdgeWidget {

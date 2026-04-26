@@ -31,6 +31,15 @@
   - hover zone indépendante
   - widget réel animé séparément de son indicateur compact
 - Ce pattern doit maintenant passer par un composant dédié, pas être recopié dans chaque fenêtre. Dans ce dépôt, la primitive de base est `src/components/ExpandableEdgeWidget.qml`; `Ring.qml` ne doit garder que la géométrie spécifique du cutout du widget.
+- Pour les panels latéraux du même système que `HomePanel`, ne pas créer un `PanelWindow` séparé et ne pas dessiner de `ThemedPanelSurface` propre au panel. Le contenu doit être un composant visuel intégré dans le `PanelWindow` du ring; le fond, la bordure et l'extension doivent venir du tracé du ring.
+- Pour qu'un panel intégré se comporte comme le dock, son `revealProgress` doit piloter simultanément:
+  - la taille/position du contenu
+  - le cutout intérieur du ring
+  - les outlines du ring
+  - le remplissage du ring
+  - l'opacité de l'icône compacte
+- L'icône compacte d'un panel intégré doit vivre dans `Ring.qml`, pas dans le composant de contenu. Elle doit utiliser la même taille que l'icône compacte du dock (`dockRestIconSize`) et disparaître pendant l'ouverture.
+- Si un panel intégré doit réagir au survol, ajouter explicitement sa zone au `mask` du `PanelWindow` du ring, comme pour `dockWidget.contentItem` et `dockWidget.hoverItem`; sinon Wayland peut ne pas transmettre les événements pointeur à cette zone.
 
 ## État du dock
 
