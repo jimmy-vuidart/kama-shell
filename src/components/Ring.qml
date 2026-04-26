@@ -12,42 +12,6 @@ Variants {
             id: root
             required property var modelData
 
-            WorkAreaReserve {
-                targetScreen: root.modelData
-                windowNamespace: "kama-shell-workarea-top"
-                reserveSize: ShellGeometry.workAreaInset
-                anchorTop: true
-                anchorLeft: true
-                anchorRight: true
-            }
-
-            WorkAreaReserve {
-                targetScreen: root.modelData
-                windowNamespace: "kama-shell-workarea-left"
-                reserveSize: ShellGeometry.workAreaInset
-                anchorTop: true
-                anchorLeft: true
-                anchorBottom: true
-            }
-
-            WorkAreaReserve {
-                targetScreen: root.modelData
-                windowNamespace: "kama-shell-workarea-right"
-                reserveSize: ShellGeometry.workAreaInset
-                anchorTop: true
-                anchorRight: true
-                anchorBottom: true
-            }
-
-            WorkAreaReserve {
-                targetScreen: root.modelData
-                windowNamespace: "kama-shell-workarea-bottom"
-                reserveSize: ShellGeometry.workAreaInset
-                anchorLeft: true
-                anchorRight: true
-                anchorBottom: true
-            }
-
             PanelWindow {
                 id: window
                 screen: root.modelData
@@ -58,28 +22,19 @@ Variants {
                 readonly property real innerTop: ShellGeometry.frameInset
                 readonly property real innerRight: window.width - ShellGeometry.frameInset
                 readonly property real innerBottom: window.height - ShellGeometry.frameInset
-                property bool dockShouldShow: dockHoverArea.containsMouse || dock.hovered || dock.contextMenuVisible
-                property real dockReveal: dockShouldShow ? 1 : 0
                 readonly property real dockRestCenter: window.width / 2
-                readonly property real dockCurrentShapeWidth: ShellGeometry.dockRestWidth + ((dock.shapeWidth - ShellGeometry.dockRestWidth) * dockReveal)
-                readonly property real dockCurrentHeight: ShellGeometry.dockRestHeight + ((ShellGeometry.dockHeight - ShellGeometry.dockRestHeight) * dockReveal)
+                readonly property real dockCurrentShapeWidth: dockWidget.currentWidth
+                readonly property real dockCurrentHeight: dockWidget.currentHeight
                 readonly property real dockShapeLeft: dockRestCenter - (dockCurrentShapeWidth / 2)
                 readonly property real dockShapeRight: dockRestCenter + (dockCurrentShapeWidth / 2)
                 readonly property real dockTop: window.height - ShellGeometry.frameInset - dockCurrentHeight
                 readonly property real dockSlopeStartLeft: dockShapeLeft
                 readonly property real dockSlopeStartRight: dockShapeRight
                 readonly property real dockPeakY: dockTop + 2
-                readonly property real dockFlatHalfWidth: (ShellGeometry.dockRestFlatWidth / 2) + ((Math.max(52, dock.bumpWidth * 0.32) - (ShellGeometry.dockRestFlatWidth / 2)) * dockReveal)
+                readonly property real dockFlatHalfWidth: (ShellGeometry.dockRestFlatWidth / 2) + ((Math.max(52, dock.bumpWidth * 0.32) - (ShellGeometry.dockRestFlatWidth / 2)) * dockWidget.revealProgress)
                 readonly property real dockTopFlatLeft: (window.width / 2) - dockFlatHalfWidth
                 readonly property real dockTopFlatRight: (window.width / 2) + dockFlatHalfWidth
                 readonly property real dockCurveRun: Math.max(10, (dockSlopeStartRight - dockTopFlatRight) * 0.42)
-
-                Behavior on dockReveal {
-                    NumberAnimation {
-                        duration: 220
-                        easing.type: Easing.InOutCubic
-                    }
-                }
 
                 component InnerCutout: Item {
                     Shape {
@@ -187,11 +142,11 @@ Variants {
                     }
 
                     Region {
-                        item: dockContainer
+                        item: dockWidget.contentItem
                     }
 
                     Region {
-                        item: dockHoverZone
+                        item: dockWidget.hoverItem
                     }
                 }
 
@@ -420,16 +375,50 @@ Variants {
                     }
                 }
 
-                Item {
-                    id: dockContainer
-                    anchors {
-                        horizontalCenter: parent.horizontalCenter
-                        bottom: parent.bottom
-                        bottomMargin: ShellGeometry.frameInset
+                ExpandableEdgeWidget {
+                    id: dockWidget
+                    anchors.fill: parent
+                    compactWidth: ShellGeometry.dockRestWidth
+                    compactHeight: ShellGeometry.dockRestHeight
+                    expandedWidth: dock.shapeWidth
+                    expandedHeight: dock.implicitHeight
+                    compactVisualWidth: ShellGeometry.dockRestWidth - 18
+                    compactVisualHeight: ShellGeometry.dockRestHeight - 6
+                    contentBottomMargin: ShellGeometry.frameInset
+                    compactBottomMargin: ShellGeometry.frameInset + 3
+                    hoverBottomMargin: 0
+                    hoverWidth: Math.max(dock.shapeWidth, ShellGeometry.dockMinWidth + 72)
+                    hoverHeight: ShellGeometry.frameInset + ShellGeometry.dockHoverZoneHeight
+                    keepExpanded: dock.hovered || dock.contextMenuVisible
+                    compactContent: Component {
+                        Item {
+                            Item {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.verticalCenterOffset: 3
+                                width: ShellGeometry.dockRestIconSize
+                                height: ShellGeometry.dockRestIconSize
+
+                                Repeater {
+                                    model: 4
+
+                                    delegate: Rectangle {
+                                        required property int index
+
+                                        readonly property real cellSize: 5
+                                        readonly property real cellGap: 2
+
+                                        width: cellSize
+                                        height: cellSize
+                                        radius: 1.5
+                                        x: (index % 2) * (cellSize + cellGap)
+                                        y: Math.floor(index / 2) * (cellSize + cellGap)
+                                        color: Qt.rgba(0.95, 0.98, 1, 0.88)
+                                    }
+                                }
+                            }
+                        }
                     }
-                    width: dock.implicitWidth
-                    height: dock.implicitHeight * window.dockReveal
-                    clip: true
 
                     AppDock {
                         id: dock
@@ -437,64 +426,7 @@ Variants {
                             horizontalCenter: parent.horizontalCenter
                             bottom: parent.bottom
                         }
-                        revealProgress: window.dockReveal
-                    }
-                }
-
-                Item {
-                    anchors {
-                        horizontalCenter: parent.horizontalCenter
-                        bottom: parent.bottom
-                        bottomMargin: ShellGeometry.frameInset + 3
-                    }
-                    width: ShellGeometry.dockRestWidth - 18
-                    height: ShellGeometry.dockRestHeight - 6
-                    opacity: 1 - window.dockReveal
-                    visible: opacity > 0
-
-                    Item {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.verticalCenterOffset: 3
-                        width: ShellGeometry.dockRestIconSize
-                        height: ShellGeometry.dockRestIconSize
-
-                        Repeater {
-                            model: 4
-
-                            delegate: Rectangle {
-                                required property int index
-
-                                readonly property real cellSize: 5
-                                readonly property real cellGap: 2
-
-                                width: cellSize
-                                height: cellSize
-                                radius: 1.5
-                                x: (index % 2) * (cellSize + cellGap)
-                                y: Math.floor(index / 2) * (cellSize + cellGap)
-                                color: Qt.rgba(0.95, 0.98, 1, 0.88)
-                            }
-                        }
-                    }
-                }
-
-                Item {
-                    id: dockHoverZone
-
-                    anchors {
-                        horizontalCenter: parent.horizontalCenter
-                        bottom: parent.bottom
-                        bottomMargin: 0
-                    }
-                    width: Math.max(dock.shapeWidth, ShellGeometry.dockMinWidth + 72)
-                    height: ShellGeometry.frameInset + ShellGeometry.dockHoverZoneHeight
-
-                    MouseArea {
-                        id: dockHoverArea
-                        anchors.fill: parent
-                        acceptedButtons: Qt.NoButton
-                        hoverEnabled: true
+                        revealProgress: dockWidget.revealProgress
                     }
                 }
             }

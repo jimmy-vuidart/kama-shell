@@ -30,6 +30,7 @@
   - reveal progress unique
   - hover zone indépendante
   - widget réel animé séparément de son indicateur compact
+- Ce pattern doit maintenant passer par un composant dédié, pas être recopié dans chaque fenêtre. Dans ce dépôt, la primitive de base est `src/components/ExpandableEdgeWidget.qml`; `Ring.qml` ne doit garder que la géométrie spécifique du cutout du widget.
 
 ## État du dock
 

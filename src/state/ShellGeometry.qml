@@ -6,7 +6,6 @@ import QtQuick
 Singleton {
     readonly property int frameInset: 16
     readonly property int frameBorderInset: frameInset + 1
-    readonly property int workAreaInset: frameBorderInset
     readonly property int cornerRadius: 48
     readonly property real glassTintAlpha: 0.18
     readonly property real glassTopHighlightAlpha: 0.34
