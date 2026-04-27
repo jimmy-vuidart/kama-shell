@@ -10,12 +10,12 @@ Item {
 
     property var items: DockState.items
     property real revealProgress: 1
+    property var screen: null
 
     readonly property int itemCount: items.length
-    readonly property int gapCount: Math.max(0, itemCount - 1)
     readonly property int actionCount: logoutAvailable ? 1 : 0
     readonly property int contentWidth: {
-        var width = 0
+        var width = ShellGeometry.dockItemSize + ShellGeometry.dockSeparatorWidth
 
         for (var i = 0; i < items.length; i++) {
             width += items[i].kind === "separator"
@@ -23,10 +23,12 @@ Item {
                 : ShellGeometry.dockItemSize
         }
 
-        width += gapCount * ShellGeometry.dockItemGap
         if (actionCount > 0) {
-            width += ShellGeometry.dockItemGap + 68
+            width += 68
         }
+
+        const totalChildren = 2 + itemCount + actionCount
+        width += Math.max(0, totalChildren - 1) * ShellGeometry.dockItemGap
         return width
     }
     readonly property int bumpWidth: Math.max(
@@ -118,6 +120,26 @@ Item {
             bottomMargin: (ShellGeometry.dockPadding - 8) - ((1 - root.revealProgress) * ShellGeometry.dockRevealOffset)
         }
         spacing: ShellGeometry.dockItemGap
+
+        AppDockItem {
+            width: ShellGeometry.dockItemSize
+            height: ShellGeometry.dockItemSize
+            label: "⊞"
+            iconSource: {
+                const path = Quickshell.iconPath("view-app-grid", true)
+                return path || ""
+            }
+            onClicked: LauncherState.toggle(root.screen ? root.screen.name : "")
+        }
+
+        Item {
+            width: ShellGeometry.dockSeparatorWidth
+            height: ShellGeometry.dockItemSize
+
+            DockSeparator {
+                anchors.centerIn: parent
+            }
+        }
 
         Repeater {
             model: root.items

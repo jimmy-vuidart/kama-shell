@@ -403,6 +403,7 @@ Singleton {
             fallbackLabel: root.fallbackLabelForItem(item)
         }])
         root.queueRebuild()
+        ShellConfig.savePinnedApps(root.pinnedApps)
     }
 
     function unpinItem(item) {
@@ -426,6 +427,7 @@ Singleton {
 
         root.pinnedApps = nextPinnedApps
         root.queueRebuild()
+        ShellConfig.savePinnedApps(root.pinnedApps)
     }
 
     function isPinnedDesktopId(desktopId) {

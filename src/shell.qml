@@ -10,7 +10,9 @@ import "ipc"
 import "state"
 
 ShellRoot {
+    WallpaperWindow {}
     Ring {}
     AppLauncherOverlay {}
     KamaShellIpc {}
 }
+

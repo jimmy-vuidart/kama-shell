@@ -9,16 +9,16 @@ Item {
     property bool selected: false
     readonly property bool hovered: pointerArea.containsMouse
     readonly property string appName: LauncherState.entryName(entry)
-    readonly property string subtitle: LauncherState.entrySubtitle(entry)
     readonly property string iconSource: LauncherState.iconSourceFor(entry)
 
     signal clicked
     signal pointerEntered
 
-    height: 64
-
     Rectangle {
-        anchors.fill: parent
+        anchors {
+            fill: parent
+            margins: 5
+        }
         radius: ShellTheme.controlRadius
         antialiasing: true
         color: "transparent"
@@ -27,88 +27,79 @@ Item {
                 position: 0.0
                 color: root.selected || root.hovered
                     ? ShellTheme.controlFillTopActive
-                    : ShellTheme.controlFillTop
+                    : "transparent"
             }
             GradientStop {
                 position: 1.0
                 color: root.selected || root.hovered
                     ? ShellTheme.controlFillBottomActive
-                    : ShellTheme.controlFillBottom
+                    : "transparent"
             }
         }
         border.width: ShellTheme.controlBorderWidth
-        border.color: root.selected ? ShellTheme.controlBorderActive : ShellTheme.controlBorder
-    }
-
-    Rectangle {
-        anchors {
-            left: parent.left
-            top: parent.top
-            bottom: parent.bottom
-            margins: 8
-        }
-        width: 48
-        radius: ShellTheme.controlRadius
-        antialiasing: true
-        color: Qt.rgba(1, 1, 1, ShellTheme.isFfxiv ? 0.06 : 0.1)
-        border.width: 1
-        border.color: ShellTheme.controlBorder
-
-        Image {
-            id: iconImage
-
-            anchors.centerIn: parent
-            width: 28
-            height: 28
-            source: root.iconSource
-            sourceSize.width: 28
-            sourceSize.height: 28
-            fillMode: Image.PreserveAspectFit
-            smooth: true
-            asynchronous: true
-            visible: status === Image.Ready
-        }
-
-        Text {
-            anchors.centerIn: parent
-            text: LauncherState.entryInitial(root.entry)
-            color: ShellTheme.textPrimary
-            font.pixelSize: 18
-            font.weight: ShellTheme.controlTextWeight
-            style: ShellTheme.controlTextStyle
-            styleColor: ShellTheme.textShadow
-            visible: root.iconSource.length === 0 || iconImage.status !== Image.Ready
-        }
+        border.color: root.selected
+            ? ShellTheme.controlBorderActive
+            : (root.hovered ? ShellTheme.controlBorder : "transparent")
     }
 
     Column {
         anchors {
-            left: parent.left
-            leftMargin: 70
-            right: parent.right
-            rightMargin: 18
-            verticalCenter: parent.verticalCenter
+            horizontalCenter: parent.horizontalCenter
+            top: parent.top
+            topMargin: 10
         }
-        spacing: 3
+        width: parent.width - 10
+        spacing: 8
+
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 64
+            height: 64
+            radius: ShellTheme.controlRadius
+            antialiasing: true
+            color: Qt.rgba(1, 1, 1, ShellTheme.isFfxiv ? 0.06 : 0.1)
+            border.width: 1
+            border.color: ShellTheme.controlBorder
+
+            Image {
+                id: iconImage
+
+                anchors.centerIn: parent
+                width: 40
+                height: 40
+                source: root.iconSource
+                sourceSize.width: 40
+                sourceSize.height: 40
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+                asynchronous: true
+                visible: status === Image.Ready
+            }
+
+            Text {
+                anchors.centerIn: parent
+                text: LauncherState.entryInitial(root.entry)
+                color: ShellTheme.textPrimary
+                font.pixelSize: 22
+                font.weight: ShellTheme.controlTextWeight
+                style: ShellTheme.controlTextStyle
+                styleColor: ShellTheme.textShadow
+                visible: root.iconSource.length === 0 || iconImage.status !== Image.Ready
+            }
+        }
 
         Text {
             width: parent.width
             text: root.appName
             color: ShellTheme.textPrimary
-            font.pixelSize: 16
+            font.pixelSize: 12
             font.weight: ShellTheme.controlTextWeight
+            horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
+            wrapMode: Text.WordWrap
+            maximumLineCount: 2
             style: ShellTheme.controlTextStyle
             styleColor: ShellTheme.textShadow
-        }
-
-        Text {
-            width: parent.width
-            text: root.subtitle
-            color: ShellTheme.textSecondary
-            font.pixelSize: 12
-            elide: Text.ElideRight
-            visible: root.subtitle.length > 0
         }
     }
 

@@ -94,7 +94,8 @@ Singleton {
                 return right.score - left.score
             }
 
-            return root.entryName(left.entry).localeCompare(root.entryName(right.entry))
+            return root.normalizedSearch(root.entryName(left.entry))
+            .localeCompare(root.normalizedSearch(root.entryName(right.entry)))
         })
 
         const result = []
@@ -124,7 +125,7 @@ Singleton {
         ].join(" ")
 
         if (!normalizedQuery.length) {
-            return 100 - Math.min(60, name.length)
+            return 0
         }
 
         const tokens = normalizedQuery.split(/\s+/).filter(token => token.length > 0)

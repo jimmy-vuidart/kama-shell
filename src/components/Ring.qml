@@ -625,6 +625,7 @@ Variants {
                             bottom: parent.bottom
                         }
                         revealProgress: dockWidget.revealProgress
+                        screen: root.modelData
                     }
                 }
             }

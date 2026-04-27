@@ -9,6 +9,9 @@ Item {
 
     property bool active: false
 
+    readonly property int targetColumns: 5
+    readonly property int gridColumns: Math.max(1, Math.floor(appGrid.width / appGrid.cellWidth))
+
     implicitWidth: 720
     implicitHeight: 620
 
@@ -38,26 +41,38 @@ Item {
             return
         }
 
-        if (event.key === Qt.Key_Down) {
+        if (event.key === Qt.Key_Right) {
             LauncherState.moveSelection(1, appModel.values.length)
             event.accepted = true
             return
         }
 
-        if (event.key === Qt.Key_Up) {
+        if (event.key === Qt.Key_Left) {
             LauncherState.moveSelection(-1, appModel.values.length)
             event.accepted = true
             return
         }
 
+        if (event.key === Qt.Key_Down) {
+            LauncherState.moveSelection(root.gridColumns, appModel.values.length)
+            event.accepted = true
+            return
+        }
+
+        if (event.key === Qt.Key_Up) {
+            LauncherState.moveSelection(-root.gridColumns, appModel.values.length)
+            event.accepted = true
+            return
+        }
+
         if (event.key === Qt.Key_PageDown) {
-            LauncherState.moveSelection(6, appModel.values.length)
+            LauncherState.moveSelection(root.gridColumns * 4, appModel.values.length)
             event.accepted = true
             return
         }
 
         if (event.key === Qt.Key_PageUp) {
-            LauncherState.moveSelection(-6, appModel.values.length)
+            LauncherState.moveSelection(-root.gridColumns * 4, appModel.values.length)
             event.accepted = true
             return
         }
@@ -154,8 +169,8 @@ Item {
             }
         }
 
-        ListView {
-            id: appList
+        GridView {
+            id: appGrid
 
             anchors {
                 top: searchBox.bottom
@@ -165,16 +180,16 @@ Item {
                 bottom: parent.bottom
             }
             clip: true
-            spacing: 8
+            cellWidth: Math.floor(width / root.targetColumns)
+            cellHeight: 130
             boundsBehavior: Flickable.StopAtBounds
             model: appModel
             currentIndex: LauncherState.selectedIndex
             highlightMoveDuration: 110
-            highlightResizeDuration: 110
 
             onCurrentIndexChanged: {
                 if (currentIndex >= 0) {
-                    positionViewAtIndex(currentIndex, ListView.Contain)
+                    positionViewAtIndex(currentIndex, GridView.Contain)
                 }
             }
 
@@ -182,8 +197,8 @@ Item {
                 required property int index
                 required property var modelData
 
-                width: appList.width
-                height: 64
+                width: appGrid.cellWidth
+                height: appGrid.cellHeight
                 entry: modelData
                 selected: index === LauncherState.selectedIndex
 
@@ -197,8 +212,8 @@ Item {
         }
 
         Text {
-            anchors.centerIn: appList
-            width: appList.width
+            anchors.centerIn: appGrid
+            width: appGrid.width
             horizontalAlignment: Text.AlignHCenter
             text: "Aucun résultat"
             color: ShellTheme.textSecondary

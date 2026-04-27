@@ -4,3 +4,4 @@ singleton ShellGeometry 1.0 ShellGeometry.qml
 singleton DockState 1.0 DockState.qml
 singleton LauncherState 1.0 LauncherState.qml
 singleton ClockState 1.0 ClockState.qml
+singleton WallpaperState 1.0 WallpaperState.qml

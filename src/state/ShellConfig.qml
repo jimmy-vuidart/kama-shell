@@ -24,6 +24,7 @@ Singleton {
 
     property string visualTheme: glassmorphismTheme
     property string launcherShortcut: defaultLauncherShortcut
+    property string wallpaperPath: ""
     property var dockPinnedApps: clonePinnedApps(defaultDockPinnedApps)
     property var values: ({})
     property var parseErrors: []
@@ -50,6 +51,7 @@ Singleton {
         root.values = nextValues
         root.visualTheme = nextVisualTheme
         root.launcherShortcut = root.effectiveLauncherShortcutFor(nextValues)
+        root.wallpaperPath = root.effectiveWallpaperPathFor(nextValues)
         root.dockPinnedApps = root.effectiveDockPinnedAppsFor(nextValues)
     }
 
@@ -91,6 +93,34 @@ Singleton {
         return root.normalizedShortcut(
             root.valueFrom(sourceValues, "launcher.shortcut", root.defaultLauncherShortcut)
         )
+    }
+
+    function effectiveWallpaperPath() {
+        return root.effectiveWallpaperPathFor(root.values)
+    }
+
+    function effectiveWallpaperPathFor(sourceValues) {
+        return root.normalizedWallpaperPath(
+            root.valueFrom(sourceValues, "appearance.wallpaper", "")
+        )
+    }
+
+    function normalizedWallpaperPath(value) {
+        const raw = String(value || "").trim()
+
+        if (!raw.length) {
+            return ""
+        }
+
+        if (raw.startsWith("~/") && root.homeDir.length > 0) {
+            return root.homeDir + raw.slice(1)
+        }
+
+        if (raw === "~" && root.homeDir.length > 0) {
+            return root.homeDir
+        }
+
+        return raw
     }
 
     function parse(text) {
@@ -494,6 +524,73 @@ Singleton {
             : withoutExtension
 
         return fallbackLabel.slice(0, 1).toUpperCase() || "?"
+    }
+
+    function pinnedAppsToConfigValue(apps) {
+        const parts = []
+        for (let i = 0; i < apps.length; i++) {
+            const app = apps[i]
+            if (app && app.desktopId) {
+                parts.push(app.desktopId + "|" + (app.fallbackLabel || "?"))
+            }
+        }
+        return parts.join(", ")
+    }
+
+    function savePinnedApps(apps) {
+        if (!root.configPath.length) {
+            return
+        }
+
+        const value = root.pinnedAppsToConfigValue(apps)
+        const proc = configSaveComponent.createObject(root, {
+            configPath: root.configPath,
+            pinnedAppsValue: value
+        })
+        proc.running = true
+        proc.exited.connect(function() { proc.destroy() })
+    }
+
+    component ConfigSaveProcess: Process {
+        required property string configPath
+        required property string pinnedAppsValue
+
+        command: [
+            "python3", "-c",
+`
+import sys, os
+config_path, value = sys.argv[1], sys.argv[2]
+lines = open(config_path).readlines() if os.path.exists(config_path) else []
+in_dock = False
+dock_line = pinned_line = -1
+for i, line in enumerate(lines):
+    s = line.strip()
+    if s == '[dock]':
+        in_dock, dock_line = True, i
+    elif s.startswith('[') and s.endswith(']'):
+        in_dock = False
+    elif in_dock and '=' in s and s.split('=')[0].strip() in ('pinnedApps', 'pinned'):
+        pinned_line = i
+        break
+if pinned_line >= 0:
+    lines[pinned_line] = 'pinnedApps = ' + value + '\\n'
+elif dock_line >= 0:
+    lines.insert(dock_line + 1, 'pinnedApps = ' + value + '\\n')
+else:
+    if lines and not lines[-1].endswith('\\n'):
+        lines.append('\\n')
+    lines += ['[dock]\\n', 'pinnedApps = ' + value + '\\n']
+os.makedirs(os.path.dirname(os.path.abspath(config_path)), exist_ok=True)
+open(config_path, 'w').writelines(lines)
+`,
+            configPath,
+            pinnedAppsValue
+        ]
+    }
+
+    Component {
+        id: configSaveComponent
+        ConfigSaveProcess {}
     }
 
     Component.onCompleted: {

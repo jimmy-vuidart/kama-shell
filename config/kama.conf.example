@@ -6,6 +6,10 @@
 [appearance]
 # Supported themes: glassmorphism, ffxiv. Saving this file updates the theme live.
 theme = glassmorphism
+# Path to the wallpaper image rendered by Kama Shell on the Wayland background layer.
+# Leave empty to fall back to a solid color. Supports a leading "~/" for the home directory.
+# Disable the desktop environment wallpaper to avoid double rendering.
+# wallpaper = ~/Pictures/wallpaper.jpg
 
 [launcher]
 # KWin key sequence for the app launcher. Meta means the Super/Windows key alone.
