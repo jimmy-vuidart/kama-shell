@@ -27,6 +27,13 @@ Singleton {
     readonly property int dockSeparatorWidth: 1
     readonly property int dockSeparatorHeight: 34
 
+    readonly property int clockNotchWidth: 208
+    readonly property int clockNotchDepth: 18
+    readonly property int clockNotchRadius: 19
+    readonly property int clockNotchHorizontalPadding: 22
+    readonly property int clockNotchFontSize: 13
+    readonly property int clockNotchTextVerticalOffset: -8
+
     readonly property real homePanelTopRatio: 0.25
     readonly property int homePanelExpandedWidth: 380
     readonly property int homePanelExpandedHeight: 472

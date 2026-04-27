@@ -2,3 +2,5 @@ singleton ShellConfig 1.0 ShellConfig.qml
 singleton ShellTheme 1.0 ShellTheme.qml
 singleton ShellGeometry 1.0 ShellGeometry.qml
 singleton DockState 1.0 DockState.qml
+singleton LauncherState 1.0 LauncherState.qml
+singleton ClockState 1.0 ClockState.qml

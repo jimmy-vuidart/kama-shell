@@ -14,9 +14,10 @@ if [[ "$APP_DIR" == "__KAMA_SHELL_APP_DIR__" ]]; then
 fi
 
 RUNNER="$APP_DIR/run.sh"
-KWIN_SCRIPT_ID="kama-shell-screenshot"
-KWIN_SCRIPT_SOURCE="$APP_DIR/kwin/scripts/$KWIN_SCRIPT_ID"
-KWIN_SCRIPT_TARGET="$DATA_HOME/kwin/scripts/$KWIN_SCRIPT_ID"
+SHELL_ENTRY="$APP_DIR/src/shell.qml"
+KWIN_SCRIPTS_DIR="$APP_DIR/kwin/scripts"
+KWIN_SCREENSHOT_SCRIPT_ID="kama-shell-screenshot"
+KWIN_SHORTCUTS_SCRIPT_ID="kama-shell-shortcuts"
 SCREENSHOT_HELPER="$APP_DIR/scripts/copy-screenshot-to-clipboard.sh"
 
 if [[ ! -x "$RUNNER" ]]; then
@@ -35,6 +36,8 @@ if [[ -f "$DEBUG_SESSION_CONFIG" ]]; then
     # shellcheck disable=SC1090
     source "$DEBUG_SESSION_CONFIG"
 fi
+
+KAMA_CONFIG="${KAMA_CONFIG:-$CONFIG_HOME/kama-shell/kama.conf}"
 
 apply_keyboard_config() {
     if ! command -v kwriteconfig6 >/dev/null 2>&1; then
@@ -67,17 +70,140 @@ apply_keyboard_config() {
     fi
 }
 
-install_kwin_script() {
-    if [[ ! -d "$KWIN_SCRIPT_SOURCE" ]] || [[ ! -x "$SCREENSHOT_HELPER" ]]; then
+kama_config_value() {
+    local section="$1"
+    local key="$2"
+    local fallback="$3"
+    local value
+
+    if [[ ! -f "$KAMA_CONFIG" ]] || ! command -v awk >/dev/null 2>&1; then
+        printf '%s\n' "$fallback"
         return
     fi
 
-    install -d "$KWIN_SCRIPT_TARGET"
-    cp -r "$KWIN_SCRIPT_SOURCE"/. "$KWIN_SCRIPT_TARGET"/
+    value=$(
+        awk -F= -v wanted_section="$section" -v wanted_key="$key" '
+            function trim(value) {
+                sub(/^[[:space:]]+/, "", value)
+                sub(/[[:space:]]+$/, "", value)
+                return value
+            }
+
+            function unquote(value) {
+                value = trim(value)
+                if (
+                    (substr(value, 1, 1) == "\"" && substr(value, length(value), 1) == "\"")
+                    || (substr(value, 1, 1) == "'"'"'" && substr(value, length(value), 1) == "'"'"'")
+                ) {
+                    return substr(value, 2, length(value) - 2)
+                }
+
+                return value
+            }
+
+            /^[[:space:]]*($|#|;)/ { next }
+
+            {
+                line = $0
+                sub(/[[:space:]]+[;#].*$/, "", line)
+                line = trim(line)
+
+                if (line ~ /^\[[^]]+\]$/) {
+                    current_section = trim(substr(line, 2, length(line) - 2))
+                    next
+                }
+
+                separator = index(line, "=")
+                if (separator <= 0) {
+                    next
+                }
+
+                current_key = trim(substr(line, 1, separator - 1))
+                current_value = trim(substr(line, separator + 1))
+
+                if (
+                    (current_section == wanted_section && current_key == wanted_key)
+                    || current_key == wanted_section "." wanted_key
+                ) {
+                    print unquote(current_value)
+                    exit
+                }
+            }
+        ' "$KAMA_CONFIG"
+    )
+
+    if [[ -n "$value" ]]; then
+        printf '%s\n' "$value"
+        return
+    fi
+
+    printf '%s\n' "$fallback"
+}
+
+normalize_launcher_shortcut() {
+    local shortcut
+    shortcut=$(printf '%s' "$1" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+
+    case "${shortcut,,}" in
+        "" | super | win | windows)
+            printf '%s\n' "Meta"
+            ;;
+        *)
+            printf '%s\n' "$shortcut"
+            ;;
+    esac
+}
+
+install_kwin_package() {
+    local script_id="$1"
+    local script_source="$KWIN_SCRIPTS_DIR/$script_id"
+    local script_target="$DATA_HOME/kwin/scripts/$script_id"
+
+    if [[ ! -d "$script_source" ]]; then
+        return
+    fi
+
+    install -d "$script_target"
+    cp -r "$script_source"/. "$script_target"/
 
     if command -v kwriteconfig6 >/dev/null 2>&1; then
-        kwriteconfig6 --file kwinrc --group Plugins --key "${KWIN_SCRIPT_ID}Enabled" true
-        kwriteconfig6 --file kwinrc --group "Script-${KWIN_SCRIPT_ID}" --key helperPath "$SCREENSHOT_HELPER"
+        kwriteconfig6 --file kwinrc --group Plugins --key "${script_id}Enabled" true
+    fi
+}
+
+install_kwin_script() {
+    install_kwin_package "$KWIN_SCREENSHOT_SCRIPT_ID"
+    install_kwin_package "$KWIN_SHORTCUTS_SCRIPT_ID"
+
+    if ! command -v kwriteconfig6 >/dev/null 2>&1; then
+        return
+    fi
+
+    if [[ -x "$SCREENSHOT_HELPER" ]]; then
+        kwriteconfig6 --file kwinrc --group "Script-${KWIN_SCREENSHOT_SCRIPT_ID}" --key helperPath "$SCREENSHOT_HELPER"
+    fi
+
+    local qs_path="${KAMA_QS_PATH:-}"
+    if [[ -z "$qs_path" ]]; then
+        qs_path=$(command -v qs || true)
+    fi
+    qs_path="${qs_path:-/usr/bin/qs}"
+
+    local launcher_shortcut
+    launcher_shortcut=$(normalize_launcher_shortcut "$(kama_config_value launcher shortcut Meta)")
+
+    kwriteconfig6 --file kwinrc --group "Script-${KWIN_SHORTCUTS_SCRIPT_ID}" --key qsPath "$qs_path"
+    kwriteconfig6 --file kwinrc --group "Script-${KWIN_SHORTCUTS_SCRIPT_ID}" --key shellEntry "$SHELL_ENTRY"
+    kwriteconfig6 --file kwinrc --group "Script-${KWIN_SHORTCUTS_SCRIPT_ID}" --key launcherShortcut "$launcher_shortcut"
+
+    if [[ "$launcher_shortcut" == "Meta" ]]; then
+        kwriteconfig6 \
+            --file kwinrc \
+            --group ModifierOnlyShortcuts \
+            --key Meta \
+            "org.kde.kglobalaccel,/component/kwin,org.kde.kglobalaccel.Component,invokeShortcut,KamaShellToggleLauncher"
+    else
+        kwriteconfig6 --file kwinrc --group ModifierOnlyShortcuts --key Meta ""
     fi
 }
 

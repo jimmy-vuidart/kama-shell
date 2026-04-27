@@ -7,6 +7,11 @@
 # Supported themes: glassmorphism, ffxiv. Saving this file updates the theme live.
 theme = glassmorphism
 
+[launcher]
+# KWin key sequence for the app launcher. Meta means the Super/Windows key alone.
+# Changing this key requires restarting the Kama Shell session.
+shortcut = Meta
+
 [dock]
 # Comma-separated desktop entries. A fallback label can be provided after "|".
 pinnedApps = zen.desktop|Z, org.gnome.Console.desktop|T, org.gnome.Nautilus.desktop|N, steam.desktop|S

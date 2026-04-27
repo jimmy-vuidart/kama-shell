@@ -52,13 +52,19 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 
 - `src/shell.qml`: point d'entrée Quickshell
 - `src/components/Ring.qml`: `PanelWindow` multi-écran et géométrie du ring
+- `src/components/DateTimeNotch.qml`: encoche haute centrale affichant la date et l'heure
 - `src/components/HomePanel.qml`: contenu visuel du panel maison, intégré dans le `PanelWindow` du ring
 - `src/components/HomeRoomRow.qml`, `HomeDeviceControl.qml`, `HouseIcon.qml`: primitives visuelles du panel maison
 - `src/components/AppDock.qml`: layout visuel du dock
+- `src/components/AppLauncherOverlay.qml`, `AppLauncher.qml`, `AppLauncherItem.qml`: overlay launcher multi-écran, recherche et lignes de résultat
+- `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher depuis KWin ou `qs ipc`
 - `src/state/ShellConfig.qml`: configuration utilisateur lue depuis `~/.config/kama-shell/kama.conf`
 - `src/state/ShellTheme.qml`: thème visuel actif, actuellement `glassmorphism` et futur `ffxiv`
 - `src/state/ShellGeometry.qml`: constantes de forme partagées entre ring, dock et panel maison
 - `src/state/DockState.qml`: état global du dock, apps pinned + running via `DesktopEntries` et `ToplevelManager`
+- `src/state/LauncherState.qml`: état global du launcher, filtrage de `DesktopEntries.applications`, sélection et lancement
+- `kwin/scripts/kama-shell-shortcuts/`: script KWin qui mappe le raccourci Super/Meta vers l'IPC Quickshell du launcher
+- `src/state/ClockState.qml`: état global de l'horloge basé sur `SystemClock`, sans processus externe
 
 Pour le dock applicatif:
 
@@ -66,6 +72,13 @@ Pour le dock applicatif:
 - préférer `DesktopEntries` pour les métadonnées applicatives
 - préférer `ToplevelManager` pour les fenêtres ouvertes tant que le compositeur expose correctement les toplevels
 - éviter d'introduire de nouveaux fallbacks spécifiques à une application si un fallback générique de résolution d'icônes suffit
+
+Pour le launcher applicatif:
+
+- garder la séparation nette entre état (`LauncherState`) et rendu (`AppLauncher`, `AppLauncherItem`)
+- utiliser `DesktopEntries.applications` comme source native des applications affichées
+- déclencher l'ouverture globale via `IpcHandler` cible `kama-shell` et le script KWin `kama-shell-shortcuts`; ne pas utiliser `Quickshell.Hyprland.GlobalShortcut` pour la session KWin
+- définir le raccourci global dans `~/.config/kama-shell/kama.conf` via `launcher.shortcut`; si cette clé change, mettre à jour `config/kama.conf.example`
 
 ## Documentation
 

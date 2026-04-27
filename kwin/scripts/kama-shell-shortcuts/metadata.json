@@ -1,0 +1,17 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "noreply@example.invalid",
+                "Name": "Kama Shell"
+            }
+        ],
+        "Description": "Registers Kama Shell global shortcuts",
+        "Icon": "system-run",
+        "Id": "kama-shell-shortcuts",
+        "License": "MIT",
+        "Name": "Kama Shell Shortcuts"
+    },
+    "X-Plasma-API": "javascript"
+}

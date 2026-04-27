@@ -22,6 +22,18 @@ Variants {
                 readonly property real innerTop: ShellGeometry.frameInset
                 readonly property real innerRight: window.width - ShellGeometry.frameInset
                 readonly property real innerBottom: window.height - ShellGeometry.frameInset
+                readonly property real clockNotchWidth: Math.min(
+                    ShellGeometry.clockNotchWidth,
+                    Math.max(0, window.width - ((ShellGeometry.frameInset + ShellGeometry.cornerRadius + 16) * 2))
+                )
+                readonly property real clockNotchLeft: (window.width - clockNotchWidth) / 2
+                readonly property real clockNotchRight: clockNotchLeft + clockNotchWidth
+                readonly property real clockNotchBottom: ShellGeometry.frameInset + ShellGeometry.clockNotchDepth
+                readonly property real clockNotchRadius: Math.min(
+                    ShellGeometry.clockNotchRadius,
+                    clockNotchWidth / 2,
+                    ShellGeometry.clockNotchDepth
+                )
                 readonly property real dockRestCenter: window.width / 2
                 readonly property real dockCurrentShapeWidth: dockWidget.currentWidth
                 readonly property real dockCurrentHeight: dockWidget.currentHeight
@@ -60,6 +72,30 @@ Variants {
                             startX: ShellGeometry.frameInset + ShellGeometry.cornerRadius
                             startY: ShellGeometry.frameInset
 
+                            PathLine {
+                                x: window.clockNotchLeft
+                                y: ShellGeometry.frameInset
+                            }
+                            PathCubic {
+                                x: window.clockNotchLeft + window.clockNotchRadius
+                                y: window.clockNotchBottom
+                                control1X: window.clockNotchLeft + (window.clockNotchRadius * 0.55)
+                                control1Y: ShellGeometry.frameInset
+                                control2X: window.clockNotchLeft
+                                control2Y: window.clockNotchBottom - (window.clockNotchRadius * 0.55)
+                            }
+                            PathLine {
+                                x: window.clockNotchRight - window.clockNotchRadius
+                                y: window.clockNotchBottom
+                            }
+                            PathCubic {
+                                x: window.clockNotchRight
+                                y: ShellGeometry.frameInset
+                                control1X: window.clockNotchRight
+                                control1Y: window.clockNotchBottom - (window.clockNotchRadius * 0.55)
+                                control2X: window.clockNotchRight - (window.clockNotchRadius * 0.55)
+                                control2Y: ShellGeometry.frameInset
+                            }
                             PathLine {
                                 x: window.width - ShellGeometry.frameInset - ShellGeometry.cornerRadius
                                 y: ShellGeometry.frameInset
@@ -180,6 +216,22 @@ Variants {
 
                     PathMove {
                         x: ShellGeometry.frameBorderInset + ShellGeometry.cornerRadius; y: ShellGeometry.frameBorderInset
+                    }
+                    PathLine {
+                        x: window.clockNotchLeft + 1; y: ShellGeometry.frameBorderInset
+                    }
+                    PathCubic {
+                        x: window.clockNotchLeft + window.clockNotchRadius; y: window.clockNotchBottom - 1
+                        control1X: window.clockNotchLeft + 1 + (window.clockNotchRadius * 0.55); control1Y: ShellGeometry.frameBorderInset
+                        control2X: window.clockNotchLeft + 1; control2Y: window.clockNotchBottom - 1 - (window.clockNotchRadius * 0.55)
+                    }
+                    PathLine {
+                        x: window.clockNotchRight - window.clockNotchRadius; y: window.clockNotchBottom - 1
+                    }
+                    PathCubic {
+                        x: window.clockNotchRight - 1; y: ShellGeometry.frameBorderInset
+                        control1X: window.clockNotchRight - 1; control1Y: window.clockNotchBottom - 1 - (window.clockNotchRadius * 0.55)
+                        control2X: window.clockNotchRight - 1 - (window.clockNotchRadius * 0.55); control2Y: ShellGeometry.frameBorderInset
                     }
                     PathLine {
                         x: window.width - ShellGeometry.frameBorderInset - ShellGeometry.cornerRadius; y: ShellGeometry.frameBorderInset
@@ -348,6 +400,22 @@ Variants {
                             x: ShellGeometry.frameInset + ShellGeometry.cornerRadius; y: ShellGeometry.frameInset
                         }
                         PathLine {
+                            x: window.clockNotchLeft; y: ShellGeometry.frameInset
+                        }
+                        PathCubic {
+                            x: window.clockNotchLeft + window.clockNotchRadius; y: window.clockNotchBottom
+                            control1X: window.clockNotchLeft + (window.clockNotchRadius * 0.55); control1Y: ShellGeometry.frameInset
+                            control2X: window.clockNotchLeft; control2Y: window.clockNotchBottom - (window.clockNotchRadius * 0.55)
+                        }
+                        PathLine {
+                            x: window.clockNotchRight - window.clockNotchRadius; y: window.clockNotchBottom
+                        }
+                        PathCubic {
+                            x: window.clockNotchRight; y: ShellGeometry.frameInset
+                            control1X: window.clockNotchRight; control1Y: window.clockNotchBottom - (window.clockNotchRadius * 0.55)
+                            control2X: window.clockNotchRight - (window.clockNotchRadius * 0.55); control2Y: ShellGeometry.frameInset
+                        }
+                        PathLine {
                             x: window.width - ShellGeometry.frameInset - ShellGeometry.cornerRadius; y: ShellGeometry.frameInset
                         }
                         PathArc {
@@ -444,6 +512,22 @@ Variants {
                             x: ShellGeometry.frameInset + 0.5 + ShellGeometry.cornerRadius; y: ShellGeometry.frameInset + 0.5
                         }
                         PathLine {
+                            x: window.clockNotchLeft + 0.5; y: ShellGeometry.frameInset + 0.5
+                        }
+                        PathCubic {
+                            x: window.clockNotchLeft + window.clockNotchRadius; y: window.clockNotchBottom - 0.5
+                            control1X: window.clockNotchLeft + 0.5 + (window.clockNotchRadius * 0.55); control1Y: ShellGeometry.frameInset + 0.5
+                            control2X: window.clockNotchLeft + 0.5; control2Y: window.clockNotchBottom - 0.5 - (window.clockNotchRadius * 0.55)
+                        }
+                        PathLine {
+                            x: window.clockNotchRight - window.clockNotchRadius; y: window.clockNotchBottom - 0.5
+                        }
+                        PathCubic {
+                            x: window.clockNotchRight - 0.5; y: ShellGeometry.frameInset + 0.5
+                            control1X: window.clockNotchRight - 0.5; control1Y: window.clockNotchBottom - 0.5 - (window.clockNotchRadius * 0.55)
+                            control2X: window.clockNotchRight - 0.5 - (window.clockNotchRadius * 0.55); control2Y: ShellGeometry.frameInset + 0.5
+                        }
+                        PathLine {
                             x: window.width - ShellGeometry.frameInset - 0.5 - ShellGeometry.cornerRadius; y: ShellGeometry.frameInset + 0.5
                         }
                         PathArc {
@@ -454,6 +538,14 @@ Variants {
                         }
                     }
 
+                }
+
+                DateTimeNotch {
+                    x: window.clockNotchLeft
+                    y: ShellGeometry.frameInset
+                    width: window.clockNotchWidth
+                    height: ShellGeometry.clockNotchDepth
+                    visible: window.clockNotchWidth > 0
                 }
 
                 HomePanel {
