@@ -53,6 +53,9 @@ Singleton {
     readonly property real liquidShadowBlur: 40
     readonly property real liquidShadowOffsetY: 12
     readonly property real liquidShadowAlpha: 0.28
+    readonly property real liquidLensingStrength: 18
+    readonly property real liquidEdgeWidth: 26
+    readonly property real liquidAberrationStrength: 4.5
 
     readonly property color panelFillTop: isFfxiv
         ? Qt.rgba(63 / 255, 62 / 255, 58 / 255, 0.98)

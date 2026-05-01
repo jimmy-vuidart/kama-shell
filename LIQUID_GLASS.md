@@ -102,21 +102,32 @@ Suffit pour ~80% du rendu Apple perçu.
 - Sur multi-écran: le crop doit suivre l'écran, pas afficher le wallpaper du
   premier moniteur partout.
 
-## Phase 2 — lensing et aberration chromatique
+## Phase 2 — lensing et aberration chromatique ✅
 
-À ne lancer **qu'après** validation de la phase 1.
+État: implémentée.
 
 7. **Shader fragment GLSL** dans `src/shaders/liquid_glass.frag`:
-   - Reçoit la texture du backdrop blurré et la SDF du rectangle arrondi.
-   - Calcule `edgeFactor = smoothstep(0, edgeWidth, distanceToEdge)`.
-   - Applique un offset `uv += normal * lensingStrength * edgeFactor`.
-   - Échantillonne R/G/B avec offsets légèrement différents
-     (`offset_r = 1.5 * normal`, `offset_g = 0`, `offset_b = -1.5 * normal`)
-     pour l'aberration chromatique.
+   - Reçoit la texture du backdrop blurré (binding `source` injecté par
+     `Item.layer.effect`) et la taille de la surface (`surfaceSize`,
+     `cornerRadius`).
+   - Calcule la SDF du rectangle arrondi, `mask = 1 - smoothstep(-1, 0, d)`.
+   - `edgeFactor = 1 - smoothstep(0, edgeWidth, distInside)`.
+   - Normale par gradient numérique de la SDF.
+   - Offset UV: `-normal * lensingStrength * edgeFactor / size` (compression
+     vers l'intérieur, comme une lentille).
+   - Aberration chromatique: échantillonne R/G/B avec
+     `±normal * aberrationStrength * edgeFactor`.
+   - Compilé avec `qsb --qt6` via `make shaders`.
 
 8. **`LiquidGlassSurface.qml`**
-   - Remplacer le voile uniforme par un `ShaderEffect` au-dessus du backdrop blurré.
-   - Exposer en property: `lensingStrength`, `edgeWidth`, `aberrationStrength`.
+   - Le `MultiEffect` qui floute le backdrop est dans un `Item` avec
+     `layer.enabled: true` et `layer.effect: ShaderEffect { ... }`. Le shader
+     reçoit la capture du blur en `source` et applique lensing + aberration.
+   - Le rectangle de masque arrondi a disparu: la rondeur est gérée
+     directement par la SDF du shader (anti-aliasing inclus).
+   - Tokens exposés via `ShellTheme`: `liquidLensingStrength`,
+     `liquidEdgeWidth`, `liquidAberrationStrength`. Ajustables sans
+     recompilation du shader.
 
 ### Vérification phase 2
 
@@ -125,6 +136,8 @@ Suffit pour ~80% du rendu Apple perçu.
 - Légère frange colorée sur le bord. Doit rester subtile, pas distrayante.
 - Performance: rester >= 60 FPS sur un panel statique. Si chute, baisser
   `blurMax` ou `sourceRect`.
+- Après modification du `.frag`, exécuter `make shaders` pour régénérer le
+  `.qsb` que charge `ShaderEffect.fragmentShader`.
 
 ## Phase 3 — interactivité optionnelle
 

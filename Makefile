@@ -1,6 +1,6 @@
 # Makefile — Kama-Shell automation
 
-.PHONY: run check fmt help install-session install-session-debug
+.PHONY: run check fmt shaders help install-session install-session-debug
 
 PREFIX ?= $(HOME)/.local
 SESSION_DIR ?= /usr/share/wayland-sessions
@@ -8,14 +8,19 @@ BIN_DIR ?= $(PREFIX)/bin
 SYSTEM_PREFIX ?= /usr
 SYSTEM_BIN_DIR ?= $(SYSTEM_PREFIX)/bin
 SUDO ?= sudo
+QSB ?= /usr/lib/qt6/bin/qsb
+
+SHADER_SRC := $(wildcard src/shaders/*.frag) $(wildcard src/shaders/*.vert)
+SHADER_OUT := $(SHADER_SRC:=.qsb)
 
 help:
 	@echo "Usage: make [target]"
 	@echo ""
 	@echo "Targets:"
-	@echo "  run    - Lancer le shell (via run.sh)"
-	@echo "  check  - Vérifier la syntaxe QML (requiert qmllint)"
-	@echo "  fmt    - Formater le code QML (requiert qmlformat)"
+	@echo "  run     - Lancer le shell (via run.sh)"
+	@echo "  check   - Vérifier la syntaxe QML (requiert qmllint)"
+	@echo "  fmt     - Formater le code QML (requiert qmlformat)"
+	@echo "  shaders - Compiler les shaders src/shaders/*.{frag,vert} en .qsb"
 	@echo "  install-session        - Installer la session Wayland standard dans $(SESSION_DIR)"
 	@echo "  install-session-debug  - Installer la session Wayland debug dans $(SESSION_DIR)"
 
@@ -27,6 +32,14 @@ check:
 
 fmt:
 	qmlformat -i src/shell.qml src/
+
+shaders: $(SHADER_OUT)
+
+%.frag.qsb: %.frag
+	$(QSB) --qt6 -o $@ $<
+
+%.vert.qsb: %.vert
+	$(QSB) --qt6 -b -o $@ $<
 
 install-session:
 	install -d "$(BIN_DIR)"

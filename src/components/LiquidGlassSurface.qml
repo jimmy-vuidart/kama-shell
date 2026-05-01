@@ -94,31 +94,32 @@ Item {
         visible: false
     }
 
-    Rectangle {
-        id: roundedMask
+    Item {
+        id: blurredHolder
 
         anchors.fill: parent
-        radius: root.radius
-        antialiasing: true
-        color: "white"
-        visible: false
-    }
+        layer.enabled: true
+        layer.smooth: true
+        layer.effect: ShaderEffect {
+            property real cornerRadius: root.radius
+            property size surfaceSize: Qt.size(Math.max(1, blurredHolder.width), Math.max(1, blurredHolder.height))
+            property real edgeWidth: ShellTheme.liquidEdgeWidth
+            property real lensingStrength: ShellTheme.liquidLensingStrength
+            property real aberrationStrength: ShellTheme.liquidAberrationStrength
 
-    MultiEffect {
-        anchors.fill: parent
-        source: backdropSource
-        autoPaddingEnabled: false
-        blurEnabled: true
-        blurMax: ShellTheme.liquidBlurMax
-        blur: ShellTheme.liquidBlurAmount
-        saturation: ShellTheme.liquidSaturation
-        brightness: ShellTheme.liquidBrightness
-        maskEnabled: true
-        maskSource: roundedMask
-        maskThresholdMin: 0.5
-        maskThresholdMax: 1.0
-        maskSpreadAtMin: 0.0
-        maskSpreadAtMax: 0.0
+            fragmentShader: Qt.resolvedUrl("../shaders/liquid_glass.frag.qsb")
+        }
+
+        MultiEffect {
+            anchors.fill: parent
+            source: backdropSource
+            autoPaddingEnabled: false
+            blurEnabled: true
+            blurMax: ShellTheme.liquidBlurMax
+            blur: ShellTheme.liquidBlurAmount
+            saturation: ShellTheme.liquidSaturation
+            brightness: ShellTheme.liquidBrightness
+        }
     }
 
     Rectangle {
