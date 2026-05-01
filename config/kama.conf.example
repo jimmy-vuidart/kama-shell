@@ -4,7 +4,7 @@
 #   ~/.config/kama-shell/kama.conf
 
 [appearance]
-# Supported themes: glassmorphism, ffxiv. Saving this file updates the theme live.
+# Supported themes: glassmorphism, ffxiv, liquid-glass. Saving this file updates the theme live.
 theme = glassmorphism
 # Path to the wallpaper image rendered by Kama Shell on the Wayland background layer.
 # Leave empty to fall back to a solid color. Supports a leading "~/" for the home directory.

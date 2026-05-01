@@ -8,9 +8,11 @@ Singleton {
 
     readonly property string glassmorphismTheme: ShellConfig.glassmorphismTheme
     readonly property string ffxivTheme: ShellConfig.ffxivTheme
+    readonly property string liquidGlassTheme: ShellConfig.liquidGlassTheme
     property string themeName: ShellConfig.visualTheme
     readonly property bool isGlassmorphism: themeName === glassmorphismTheme
     readonly property bool isFfxiv: themeName === ffxivTheme
+    readonly property bool isLiquidGlass: themeName === liquidGlassTheme
 
     readonly property var themeValues: ({
         glassmorphism: {
@@ -26,6 +28,13 @@ Singleton {
             glassBottomShadeAlpha: 0.72,
             glassBorderAlpha: 0.94,
             glassInnerHighlightAlpha: 0.72
+        },
+        "liquid-glass": {
+            glassTintAlpha: 0.06,
+            glassTopHighlightAlpha: 0.22,
+            glassBottomShadeAlpha: 0.08,
+            glassBorderAlpha: 0.25,
+            glassInnerHighlightAlpha: 0.55
         }
     })
 
@@ -34,6 +43,16 @@ Singleton {
     readonly property real glassBottomShadeAlpha: themeValue(themeName, "glassBottomShadeAlpha")
     readonly property real glassBorderAlpha: themeValue(themeName, "glassBorderAlpha")
     readonly property real glassInnerHighlightAlpha: themeValue(themeName, "glassInnerHighlightAlpha")
+
+    readonly property real liquidBlurAmount: 0.7
+    readonly property int liquidBlurMax: 64
+    readonly property real liquidSaturation: 0.22
+    readonly property real liquidBrightness: 0.06
+    readonly property real liquidEdgeHighlightAlpha: 0.55
+    readonly property real liquidEdgeShadowAlpha: 0.18
+    readonly property real liquidShadowBlur: 40
+    readonly property real liquidShadowOffsetY: 12
+    readonly property real liquidShadowAlpha: 0.28
 
     readonly property color panelFillTop: isFfxiv
         ? Qt.rgba(63 / 255, 62 / 255, 58 / 255, 0.98)
@@ -78,7 +97,7 @@ Singleton {
     readonly property real panelHighlightWidth: isFfxiv ? 1.35 : 1.2
     readonly property int surfaceBorderWidth: 2
     readonly property int controlBorderWidth: 2
-    readonly property int panelRadius: isFfxiv ? 7 : 24
+    readonly property int panelRadius: isFfxiv ? 7 : isLiquidGlass ? 32 : 24
     readonly property int panelPadding: isFfxiv ? 14 : 18
 
     readonly property color textPrimary: isFfxiv

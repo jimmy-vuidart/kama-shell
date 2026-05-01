@@ -13,8 +13,9 @@ Singleton {
         : ""
     readonly property string glassmorphismTheme: "glassmorphism"
     readonly property string ffxivTheme: "ffxiv"
+    readonly property string liquidGlassTheme: "liquid-glass"
     readonly property string defaultLauncherShortcut: "Meta"
-    readonly property var supportedVisualThemes: [glassmorphismTheme, ffxivTheme]
+    readonly property var supportedVisualThemes: [glassmorphismTheme, ffxivTheme, liquidGlassTheme]
     readonly property var defaultDockPinnedApps: [
         { desktopId: "zen.desktop", fallbackLabel: "Z" },
         { desktopId: "org.gnome.Console.desktop", fallbackLabel: "T" },
@@ -419,6 +420,10 @@ Singleton {
 
         if (normalized === "glass" || normalized === "current" || normalized === "default") {
             return root.glassmorphismTheme
+        }
+
+        if (normalized === "liquid") {
+            return root.liquidGlassTheme
         }
 
         for (let i = 0; i < root.supportedVisualThemes.length; i++) {

@@ -11,8 +11,6 @@ Singleton {
     property int selectedIndex: 0
     property string targetScreenName: ""
 
-    readonly property int resultLimit: 80
-
     function show(screenName) {
         root.targetScreenName = root.effectiveScreenName(screenName)
         root.query = ""
@@ -99,9 +97,8 @@ Singleton {
         })
 
         const result = []
-        const limit = Math.min(root.resultLimit, scored.length)
 
-        for (let i = 0; i < limit; i++) {
+        for (let i = 0; i < scored.length; i++) {
             result.push(scored[i].entry)
         }
 

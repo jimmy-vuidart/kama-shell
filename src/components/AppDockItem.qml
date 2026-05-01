@@ -2,7 +2,7 @@ import QtQuick
 
 import "../state"
 
-Rectangle {
+Item {
     id: root
 
     required property string label
@@ -15,51 +15,6 @@ Rectangle {
 
     width: 48
     height: 48
-    radius: ShellTheme.controlRadius
-    antialiasing: true
-    color: "transparent"
-    gradient: Gradient {
-        GradientStop {
-            position: 0.0
-            color: root.active ? ShellTheme.controlFillTopActive : ShellTheme.controlFillTop
-        }
-        GradientStop {
-            position: 1.0
-            color: root.active ? ShellTheme.controlFillBottomActive : ShellTheme.controlFillBottom
-        }
-    }
-    border.width: ShellTheme.controlBorderWidth
-    border.color: active ? ShellTheme.controlBorderActive : ShellTheme.controlBorder
-
-    Rectangle {
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-            leftMargin: Math.min(10, root.radius)
-            rightMargin: Math.min(10, root.radius)
-            topMargin: 1
-        }
-        height: 1
-        radius: 1
-        antialiasing: true
-        color: ShellTheme.controlTopHighlight
-    }
-
-    Rectangle {
-        anchors {
-            left: parent.left
-            right: parent.right
-            bottom: parent.bottom
-            leftMargin: Math.min(10, root.radius)
-            rightMargin: Math.min(10, root.radius)
-            bottomMargin: 1
-        }
-        height: 1
-        radius: 1
-        antialiasing: true
-        color: ShellTheme.controlBottomShadow
-    }
 
     Rectangle {
         anchors {
@@ -79,11 +34,11 @@ Rectangle {
         id: iconImage
 
         anchors.centerIn: parent
-        width: 22
-        height: 22
+        width: 42
+        height: 42
         source: root.iconSource
-        sourceSize.width: 22
-        sourceSize.height: 22
+        sourceSize.width: 42
+        sourceSize.height: 42
         fillMode: Image.PreserveAspectFit
         smooth: true
         asynchronous: true
