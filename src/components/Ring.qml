@@ -367,20 +367,21 @@ Variants {
                 color: "transparent"
                 surfaceFormat.opaque: false
 
-                // Liquid glass: wallpaper blurred and clipped to the ring frame shape.
-                // Uses MultiEffect.maskSource to restrict the blurred backdrop to only
-                // the ring frame pixels (outer band minus inner content cutout).
-                // InnerCutout renders white where the inner content is, so maskInverted:true
-                // makes the blurred wallpaper visible only in the ring frame area.
+                // Liquid glass backdrop for the ring frame.
+                // Same architecture as LiquidGlassSurface: wallpaper rendered internally,
+                // blurred via MultiEffect, then ring_glass.frag clips to the ring frame
+                // shape via an inner-boundary SDF and applies lensing at the inner edge.
                 Item {
                     anchors.fill: parent
                     visible: ShellTheme.isLiquidGlass
 
+                    // Source wallpaper scene: NOT marked visible:false so Qt renders it
+                    // into the ShaderEffectSource texture. hideSource:true on the
+                    // ShaderEffectSource prevents it from appearing directly in the scene.
                     Item {
                         id: ringWallpaperScene
                         width: window.width
                         height: window.height
-                        visible: false
 
                         Rectangle {
                             anchors.fill: parent
@@ -391,6 +392,7 @@ Variants {
                             source: WallpaperState.source
                             visible: WallpaperState.hasWallpaper
                             fillMode: Image.PreserveAspectCrop
+                            sourceSize: Qt.size(ringWallpaperScene.width, ringWallpaperScene.height)
                             smooth: true
                             mipmap: true
                             asynchronous: true
@@ -400,37 +402,46 @@ Variants {
 
                     ShaderEffectSource {
                         id: ringWallpaperSource
-                        sourceItem: ringWallpaperScene
-                        visible: false
-                        live: true
-                    }
-
-                    InnerCutout {
-                        id: ringMaskCutout
                         width: window.width
                         height: window.height
-                        visible: false
-                    }
-
-                    ShaderEffectSource {
-                        id: ringMaskSource
-                        sourceItem: ringMaskCutout
-                        visible: false
+                        sourceItem: ringWallpaperScene
+                        hideSource: true
                         live: true
+                        recursive: false
+                        mipmap: true
+                        visible: false
                     }
 
-                    MultiEffect {
+                    Item {
+                        id: ringBlurredHolder
                         anchors.fill: parent
-                        source: ringWallpaperSource
-                        blurEnabled: true
-                        blurMax: ShellTheme.liquidBlurMax
-                        blur: ShellTheme.liquidBlurAmount
-                        saturation: ShellTheme.liquidSaturation
-                        brightness: ShellTheme.liquidBrightness
-                        maskEnabled: true
-                        maskSource: ringMaskSource
-                        maskThresholdMin: 0.5
-                        maskInverted: true
+                        layer.enabled: true
+                        layer.smooth: true
+                        layer.effect: ShaderEffect {
+                            property real surfaceWidth: ringBlurredHolder.width
+                            property real surfaceHeight: ringBlurredHolder.height
+                            property real frameInset: ShellGeometry.frameInset
+                            property real cornerRadius: ShellGeometry.cornerRadius
+                            property real edgeWidth: ShellTheme.liquidEdgeWidth
+                            property real lensingStrength: ShellTheme.liquidLensingStrength
+                            property real aberrationStrength: ShellTheme.liquidAberrationStrength
+                            property real dockLeft: window.dockSlopeStartLeft
+                            property real dockRight: window.dockSlopeStartRight
+                            property real dockTopY: window.dockPeakY
+
+                            fragmentShader: Qt.resolvedUrl("../shaders/ring_glass.frag.qsb")
+                        }
+
+                        MultiEffect {
+                            anchors.fill: parent
+                            source: ringWallpaperSource
+                            autoPaddingEnabled: false
+                            blurEnabled: true
+                            blurMax: ShellTheme.liquidBlurMax
+                            blur: ShellTheme.liquidBlurAmount
+                            saturation: ShellTheme.liquidSaturation
+                            brightness: ShellTheme.liquidBrightness
+                        }
                     }
                 }
 
