@@ -18,6 +18,11 @@
 #   KAMA_XKB_VARIANT=,bepo
 #   KAMA_XKB_OPTIONS=grp:alt_shift_toggle
 #
+# Compositor:
+#   KAMA_COMPOSITOR=niri
+#   KAMA_COMPOSITOR=labwc
+#   KAMA_NIRI_CONFIG=~/.config/niri/config.kdl
+#
 # KAMA_XKB_LAYOUT=fr
 # KAMA_XKB_VARIANT=
 # KAMA_XKB_MODEL=

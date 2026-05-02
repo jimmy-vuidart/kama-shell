@@ -12,9 +12,10 @@ theme = glassmorphism
 # wallpaper = ~/Pictures/wallpaper.jpg
 
 [launcher]
-# KWin key sequence for the app launcher. Meta means the Super/Windows key alone.
+# Compositor key sequence for the app launcher.
+# Super+Space works on Niri and labwc. Super alone is only supported by labwc.
 # Changing this key requires restarting the Kama Shell session.
-shortcut = Meta
+shortcut = Super+Space
 
 [dock]
 # Comma-separated desktop entries. A fallback label can be provided after "|".

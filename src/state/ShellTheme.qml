@@ -30,11 +30,11 @@ Singleton {
             glassInnerHighlightAlpha: 0.72
         },
         "liquid-glass": {
-            glassTintAlpha: 0.06,
-            glassTopHighlightAlpha: 0.22,
-            glassBottomShadeAlpha: 0.08,
-            glassBorderAlpha: 0.25,
-            glassInnerHighlightAlpha: 0.55
+            glassTintAlpha: 0.03,
+            glassTopHighlightAlpha: 0.52,
+            glassBottomShadeAlpha: 0.10,
+            glassBorderAlpha: 0.40,
+            glassInnerHighlightAlpha: 0.70
         }
     })
 
@@ -44,18 +44,18 @@ Singleton {
     readonly property real glassBorderAlpha: themeValue(themeName, "glassBorderAlpha")
     readonly property real glassInnerHighlightAlpha: themeValue(themeName, "glassInnerHighlightAlpha")
 
-    readonly property real liquidBlurAmount: 0.7
-    readonly property int liquidBlurMax: 64
-    readonly property real liquidSaturation: 0.22
-    readonly property real liquidBrightness: 0.06
-    readonly property real liquidEdgeHighlightAlpha: 0.55
-    readonly property real liquidEdgeShadowAlpha: 0.18
-    readonly property real liquidShadowBlur: 40
-    readonly property real liquidShadowOffsetY: 12
-    readonly property real liquidShadowAlpha: 0.28
-    readonly property real liquidLensingStrength: 18
-    readonly property real liquidEdgeWidth: 26
-    readonly property real liquidAberrationStrength: 4.5
+    readonly property real liquidBlurAmount: 0.8
+    readonly property int liquidBlurMax: 80
+    readonly property real liquidSaturation: 0.04
+    readonly property real liquidBrightness: 0.14
+    readonly property real liquidEdgeHighlightAlpha: 0.72
+    readonly property real liquidEdgeShadowAlpha: 0.14
+    readonly property real liquidShadowBlur: 48
+    readonly property real liquidShadowOffsetY: 14
+    readonly property real liquidShadowAlpha: 0.36
+    readonly property real liquidLensingStrength: 22
+    readonly property real liquidEdgeWidth: 28
+    readonly property real liquidAberrationStrength: 2.5
 
     readonly property color panelFillTop: isFfxiv
         ? Qt.rgba(63 / 255, 62 / 255, 58 / 255, 0.98)

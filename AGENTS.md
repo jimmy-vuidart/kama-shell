@@ -59,13 +59,14 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/components/ThemedPanelSurface.qml`, `LiquidGlassSurface.qml`: surfaces de panel thémables, avec rendu backdrop blur pour `liquid-glass` (lensing + aberration chromatique via `src/shaders/liquid_glass.frag`)
 - `src/shaders/liquid_glass.frag` + `.qsb`: shader fragment Qt 6 appliqué au backdrop blurré pour produire le lensing de bord et l'aberration chromatique. Recompiler avec `make shaders` après modification
 - `src/components/AppLauncherOverlay.qml`, `AppLauncher.qml`, `AppLauncherItem.qml`: overlay launcher multi-écran, recherche et lignes de résultat
-- `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher depuis KWin ou `qs ipc`
+- `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher depuis un raccourci du compositeur ou `qs ipc`
 - `src/state/ShellConfig.qml`: configuration utilisateur lue depuis `~/.config/kama-shell/kama.conf`
 - `src/state/ShellTheme.qml`: thème visuel actif, actuellement `glassmorphism`, `ffxiv` et `liquid-glass`
 - `src/state/ShellGeometry.qml`: constantes de forme partagées entre ring, dock et panel maison
 - `src/state/DockState.qml`: état global du dock, apps pinned + running via `DesktopEntries` et `ToplevelManager`
 - `src/state/LauncherState.qml`: état global du launcher, filtrage de `DesktopEntries.applications`, sélection et lancement
-- `kwin/scripts/kama-shell-shortcuts/`: script KWin qui mappe le raccourci Super/Meta vers l'IPC Quickshell du launcher
+- `sessions/kama-shell-session`: lance une session Niri par défaut, avec option `KAMA_COMPOSITOR=labwc`, et génère les bindings compositor nécessaires au launcher
+- `scripts/toggle-launcher.sh`: helper portable qui appelle l'IPC Quickshell du launcher; sous Niri il cible l'écran actif via `niri msg --json focused-output`
 - `src/state/ClockState.qml`: état global de l'horloge basé sur `SystemClock`, sans processus externe
 - `src/state/WallpaperState.qml`: source du wallpaper rendu par Kama Shell, lue depuis `appearance.wallpaper`
 - `src/components/WallpaperWindow.qml`: `PanelWindow` multi-écran sur la couche `WlrLayer.Background` qui rend le wallpaper de référence pour les futurs effets de backdrop blur
@@ -81,7 +82,7 @@ Pour le launcher applicatif:
 
 - garder la séparation nette entre état (`LauncherState`) et rendu (`AppLauncher`, `AppLauncherItem`)
 - utiliser `DesktopEntries.applications` comme source native des applications affichées
-- déclencher l'ouverture globale via `IpcHandler` cible `kama-shell` et le script KWin `kama-shell-shortcuts`; ne pas utiliser `Quickshell.Hyprland.GlobalShortcut` pour la session KWin
+- déclencher l'ouverture globale via `IpcHandler` cible `kama-shell` et un raccourci natif du compositeur; ne pas utiliser de binding spécifique à un compositeur dans QML
 - définir le raccourci global dans `~/.config/kama-shell/kama.conf` via `launcher.shortcut`; si cette clé change, mettre à jour `config/kama.conf.example`
 
 ## Documentation
@@ -105,6 +106,8 @@ Pour le launcher applicatif:
 - Guide d'introduction Quickshell: https://quickshell.org/docs/master/guide/introduction/
 - Référence `Quickshell`: https://quickshell.org/docs/master/types/Quickshell/Quickshell/
 - Référence `PanelWindow`: https://quickshell.org/docs/master/types/Quickshell/PanelWindow/
+- Documentation Niri IPC/config: https://niri-wm.github.io/niri/IPC.html
+- Documentation labwc intégration: https://labwc.github.io/integration.html
 
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands

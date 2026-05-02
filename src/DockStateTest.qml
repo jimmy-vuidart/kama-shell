@@ -53,9 +53,6 @@ ShellRoot {
 
         onTriggered: {
             console.log("dock-shell-dir", Quickshell.shellDir)
-            console.log("dock-krunner-helper", DockState.krunnerLookupHelper)
-            console.log("dock-krunner-fallback", DockState.krunnerFallbackEnabled)
-            console.log("dock-krunner-count", DockState.krunnerWindows.length)
             console.log("dock-pinned-count", DockState.pinnedApps.length)
             console.log("dock-toplevel-count", DockState.currentToplevels().length)
             console.log("dock-item-count", DockState.items.length)

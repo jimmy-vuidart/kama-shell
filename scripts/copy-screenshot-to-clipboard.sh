@@ -2,9 +2,18 @@
 
 set -euo pipefail
 
-if ! command -v spectacle >/dev/null 2>&1; then
-    echo "spectacle introuvable" >&2
+if [[ -n "${NIRI_SOCKET:-}" ]] && command -v niri >/dev/null 2>&1; then
+    exec niri msg action screenshot-screen --write-to-disk=false
+fi
+
+if ! command -v grim >/dev/null 2>&1; then
+    echo "grim introuvable" >&2
     exit 1
 fi
 
-exec spectacle --background --fullscreen --copy-image --nonotify
+if ! command -v wl-copy >/dev/null 2>&1; then
+    echo "wl-copy introuvable" >&2
+    exit 1
+fi
+
+grim - | wl-copy

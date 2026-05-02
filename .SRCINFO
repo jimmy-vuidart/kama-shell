@@ -1,11 +1,16 @@
 pkgbase = kama-shell
-	pkgdesc = Minimal Quickshell session running on KWin Wayland
+	pkgdesc = Minimal Quickshell session running on Niri Wayland
 	pkgver = 0.1.0
 	pkgrel = 1
 	arch = any
 	license = custom
-	depends = kwin
-	depends = noctalia-qs
-	depends = plasma-workspace
+	depends = niri>=25.11
+	depends = quickshell-git
+	optdepends = labwc: optional stacking compositor session via KAMA_COMPOSITOR=labwc
+	optdepends = grim: fullscreen screenshot helper under labwc
+	optdepends = wl-clipboard: clipboard target for the labwc screenshot helper
+	optdepends = xwayland-satellite: X11 application support under Niri
+	optdepends = xdg-desktop-portal-gnome: screencast portal support under Niri
+	optdepends = xdg-desktop-portal-gtk: fallback desktop portal support
 
 pkgname = kama-shell

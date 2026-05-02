@@ -20,7 +20,7 @@ Item {
         anchors {
             horizontalCenter: parent.horizontalCenter
             bottom: parent.bottom
-            bottomMargin: 4
+            bottomMargin: -4
         }
         width: root.running ? (root.active ? 18 : 10) : 0
         height: 3

@@ -28,7 +28,7 @@
 | Style tokens | QML Singletons (`pragma Singleton`) | typé via `readonly property` |
 | Config | TOML dans `~/.config/kama-shell/config.toml` | parser TOML embarqué (ou JSON en fallback) |
 | Secrets | `secret-tool` CLI via `Process` | HA token et autres, pas besoin de lib Qt supplémentaire |
-| DBus | `Quickshell.Io` + `DBusObject` | Activities KWin, media player, etc. |
+| DBus | `Quickshell.Io` + `DBusObject` | Media player, portals et services desktop génériques |
 | Subprocess | `Quickshell.Io.Process` | wpctl, brightnessctl, nmcli, upower (async) |
 | Fichiers | `Quickshell.Io.FileView` | `/proc/stat`, `/sys/class/...` |
 | WebSocket | `QtWebSockets` | Home Assistant |
@@ -38,9 +38,9 @@
 ## 2. Non-goals (explicites)
 
 - **Pas de HDR.** Décision produit : dropped.
-- **Pas de support Hyprland.** Cible = KWin / Plasma 6 uniquement.
-- **Pas de bindings `wlr-foreign-toplevel` custom.** En cas de besoin (task dock hybride), on passe par un KWin script qui publie la liste des toplevels sur DBus.
-- **Pas de support Plasma < 6.**
+- **Pas de support Hyprland.** Cible = Niri par défaut, labwc en option de session légère.
+- **Pas de dépendance à un compositor spécifique dans QML.** Le shell consomme les protocoles Wayland exposés par Quickshell; les raccourcis globaux restent dans la configuration du compositor.
+- **Pas de dépendance à un environnement desktop complet.** Les services périphériques (portals, polkit, idle, lock) restent des composants explicites.
 - **Pas de TypeScript.** JS QML suffit pour un shell de cette taille.
 
 ---
@@ -63,7 +63,7 @@ La construction suit trois jalons mesurables :
 
 ### Jalon B — Shell intégré (fin Phase 11)
 
-- [ ] Universes = KDE Activities via DBus, changement d'Universe modifie la teinte du pulse
+- [ ] Universes = workspaces ou univers logiques via IPC compositor, changement d'Universe modifie la teinte du pulse
 - [ ] Settings panel overlay avec matrice widget × moniteur, persistance TOML
 - [ ] HA token dans gnome-keyring
 - [ ] Widget Home Assistant connecté en WebSocket, toggle fonctionnel sur une entité test
@@ -435,21 +435,20 @@ QtObject {
 
 ---
 
-### Phase 8 — KDE Activities DBus = Universes (≈ 4 h)
+### Phase 8 — Universes via IPC compositor (≈ 4 h)
 
-**Objectif.** Mapper les KDE Activities aux Universes. Universe Selector sidebar change l'Activity active via DBus.
+**Objectif.** Mapper les workspaces ou univers logiques du compositor aux Universes. Universe Selector sidebar change l'univers actif via le mécanisme IPC disponible.
 
 **Tâches.**
-1. `src/services/Activities.qml` :
-   - `DBusObject { service: "org.kde.ActivityManager"; path: "/ActivityManager/Activities"; interface: "org.kde.ActivityManager.Activities" }`
-   - Méthodes : `ListActivities()`, `CurrentActivity()`, `SetCurrentActivity(id)`
-   - Signaux : `CurrentActivityChanged`, `ActivityAdded`, `ActivityRemoved`
+1. `src/services/Universes.qml` :
+   - source Niri via `niri msg --json event-stream` si `KAMA_COMPOSITOR=niri`
+   - fallback local si le compositor ne publie pas de workspaces exploitables
 2. Expose `model` (ListModel `{id, name, icon}`), `currentId`, `setCurrent(id)`.
-3. `src/components/UniverseSelector.qml` : ListView bindée à `Activities.model`, item actif = `currentId`.
-4. Chaque Universe a une couleur d'accent dans `Config.universes[id].accent` (défauts : violet, blue, pink). `PulseBus.tint` bindé sur `Config.universes[Activities.currentId].accent`.
-5. Masquer les virtual desktops KWin via config utilisateur (hors scope shell, à documenter).
+3. `src/components/UniverseSelector.qml` : ListView bindée à `Universes.model`, item actif = `currentId`.
+4. Chaque Universe a une couleur d'accent dans `Config.universes[id].accent` (défauts : violet, blue, pink). `PulseBus.tint` bindé sur `Config.universes[Universes.currentId].accent`.
+5. Documenter les limites labwc si l'IPC de workspace est insuffisant.
 
-**DoD.** Changer d'Activity dans KWin change la couleur du pulse en temps réel. Changer via Universe Selector déclenche `SetCurrentActivity` et KWin suit.
+**DoD.** Changer d'univers change la couleur du pulse en temps réel. Sous Niri, le changement suit l'état publié par l'IPC du compositor.
 
 ---
 
@@ -551,12 +550,12 @@ accent = "#ff4da6"
 
 **Objectif.** Pinned | separator | running-not-pinned.
 
-**Stratégie toplevels.** `wlr-foreign-toplevel-management` n'a pas de binding Quickshell mature. On déploie un KWin script externe qui publie la liste des fenêtres sur DBus (`/com/kamashell/Tasks`). Quickshell consomme via `DBusObject`.
+**Stratégie toplevels.** Utiliser `Quickshell.Wayland.ToplevelManager`, qui expose les fenêtres via `zwlr-foreign-toplevel-management-v1`. Ne pas ajouter de fallback spécifique à un compositor.
 
 **Tâches.**
-1. Écrire un `KWin script` (JS) qui écoute `workspace.clientList` + `workspace.clientAdded` / `workspace.clientRemoved` et publie la liste (id, wm_class, icon, activity) sur DBus toutes les N ms ou sur event.
-2. Installer le script dans `~/.local/share/kwin/scripts/kama-tasks/` + activer via `kwriteconfig6 --file kwinrc --group Plugins --key kama-tasksEnabled true`.
-3. `src/services/Tasks.qml` : `DBusObject` consume la liste, expose `running`, `byClass`.
+1. Consommer `ToplevelManager.toplevels` depuis `DockState`.
+2. Résoudre les métadonnées via `DesktopEntries`.
+3. Garder `activate()` sur les toplevels comme action de focus.
 4. Pinned list dans `Config.widgets.dock.pinned = ["firefox", "code", "foot"]`.
 5. Intersection pinned + running → indicator point.
 
@@ -686,7 +685,7 @@ glass-shell-qs/
 | Risque | Impact | Mitigation |
 |---|---|---|
 | Pulse cross-monitor non synchrone (frame callbacks Wayland par surface) | Tearing visuel du glow entre écrans | Fallback : glow isolé par moniteur, pas d'effet bord-à-bord. À évaluer en Phase 3 avant Phase 7 |
-| `wlr-foreign-toplevel` absent côté Quickshell | Task dock bloqué | KWin script externe DBus publisher (Phase 13) |
+| `wlr-foreign-toplevel` absent côté compositor | Task dock limité aux apps pinned | Garder le dock utilisable sans running state; choisir Niri/labwc comme compositors cibles car ils exposent les protocoles wlroots attendus |
 | Parser TOML JS introuvable | Config delay | Fallback JSON, non bloquant |
 | NVIDIA + Qt Wayland hiccups (tearing, VRR) | Glitches visuels | `QT_QPA_PLATFORM=wayland`, `QT_WAYLAND_DISABLE_WINDOWDECORATION=1` ; surveiller les logs |
 | Quickshell breaking changes (projet en beta) | Régression sur un upgrade | Pinner la version via commit précis si stabilité nécessaire |
@@ -704,4 +703,4 @@ glass-shell-qs/
 
 ## 9. Prochaine action concrète
 
-**Lancer la Phase 0.** Installer `quickshell-git`, écrire le `shell.qml` de ~15 lignes, vérifier que ça tourne sur la session KWin.
+**Lancer la Phase 0.** Installer `quickshell-git` et `niri`, écrire le `shell.qml` de ~15 lignes, vérifier que ça tourne sur la session Kama Shell.

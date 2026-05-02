@@ -10,10 +10,6 @@ if [[ ! -x "$SESSION_BIN" ]]; then
     exit 1
 fi
 
-if [[ -x /usr/lib/plasma-dbus-run-session-if-needed ]]; then
-    exec /usr/lib/plasma-dbus-run-session-if-needed "$SESSION_BIN" "$@"
-fi
-
 if [[ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]] && command -v dbus-run-session >/dev/null 2>&1; then
     exec dbus-run-session "$SESSION_BIN" "$@"
 fi

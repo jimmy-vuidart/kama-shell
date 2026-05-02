@@ -5,7 +5,6 @@ set -euo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 APP_DIR="${KAMA_SHELL_APP_DIR:-__KAMA_SHELL_APP_DIR__}"
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 SESSION_CONFIG="${KAMA_SHELL_SESSION_CONFIG:-$CONFIG_HOME/kama-shell/session.conf}"
 
 if [[ "$APP_DIR" == "__KAMA_SHELL_APP_DIR__" ]]; then
@@ -14,13 +13,11 @@ fi
 
 RUNNER="$APP_DIR/run.sh"
 SHELL_ENTRY="$APP_DIR/src/shell.qml"
-KWIN_SCRIPTS_DIR="$APP_DIR/kwin/scripts"
-KWIN_SCREENSHOT_SCRIPT_ID="kama-shell-screenshot"
-KWIN_SHORTCUTS_SCRIPT_ID="kama-shell-shortcuts"
 SCREENSHOT_HELPER="$APP_DIR/scripts/copy-screenshot-to-clipboard.sh"
+LAUNCHER_HELPER="$APP_DIR/scripts/toggle-launcher.sh"
 
 if [[ ! -x "$RUNNER" ]]; then
-    echo "Runner introuvable ou non exécutable: $RUNNER" >&2
+    echo "Runner introuvable ou non executable: $RUNNER" >&2
     exit 1
 fi
 
@@ -31,37 +28,7 @@ if [[ -f "$SESSION_CONFIG" ]]; then
 fi
 
 KAMA_CONFIG="${KAMA_CONFIG:-$CONFIG_HOME/kama-shell/kama.conf}"
-
-apply_keyboard_config() {
-    if ! command -v kwriteconfig6 >/dev/null 2>&1; then
-        return
-    fi
-
-    if [[ -z "${KAMA_XKB_LAYOUT:-}" ]] \
-        && [[ -z "${KAMA_XKB_MODEL:-}" ]] \
-        && [[ -z "${KAMA_XKB_VARIANT:-}" ]] \
-        && [[ -z "${KAMA_XKB_OPTIONS:-}" ]]; then
-        return
-    fi
-
-    kwriteconfig6 --file kxkbrc --group Layout --key Use true
-
-    if [[ -n "${KAMA_XKB_LAYOUT:-}" ]]; then
-        kwriteconfig6 --file kxkbrc --group Layout --key LayoutList "$KAMA_XKB_LAYOUT"
-    fi
-
-    if [[ -n "${KAMA_XKB_MODEL:-}" ]]; then
-        kwriteconfig6 --file kxkbrc --group Layout --key Model "$KAMA_XKB_MODEL"
-    fi
-
-    if [[ -n "${KAMA_XKB_VARIANT:-}" ]]; then
-        kwriteconfig6 --file kxkbrc --group Layout --key VariantList "$KAMA_XKB_VARIANT"
-    fi
-
-    if [[ -n "${KAMA_XKB_OPTIONS:-}" ]]; then
-        kwriteconfig6 --file kxkbrc --group Layout --key Options "$KAMA_XKB_OPTIONS"
-    fi
-}
+KAMA_COMPOSITOR="${KAMA_COMPOSITOR:-niri}"
 
 kama_config_value() {
     local section="$1"
@@ -83,11 +50,9 @@ kama_config_value() {
             }
 
             function unquote(value) {
+                single_quote = sprintf("%c", 39)
                 value = trim(value)
-                if (
-                    (substr(value, 1, 1) == "\"" && substr(value, length(value), 1) == "\"")
-                    || (substr(value, 1, 1) == "'"'"'" && substr(value, length(value), 1) == "'"'"'")
-                ) {
+                if (((substr(value, 1, 1) == "\"" && substr(value, length(value), 1) == "\"") || (substr(value, 1, 1) == single_quote && substr(value, length(value), 1) == single_quote))) {
                     return substr(value, 2, length(value) - 2)
                 }
 
@@ -114,10 +79,7 @@ kama_config_value() {
                 current_key = trim(substr(line, 1, separator - 1))
                 current_value = trim(substr(line, separator + 1))
 
-                if (
-                    (current_section == wanted_section && current_key == wanted_key)
-                    || current_key == wanted_section "." wanted_key
-                ) {
+                if (((current_section == wanted_section && current_key == wanted_key) || current_key == wanted_section "." wanted_key)) {
                     print unquote(current_value)
                     exit
                 }
@@ -138,105 +100,291 @@ normalize_launcher_shortcut() {
     shortcut=$(printf '%s' "$1" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
 
     case "${shortcut,,}" in
-        "" | super | win | windows)
-            printf '%s\n' "Meta"
+        "")
+            printf '%s\n' "Super+Space"
+            ;;
+        meta | super | win | windows)
+            printf '%s\n' "Super"
             ;;
         *)
-            printf '%s\n' "$shortcut"
+            printf '%s\n' "$shortcut" | sed -E 's/(^|\+)Meta($|\+)/\1Super\2/g; s/(^|\+)Win($|\+)/\1Super\2/g'
             ;;
     esac
 }
 
-install_kwin_package() {
-    local script_id="$1"
-    local script_source="$KWIN_SCRIPTS_DIR/$script_id"
-    local script_target="$DATA_HOME/kwin/scripts/$script_id"
+niri_launcher_shortcut() {
+    local shortcut="$1"
 
-    if [[ ! -d "$script_source" ]]; then
+    if [[ "$shortcut" == "Super" ]]; then
+        printf '%s\n' "Super+Space"
         return
     fi
 
-    install -d "$script_target"
-    cp -r "$script_source"/. "$script_target"/
+    printf '%s\n' "$shortcut"
+}
 
-    if command -v kwriteconfig6 >/dev/null 2>&1; then
-        kwriteconfig6 --file kwinrc --group Plugins --key "${script_id}Enabled" true
+labwc_launcher_shortcut() {
+    local shortcut="$1"
+    local result=""
+    local part
+
+    if [[ "$shortcut" == "Super" ]]; then
+        printf '%s\n' "Super_L"
+        return
+    fi
+
+    IFS='+' read -ra parts <<<"$shortcut"
+    for part in "${parts[@]}"; do
+        case "${part,,}" in
+            super | win | windows | meta)
+                part="W"
+                ;;
+            ctrl | control)
+                part="C"
+                ;;
+            alt)
+                part="A"
+                ;;
+            shift)
+                part="S"
+                ;;
+        esac
+
+        if [[ -n "$result" ]]; then
+            result+="-"
+        fi
+
+        result+="$part"
+    done
+
+    printf '%s\n' "${result:-W-Space}"
+}
+
+kdl_string() {
+    printf '"%s"' "$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+}
+
+shell_word() {
+    printf '%q' "$1"
+}
+
+expand_path() {
+    case "$1" in
+        "~/"*)
+            printf '%s/%s\n' "$HOME" "${1#"~/"}"
+            ;;
+        *)
+            printf '%s\n' "$1"
+            ;;
+    esac
+}
+
+xml_attr() {
+    printf '%s' "$1" \
+        | sed 's/&/\&amp;/g; s/"/\&quot;/g; s/</\&lt;/g; s/>/\&gt;/g'
+}
+
+runtime_dir() {
+    local base="${XDG_RUNTIME_DIR:-/tmp}"
+    local dir="$base/kama-shell"
+
+    install -d "$dir"
+    printf '%s\n' "$dir"
+}
+
+niri_base_config() {
+    local config_path
+
+    if [[ -n "${KAMA_NIRI_CONFIG:-}" ]]; then
+        config_path=$(expand_path "$KAMA_NIRI_CONFIG")
+    fi
+
+    if [[ -n "${config_path:-}" && -f "$config_path" ]]; then
+        printf '%s\n' "$config_path"
+        return
+    fi
+
+    config_path=""
+    if [[ -n "${NIRI_CONFIG:-}" ]]; then
+        config_path=$(expand_path "$NIRI_CONFIG")
+    fi
+
+    if [[ -n "${config_path:-}" && -f "$config_path" ]]; then
+        printf '%s\n' "$config_path"
+        return
+    fi
+
+    if [[ -f "$CONFIG_HOME/niri/config.kdl" ]]; then
+        printf '%s\n' "$CONFIG_HOME/niri/config.kdl"
+        return
+    fi
+
+    if [[ -f /etc/niri/config.kdl ]]; then
+        printf '%s\n' /etc/niri/config.kdl
+        return
+    fi
+
+    if [[ -f /usr/share/doc/niri/default-config.kdl ]]; then
+        printf '%s\n' /usr/share/doc/niri/default-config.kdl
     fi
 }
 
-install_kwin_script() {
-    install_kwin_package "$KWIN_SCREENSHOT_SCRIPT_ID"
-    install_kwin_package "$KWIN_SHORTCUTS_SCRIPT_ID"
+write_niri_config() {
+    local output_path="$1"
+    local base_config
+    local filtered_base_config
+    local shortcut
 
-    if ! command -v kwriteconfig6 >/dev/null 2>&1; then
-        return
+    base_config=$(niri_base_config)
+    shortcut=$(niri_launcher_shortcut "$(normalize_launcher_shortcut "$(kama_config_value launcher shortcut Super+Space)")")
+
+    if [[ "$base_config" == "/usr/share/doc/niri/default-config.kdl" ]]; then
+        filtered_base_config="$output_path.base.kdl"
+        sed '/^[[:space:]]*spawn-at-startup[[:space:]]*"waybar"[[:space:]]*$/d' "$base_config" >"$filtered_base_config"
+        base_config="$filtered_base_config"
     fi
 
-    if [[ -x "$SCREENSHOT_HELPER" ]]; then
-        kwriteconfig6 --file kwinrc --group "Script-${KWIN_SCREENSHOT_SCRIPT_ID}" --key helperPath "$SCREENSHOT_HELPER"
-    fi
+    {
+        printf '%s\n' "// Generated by Kama Shell. Edit ~/.config/kama-shell/session.conf to change session options."
 
-    local qs_path="${KAMA_QS_PATH:-}"
-    if [[ -z "$qs_path" ]]; then
-        qs_path=$(command -v qs || true)
-    fi
-    qs_path="${qs_path:-/usr/bin/qs}"
+        if [[ -n "$base_config" && "$base_config" != "$output_path" ]]; then
+            printf 'include %s\n\n' "$(kdl_string "$base_config")"
+        fi
 
-    local launcher_shortcut
-    launcher_shortcut=$(normalize_launcher_shortcut "$(kama_config_value launcher shortcut Meta)")
+        printf 'spawn-at-startup %s\n\n' "$(kdl_string "$RUNNER")"
 
-    kwriteconfig6 --file kwinrc --group "Script-${KWIN_SHORTCUTS_SCRIPT_ID}" --key qsPath "$qs_path"
-    kwriteconfig6 --file kwinrc --group "Script-${KWIN_SHORTCUTS_SCRIPT_ID}" --key shellEntry "$SHELL_ENTRY"
-    kwriteconfig6 --file kwinrc --group "Script-${KWIN_SHORTCUTS_SCRIPT_ID}" --key launcherShortcut "$launcher_shortcut"
+        if [[ -n "${KAMA_XKB_LAYOUT:-}${KAMA_XKB_MODEL:-}${KAMA_XKB_VARIANT:-}${KAMA_XKB_OPTIONS:-}" ]]; then
+            printf '%s\n' "input {"
+            printf '%s\n' "    keyboard {"
+            printf '%s\n' "        xkb {"
+            if [[ -n "${KAMA_XKB_LAYOUT:-}" ]]; then
+                printf '            layout %s\n' "$(kdl_string "$KAMA_XKB_LAYOUT")"
+            fi
+            if [[ -n "${KAMA_XKB_MODEL:-}" ]]; then
+                printf '            model %s\n' "$(kdl_string "$KAMA_XKB_MODEL")"
+            fi
+            if [[ -n "${KAMA_XKB_VARIANT:-}" ]]; then
+                printf '            variant %s\n' "$(kdl_string "$KAMA_XKB_VARIANT")"
+            fi
+            if [[ -n "${KAMA_XKB_OPTIONS:-}" ]]; then
+                printf '            options %s\n' "$(kdl_string "$KAMA_XKB_OPTIONS")"
+            fi
+            printf '%s\n' "        }"
+            printf '%s\n' "    }"
+            printf '%s\n\n' "}"
+        fi
 
-    if [[ "$launcher_shortcut" == "Meta" ]]; then
-        kwriteconfig6 \
-            --file kwinrc \
-            --group ModifierOnlyShortcuts \
-            --key Meta \
-            "org.kde.kglobalaccel,/component/kwin,org.kde.kglobalaccel.Component,invokeShortcut,KamaShellToggleLauncher"
-    else
-        kwriteconfig6 --file kwinrc --group ModifierOnlyShortcuts --key Meta ""
-    fi
+        printf '%s\n' "binds {"
+        printf '    %s { spawn %s; }\n' "$shortcut" "$(kdl_string "$LAUNCHER_HELPER")"
+        printf '%s\n' "    Print { screenshot-screen write-to-disk=false; }"
+        printf '%s\n' "}"
+    } >"$output_path"
 }
 
-apply_kwin_effect_config() {
-    if ! command -v kwriteconfig6 >/dev/null 2>&1; then
-        return
+write_labwc_config() {
+    local dir="$1"
+    local shortcut
+    local launcher_action
+    local screenshot_action
+
+    shortcut=$(labwc_launcher_shortcut "$(normalize_launcher_shortcut "$(kama_config_value launcher shortcut Super+Space)")")
+    launcher_action=$(xml_attr "$LAUNCHER_HELPER")
+    screenshot_action=$(xml_attr "$SCREENSHOT_HELPER")
+
+    install -d "$dir"
+
+    {
+        printf '%s\n' "XDG_CURRENT_DESKTOP=KamaShell"
+        printf '%s\n' "XDG_SESSION_DESKTOP=kama-shell"
+        printf '%s\n' "DESKTOP_SESSION=kama-shell"
+        printf '%s\n' "KAMA_COMPOSITOR=labwc"
+        printf '%s\n' "QT_WAYLAND_SHELL_INTEGRATION=layer-shell"
+        [[ -n "${KAMA_XKB_LAYOUT:-}" ]] && printf 'XKB_DEFAULT_LAYOUT=%s\n' "$KAMA_XKB_LAYOUT"
+        [[ -n "${KAMA_XKB_MODEL:-}" ]] && printf 'XKB_DEFAULT_MODEL=%s\n' "$KAMA_XKB_MODEL"
+        [[ -n "${KAMA_XKB_VARIANT:-}" ]] && printf 'XKB_DEFAULT_VARIANT=%s\n' "$KAMA_XKB_VARIANT"
+        [[ -n "${KAMA_XKB_OPTIONS:-}" ]] && printf 'XKB_DEFAULT_OPTIONS=%s\n' "$KAMA_XKB_OPTIONS"
+    } >"$dir/environment"
+
+    {
+        printf '%s\n' "#!/bin/sh"
+        printf '%s "$@" &\n' "$(shell_word "$RUNNER")"
+    } >"$dir/autostart"
+    chmod 755 "$dir/autostart"
+
+    {
+        printf '%s\n' '<?xml version="1.0"?>'
+        printf '%s\n' '<labwc_config>'
+        printf '%s\n' '  <keyboard>'
+        printf '%s\n' '    <default/>'
+        if [[ "$shortcut" == "Super_L" ]]; then
+            printf '%s\n' '    <keybind key="Super_L" onRelease="yes">'
+        else
+            printf '    <keybind key="%s">\n' "$(xml_attr "$shortcut")"
+        fi
+        printf '      <action name="Execute" command="%s"/>\n' "$launcher_action"
+        printf '%s\n' '    </keybind>'
+        printf '%s\n' '    <keybind key="Print">'
+        printf '      <action name="Execute" command="%s"/>\n' "$screenshot_action"
+        printf '%s\n' '    </keybind>'
+        printf '%s\n' '  </keyboard>'
+        printf '%s\n' '</labwc_config>'
+    } >"$dir/rc.xml"
+}
+
+run_niri_session() {
+    local dir
+    local config_path
+
+    dir=$(runtime_dir)
+    config_path="$dir/niri.kdl"
+    write_niri_config "$config_path"
+
+    export KAMA_COMPOSITOR=niri
+    export NIRI_CONFIG="$config_path"
+
+    if command -v niri-session >/dev/null 2>&1; then
+        exec niri-session "$@"
     fi
 
-    if [[ "${KAMA_KWIN_BLUR:-1}" != "1" ]]; then
-        return
+    if command -v niri >/dev/null 2>&1; then
+        exec niri --session "$@"
     fi
 
-    kwriteconfig6 --file kwinrc --group Plugins --key blurEnabled true
-    kwriteconfig6 --file kwinrc --group Plugins --key backgroundcontrastEnabled true
+    echo "Niri introuvable. Installez niri ou definissez KAMA_COMPOSITOR=labwc." >&2
+    exit 1
+}
+
+run_labwc_session() {
+    local dir
+
+    if ! command -v labwc >/dev/null 2>&1; then
+        echo "labwc introuvable. Installez labwc ou definissez KAMA_COMPOSITOR=niri." >&2
+        exit 1
+    fi
+
+    dir="$(runtime_dir)/labwc"
+    write_labwc_config "$dir"
+
+    export KAMA_COMPOSITOR=labwc
+    exec labwc -C "$dir" "$@"
 }
 
 export XDG_CURRENT_DESKTOP=KamaShell
 export XDG_SESSION_DESKTOP=kama-shell
 export DESKTOP_SESSION=kama-shell
-export KAMA_SESSION=1
+export KAMA_DEV="${KAMA_DEV:-1}"
 export QT_WAYLAND_SHELL_INTEGRATION=layer-shell
+export KAMA_SHELL_ENTRY="$SHELL_ENTRY"
 
-apply_keyboard_config
-install_kwin_script
-apply_kwin_effect_config
-
-KWIN_ARGS=(
-    --xwayland
-    --no-lockscreen
-    --desktopfile
-    kama-shell
-    --exit-with-session
-    "$RUNNER"
-)
-
-if [[ -n "${KAMA_WAYLAND_SOCKET:-}" ]]; then
-    KWIN_ARGS+=(
-        --socket
-        "$KAMA_WAYLAND_SOCKET"
-    )
-fi
-
-exec kwin_wayland "${KWIN_ARGS[@]}" "$@"
+case "${KAMA_COMPOSITOR,,}" in
+    niri)
+        run_niri_session "$@"
+        ;;
+    labwc)
+        run_labwc_session "$@"
+        ;;
+    *)
+        echo "Compositeur non supporte: $KAMA_COMPOSITOR (attendu: niri ou labwc)" >&2
+        exit 1
+        ;;
+esac

@@ -101,8 +101,9 @@ Item {
         layer.enabled: true
         layer.smooth: true
         layer.effect: ShaderEffect {
+            property real surfaceWidth: Math.max(1, blurredHolder.width)
+            property real surfaceHeight: Math.max(1, blurredHolder.height)
             property real cornerRadius: root.radius
-            property size surfaceSize: Qt.size(Math.max(1, blurredHolder.width), Math.max(1, blurredHolder.height))
             property real edgeWidth: ShellTheme.liquidEdgeWidth
             property real lensingStrength: ShellTheme.liquidLensingStrength
             property real aberrationStrength: ShellTheme.liquidAberrationStrength

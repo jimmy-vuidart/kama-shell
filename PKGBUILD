@@ -1,14 +1,21 @@
 pkgname=kama-shell
 pkgver=0.1.0
 pkgrel=1
-pkgdesc="Minimal Quickshell session running on KWin Wayland"
+pkgdesc="Minimal Quickshell session running on Niri Wayland"
 arch=('any')
 url=""
 license=('custom')
 depends=(
-    'kwin'
+    'niri>=25.11'
     'quickshell-git'
-    'plasma-workspace'
+)
+optdepends=(
+    'labwc: optional stacking compositor session via KAMA_COMPOSITOR=labwc'
+    'grim: fullscreen screenshot helper under labwc'
+    'wl-clipboard: clipboard target for the labwc screenshot helper'
+    'xwayland-satellite: X11 application support under Niri'
+    'xdg-desktop-portal-gnome: screencast portal support under Niri'
+    'xdg-desktop-portal-gtk: fallback desktop portal support'
 )
 makedepends=()
 source=()
@@ -27,7 +34,6 @@ package() {
     install -m 644 "$repo_dir/qmldir" "$appdir/qmldir"
     cp -r "$repo_dir/src" "$appdir/src"
     cp -r "$repo_dir/scripts" "$appdir/scripts"
-    cp -r "$repo_dir/kwin" "$appdir/kwin"
 
     install -m 755 "$repo_dir/sessions/start-kama-shell-session" \
         "$bindir/start-kama-shell-session"
