@@ -425,9 +425,21 @@ Variants {
                             property real edgeWidth: ShellTheme.liquidEdgeWidth
                             property real lensingStrength: ShellTheme.liquidLensingStrength
                             property real aberrationStrength: ShellTheme.liquidAberrationStrength
+                            property real clockLeft: window.clockNotchLeft
+                            property real clockRight: window.clockNotchRight
+                            property real clockBottom: window.clockNotchBottom
+                            property real clockRadius: window.clockNotchRadius
                             property real dockLeft: window.dockSlopeStartLeft
                             property real dockRight: window.dockSlopeStartRight
                             property real dockTopY: window.dockPeakY
+                            property real dockTopFlatLeft: window.dockTopFlatLeft
+                            property real dockTopFlatRight: window.dockTopFlatRight
+                            property real dockCurveRun: window.dockCurveRun
+                            property real homeLeft: window.homePanelShapeLeft
+                            property real homeRight: window.homePanelShapeRight
+                            property real homeTop: window.homePanelShapeTop
+                            property real homeBottom: window.homePanelShapeBottom
+                            property real homeRadius: window.homePanelShapeRadius
 
                             fragmentShader: Qt.resolvedUrl("../shaders/ring_glass.frag.qsb")
                         }

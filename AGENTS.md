@@ -57,7 +57,7 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/components/HomeRoomRow.qml`, `HomeDeviceControl.qml`, `HouseIcon.qml`: primitives visuelles du panel maison
 - `src/components/AppDock.qml`: layout visuel du dock
 - `src/components/ThemedPanelSurface.qml`, `LiquidGlassSurface.qml`: surfaces de panel thémables, avec rendu backdrop blur pour `liquid-glass` (lensing + aberration chromatique via `src/shaders/liquid_glass.frag`)
-- `src/shaders/liquid_glass.frag` + `.qsb`: shader fragment Qt 6 appliqué au backdrop blurré pour produire le lensing de bord et l'aberration chromatique. Recompiler avec `make shaders` après modification
+- `src/shaders/liquid_glass.frag`, `ring_glass.frag` + `.qsb`: shaders fragment Qt 6 appliqués au backdrop blurré pour produire le lensing de bord et l'aberration chromatique; `ring_glass` suit la géométrie du ring, du dock, de l'encoche et du panel maison. Recompiler avec `make shaders` après modification
 - `src/components/AppLauncherOverlay.qml`, `AppLauncher.qml`, `AppLauncherItem.qml`: overlay launcher multi-écran, recherche et lignes de résultat
 - `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher depuis un raccourci du compositeur ou `qs ipc`
 - `src/state/ShellConfig.qml`: configuration utilisateur lue depuis `~/.config/kama-shell/kama.conf`
