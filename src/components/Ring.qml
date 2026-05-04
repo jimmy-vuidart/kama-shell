@@ -56,9 +56,16 @@ Variants {
                 readonly property real homePanelShapeTop: homePanelTop
                 readonly property real homePanelShapeBottom: homePanelShapeTop + homePanel.currentHeight
                 readonly property real homePanelShapeRadius: Math.min(
-                    ShellGeometry.homePanelShapeRadius,
+                    ShellGeometry.homePanelCompactShapeRadius
+                        + ((ShellGeometry.homePanelShapeRadius - ShellGeometry.homePanelCompactShapeRadius) * homePanel.revealProgress),
                     homePanelShapeDepth,
                     homePanel.currentHeight / 2
+                )
+                readonly property real homePanelFlatHalfHeight: (ShellGeometry.dockRestFlatWidth / 2)
+                    + ((Math.max(0, (homePanel.currentHeight / 2) - window.homePanelShapeRadius) - (ShellGeometry.dockRestFlatWidth / 2)) * homePanel.revealProgress)
+                readonly property real homePanelShoulderInset: Math.max(
+                    0,
+                    (homePanel.currentHeight / 2) - homePanelFlatHalfHeight
                 )
 
                 component InnerCutout: Item {
@@ -113,33 +120,25 @@ Variants {
                                 x: window.homePanelShapeRight
                                 y: window.homePanelShapeTop
                             }
-                            PathLine {
-                                x: window.homePanelShapeLeft + window.homePanelShapeRadius
-                                y: window.homePanelShapeTop
-                            }
                             PathCubic {
                                 x: window.homePanelShapeLeft
-                                y: window.homePanelShapeTop + window.homePanelShapeRadius
-                                control1X: window.homePanelShapeLeft + (window.homePanelShapeRadius * 0.45)
-                                control1Y: window.homePanelShapeTop
+                                y: window.homePanelShapeTop + window.homePanelShoulderInset
+                                control1X: window.homePanelShapeRight
+                                control1Y: window.homePanelShapeTop + (window.homePanelShoulderInset * 0.45)
                                 control2X: window.homePanelShapeLeft
-                                control2Y: window.homePanelShapeTop + (window.homePanelShapeRadius * 0.45)
+                                control2Y: window.homePanelShapeTop + (window.homePanelShoulderInset * 0.55)
                             }
                             PathLine {
                                 x: window.homePanelShapeLeft
-                                y: window.homePanelShapeBottom - window.homePanelShapeRadius
+                                y: window.homePanelShapeBottom - window.homePanelShoulderInset
                             }
                             PathCubic {
-                                x: window.homePanelShapeLeft + window.homePanelShapeRadius
-                                y: window.homePanelShapeBottom
-                                control1X: window.homePanelShapeLeft
-                                control1Y: window.homePanelShapeBottom - (window.homePanelShapeRadius * 0.45)
-                                control2X: window.homePanelShapeLeft + (window.homePanelShapeRadius * 0.45)
-                                control2Y: window.homePanelShapeBottom
-                            }
-                            PathLine {
                                 x: window.homePanelShapeRight
                                 y: window.homePanelShapeBottom
+                                control1X: window.homePanelShapeLeft
+                                control1Y: window.homePanelShapeBottom - (window.homePanelShoulderInset * 0.55)
+                                control2X: window.homePanelShapeRight
+                                control2Y: window.homePanelShapeBottom - (window.homePanelShoulderInset * 0.45)
                             }
                             PathLine {
                                 x: window.innerRight
@@ -246,24 +245,18 @@ Variants {
                     PathLine {
                         x: window.homePanelShapeRight - 1; y: window.homePanelShapeTop + 1
                     }
+                    PathCubic {
+                        x: window.homePanelShapeLeft + 1; y: window.homePanelShapeTop + window.homePanelShoulderInset
+                        control1X: window.homePanelShapeRight - 1; control1Y: window.homePanelShapeTop + (window.homePanelShoulderInset * 0.45)
+                        control2X: window.homePanelShapeLeft + 1; control2Y: window.homePanelShapeTop + (window.homePanelShoulderInset * 0.55)
+                    }
                     PathLine {
-                        x: window.homePanelShapeLeft + window.homePanelShapeRadius; y: window.homePanelShapeTop + 1
+                        x: window.homePanelShapeLeft + 1; y: window.homePanelShapeBottom - window.homePanelShoulderInset
                     }
                     PathCubic {
-                        x: window.homePanelShapeLeft + 1; y: window.homePanelShapeTop + window.homePanelShapeRadius
-                        control1X: window.homePanelShapeLeft + (window.homePanelShapeRadius * 0.45); control1Y: window.homePanelShapeTop + 1
-                        control2X: window.homePanelShapeLeft + 1; control2Y: window.homePanelShapeTop + (window.homePanelShapeRadius * 0.45)
-                    }
-                    PathLine {
-                        x: window.homePanelShapeLeft + 1; y: window.homePanelShapeBottom - window.homePanelShapeRadius
-                    }
-                    PathCubic {
-                        x: window.homePanelShapeLeft + window.homePanelShapeRadius; y: window.homePanelShapeBottom - 1
-                        control1X: window.homePanelShapeLeft + 1; control1Y: window.homePanelShapeBottom - (window.homePanelShapeRadius * 0.45)
-                        control2X: window.homePanelShapeLeft + (window.homePanelShapeRadius * 0.45); control2Y: window.homePanelShapeBottom - 1
-                    }
-                    PathLine {
                         x: window.homePanelShapeRight - 1; y: window.homePanelShapeBottom - 1
+                        control1X: window.homePanelShapeLeft + 1; control1Y: window.homePanelShapeBottom - (window.homePanelShoulderInset * 0.55)
+                        control2X: window.homePanelShapeRight - 1; control2Y: window.homePanelShapeBottom - (window.homePanelShoulderInset * 0.45)
                     }
                     PathLine {
                         x: window.innerRight - 1; y: window.innerBottom - 1 - ShellGeometry.cornerRadius
@@ -439,7 +432,7 @@ Variants {
                             property real homeRight: window.homePanelShapeRight
                             property real homeTop: window.homePanelShapeTop
                             property real homeBottom: window.homePanelShapeBottom
-                            property real homeRadius: window.homePanelShapeRadius
+                            property real homeShoulderInset: window.homePanelShoulderInset
 
                             fragmentShader: Qt.resolvedUrl("../shaders/ring_glass.frag.qsb")
                         }
@@ -518,24 +511,18 @@ Variants {
                         PathLine {
                             x: window.homePanelShapeRight; y: window.homePanelShapeTop
                         }
+                        PathCubic {
+                            x: window.homePanelShapeLeft; y: window.homePanelShapeTop + window.homePanelShoulderInset
+                            control1X: window.homePanelShapeRight; control1Y: window.homePanelShapeTop + (window.homePanelShoulderInset * 0.45)
+                            control2X: window.homePanelShapeLeft; control2Y: window.homePanelShapeTop + (window.homePanelShoulderInset * 0.55)
+                        }
                         PathLine {
-                            x: window.homePanelShapeLeft + window.homePanelShapeRadius; y: window.homePanelShapeTop
+                            x: window.homePanelShapeLeft; y: window.homePanelShapeBottom - window.homePanelShoulderInset
                         }
                         PathCubic {
-                            x: window.homePanelShapeLeft; y: window.homePanelShapeTop + window.homePanelShapeRadius
-                            control1X: window.homePanelShapeLeft + (window.homePanelShapeRadius * 0.45); control1Y: window.homePanelShapeTop
-                            control2X: window.homePanelShapeLeft; control2Y: window.homePanelShapeTop + (window.homePanelShapeRadius * 0.45)
-                        }
-                        PathLine {
-                            x: window.homePanelShapeLeft; y: window.homePanelShapeBottom - window.homePanelShapeRadius
-                        }
-                        PathCubic {
-                            x: window.homePanelShapeLeft + window.homePanelShapeRadius; y: window.homePanelShapeBottom
-                            control1X: window.homePanelShapeLeft; control1Y: window.homePanelShapeBottom - (window.homePanelShapeRadius * 0.45)
-                            control2X: window.homePanelShapeLeft + (window.homePanelShapeRadius * 0.45); control2Y: window.homePanelShapeBottom
-                        }
-                        PathLine {
                             x: window.homePanelShapeRight; y: window.homePanelShapeBottom
+                            control1X: window.homePanelShapeLeft; control1Y: window.homePanelShapeBottom - (window.homePanelShoulderInset * 0.55)
+                            control2X: window.homePanelShapeRight; control2Y: window.homePanelShapeBottom - (window.homePanelShoulderInset * 0.45)
                         }
                         PathLine {
                             x: window.innerRight; y: window.innerBottom - ShellGeometry.cornerRadius
@@ -653,7 +640,7 @@ Variants {
                     y: window.homePanelTop + (ShellGeometry.homePanelBumpHeight / 2) - (height / 2)
                     width: ShellGeometry.homePanelHandleIconSize
                     height: ShellGeometry.homePanelHandleIconSize
-                    opacity: 1 - Math.min(1, homePanel.revealProgress * 1.35)
+                    opacity: 1 - Math.min(1, homePanel.revealProgress * 2.2)
                     visible: opacity > 0
 
                     Behavior on opacity {

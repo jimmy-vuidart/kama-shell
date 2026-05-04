@@ -111,7 +111,7 @@ Item {
 
     ThemedPanelSurface {
         anchors.fill: parent
-        radius: ShellTheme.isFfxiv ? 10 : 28
+        radius: ShellTheme.isFfxiv ? 10 : ShellTheme.isLiquidGlass ? 44 : 28
         padding: 20
         clipContent: false
 

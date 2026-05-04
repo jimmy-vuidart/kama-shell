@@ -67,6 +67,15 @@ void main() {
     vec4 cB = texture(source, uv + lensOffset - abOffset);
 
     vec3 color = vec3(cR.r, cG.g, cB.b);
+    vec2 lightDir = normalize(vec2(-0.42, -0.9));
+    vec2 shadowDir = normalize(vec2(0.54, 0.84));
+    float rimLight = pow(max(dot(normal, lightDir), 0.0), 0.72) * edgeFactor;
+    float rimShadow = pow(max(dot(normal, shadowDir), 0.0), 1.25) * edgeFactor;
+
+    color += vec3(1.0, 0.97, 0.92) * rimLight * 0.1;
+    color -= vec3(0.09, 0.1, 0.12) * rimShadow * 0.16;
+    color = clamp(color, 0.0, 1.0);
+
     float alpha = cG.a;
 
     fragColor = vec4(color, alpha) * mask * qt_Opacity;

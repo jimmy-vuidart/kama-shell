@@ -39,6 +39,7 @@ Singleton {
     readonly property int homePanelExpandedHeight: 472
     readonly property int homePanelBumpDepth: 24
     readonly property int homePanelBumpHeight: dockRestWidth
+    readonly property int homePanelCompactShapeRadius: 10
     readonly property int homePanelShapeRadius: 28
     readonly property int homePanelHandleWidth: frameInset + homePanelBumpDepth + 12
     readonly property int homePanelHandleHeight: homePanelBumpHeight

@@ -40,7 +40,7 @@ Item {
             margins: ShellTheme.panelPadding
         }
         spacing: 12
-        opacity: Math.max(0, (root.revealProgress - 0.28) / 0.72)
+        opacity: Math.max(0, (root.revealProgress - 0.48) / 0.52)
         visible: opacity > 0
 
         Behavior on opacity {

@@ -27,7 +27,7 @@ layout(std140, binding = 0) uniform buf {
     float homeRight;
     float homeTop;
     float homeBottom;
-    float homeRadius;
+    float homeShoulderInset;
 };
 
 layout(binding = 1) uniform sampler2D source;
@@ -162,34 +162,30 @@ float sdfHomePanel(vec2 px, float outerRight) {
     float right = max(outerRight, homeRight + 1.0);
     float bottom = homeBottom;
     float height = max(bottom - top, 1.0);
-    float width = max(right - left, 1.0);
-    float r = min(max(homeRadius, 0.0), min(width, height * 0.5));
+    float s = min(max(homeShoulderInset, 0.0), height * 0.5);
 
     vec2 topRight = vec2(right, top);
-    vec2 topLeft = vec2(left + r, top);
-    vec2 upperLeft = vec2(left, top + r);
-    vec2 lowerLeft = vec2(left, bottom - r);
-    vec2 bottomLeft = vec2(left + r, bottom);
+    vec2 upperLeft = vec2(left, top + s);
+    vec2 lowerLeft = vec2(left, bottom - s);
     vec2 bottomRight = vec2(right, bottom);
 
-    vec2 topC1 = vec2(left + (r * 0.45), top);
-    vec2 topC2 = vec2(left, top + (r * 0.45));
-    vec2 bottomC1 = vec2(left, bottom - (r * 0.45));
-    vec2 bottomC2 = vec2(left + (r * 0.45), bottom);
+    vec2 topC1 = vec2(right, top + (s * 0.45));
+    vec2 topC2 = vec2(left, top + (s * 0.55));
+    vec2 bottomC1 = vec2(left, bottom - (s * 0.55));
+    vec2 bottomC2 = vec2(right, bottom - (s * 0.45));
 
     float dist = min(
-        min(sdfSegment(px, topRight, topLeft), sdfCubicApprox(px, topLeft, topC1, topC2, upperLeft)),
-        min(sdfSegment(px, upperLeft, lowerLeft), sdfCubicApprox(px, lowerLeft, bottomC1, bottomC2, bottomLeft))
+        min(sdfCubicApprox(px, topRight, topC1, topC2, upperLeft), sdfSegment(px, upperLeft, lowerLeft)),
+        sdfCubicApprox(px, lowerLeft, bottomC1, bottomC2, bottomRight)
     );
-    dist = min(dist, sdfSegment(px, bottomLeft, bottomRight));
     dist = min(dist, sdfSegment(px, bottomRight, topRight));
 
     float boundaryX = left;
 
-    if (px.y < top + r) {
-        boundaryX = cubicXForY(topLeft, topC1, topC2, upperLeft, px.y);
-    } else if (px.y > bottom - r) {
-        boundaryX = cubicXForY(lowerLeft, bottomC1, bottomC2, bottomLeft, px.y);
+    if (px.y < top + s) {
+        boundaryX = cubicXForY(topRight, topC1, topC2, upperLeft, px.y);
+    } else if (px.y > bottom - s) {
+        boundaryX = cubicXForY(lowerLeft, bottomC1, bottomC2, bottomRight, px.y);
     }
 
     bool inside = px.x >= boundaryX
@@ -282,6 +278,15 @@ void main() {
     vec4 cB = texture(source, uv + lensOffset - abOffset);
 
     vec3 color = vec3(cR.r, cG.g, cB.b);
+    vec2 lightDir = normalize(vec2(-0.42, -0.9));
+    vec2 shadowDir = normalize(vec2(0.54, 0.84));
+    float rimLight = pow(max(dot(innerNormal, lightDir), 0.0), 0.72) * edgeFactor;
+    float rimShadow = pow(max(dot(innerNormal, shadowDir), 0.0), 1.25) * edgeFactor;
+
+    color += vec3(1.0, 0.97, 0.92) * rimLight * 0.1;
+    color -= vec3(0.09, 0.1, 0.12) * rimShadow * 0.16;
+    color = clamp(color, 0.0, 1.0);
+
     float alpha = cG.a;
 
     fragColor = vec4(color, alpha) * mask * qt_Opacity;

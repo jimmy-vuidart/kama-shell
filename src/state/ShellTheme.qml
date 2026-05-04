@@ -30,11 +30,11 @@ Singleton {
             glassInnerHighlightAlpha: 0.72
         },
         "liquid-glass": {
-            glassTintAlpha: 0.03,
-            glassTopHighlightAlpha: 0.52,
-            glassBottomShadeAlpha: 0.10,
-            glassBorderAlpha: 0.40,
-            glassInnerHighlightAlpha: 0.70
+            glassTintAlpha: 0.025,
+            glassTopHighlightAlpha: 0.38,
+            glassBottomShadeAlpha: 0.08,
+            glassBorderAlpha: 0.26,
+            glassInnerHighlightAlpha: 0.46
         }
     })
 
@@ -44,18 +44,21 @@ Singleton {
     readonly property real glassBorderAlpha: themeValue(themeName, "glassBorderAlpha")
     readonly property real glassInnerHighlightAlpha: themeValue(themeName, "glassInnerHighlightAlpha")
 
-    readonly property real liquidBlurAmount: 0.8
+    readonly property real liquidBlurAmount: 0.86
     readonly property int liquidBlurMax: 80
-    readonly property real liquidSaturation: 0.04
-    readonly property real liquidBrightness: 0.14
-    readonly property real liquidEdgeHighlightAlpha: 0.72
-    readonly property real liquidEdgeShadowAlpha: 0.14
-    readonly property real liquidShadowBlur: 48
-    readonly property real liquidShadowOffsetY: 14
-    readonly property real liquidShadowAlpha: 0.36
-    readonly property real liquidLensingStrength: 22
-    readonly property real liquidEdgeWidth: 28
-    readonly property real liquidAberrationStrength: 2.5
+    readonly property real liquidSaturation: 0.08
+    readonly property real liquidBrightness: 0.12
+    readonly property real liquidShadowBlur: 58
+    readonly property real liquidShadowOffsetY: 10
+    readonly property real liquidShadowAlpha: 0.3
+    readonly property real liquidLensingStrength: 18
+    readonly property real liquidEdgeWidth: 34
+    readonly property real liquidAberrationStrength: 1.6
+    readonly property color liquidRimOuter: Qt.rgba(1, 0.97, 0.92, 0.42)
+    readonly property color liquidRimInner: Qt.rgba(1, 1, 1, 0.24)
+    readonly property color liquidRimHighlight: Qt.rgba(1, 1, 1, 0.58)
+    readonly property color liquidRimShadow: Qt.rgba(0.015, 0.018, 0.024, 0.2)
+    readonly property color liquidRimAmbient: Qt.rgba(0.92, 0.97, 1, 0.2)
 
     readonly property color panelFillTop: isFfxiv
         ? Qt.rgba(63 / 255, 62 / 255, 58 / 255, 0.98)
@@ -72,35 +75,47 @@ Singleton {
 
     readonly property color panelBorderOuter: isFfxiv
         ? Qt.rgba(18 / 255, 13 / 255, 8 / 255, 1)
-        : Qt.rgba(7 / 255, 16 / 255, 24 / 255, 0.34)
+        : (isLiquidGlass
+            ? liquidRimShadow
+            : Qt.rgba(7 / 255, 16 / 255, 24 / 255, 0.34))
     readonly property color panelBorderSupport: isFfxiv
         ? Qt.rgba(9 / 255, 7 / 255, 5 / 255, 0.78)
-        : Qt.rgba(0.92, 0.97, 1, 0.18)
+        : (isLiquidGlass
+            ? liquidRimShadow
+            : Qt.rgba(0.92, 0.97, 1, 0.18))
     readonly property color panelBorder: isFfxiv
         ? Qt.rgba(199 / 255, 159 / 255, 83 / 255, 0.97)
-        : Qt.rgba(0.92, 0.97, 1, glassBorderAlpha)
+        : (isLiquidGlass
+            ? liquidRimAmbient
+            : Qt.rgba(0.92, 0.97, 1, glassBorderAlpha))
     readonly property color panelBorderHighlight: isFfxiv
         ? Qt.rgba(242 / 255, 202 / 255, 116 / 255, 0.92)
-        : Qt.rgba(1, 1, 1, glassInnerHighlightAlpha)
+        : (isLiquidGlass
+            ? liquidRimHighlight
+            : Qt.rgba(1, 1, 1, glassInnerHighlightAlpha))
     readonly property color panelBorderShadow: isFfxiv
         ? Qt.rgba(0, 0, 0, 0.62)
         : Qt.rgba(0.05, 0.08, 0.12, 0.2)
     readonly property color panelInsetLine: isFfxiv
         ? Qt.rgba(77 / 255, 59 / 255, 31 / 255, 0.95)
-        : Qt.rgba(1, 1, 1, glassInnerHighlightAlpha)
+        : (isLiquidGlass
+            ? liquidRimInner
+            : Qt.rgba(1, 1, 1, glassInnerHighlightAlpha))
     readonly property color panelTopSheen: isFfxiv
         ? Qt.rgba(1, 1, 1, 0.12)
-        : Qt.rgba(1, 1, 1, 0.2)
+        : (isLiquidGlass
+            ? Qt.rgba(1, 1, 1, 0.38)
+            : Qt.rgba(1, 1, 1, 0.2))
     readonly property color panelTextureLine: isFfxiv
         ? Qt.rgba(1, 1, 1, 0.035)
         : Qt.rgba(1, 1, 1, 0.06)
 
-    readonly property real panelBorderSupportWidth: isFfxiv ? 3.4 : 2.8
-    readonly property real panelBorderWidth: isFfxiv ? 2.1 : 1.8
-    readonly property real panelHighlightWidth: isFfxiv ? 1.35 : 1.2
+    readonly property real panelBorderSupportWidth: isFfxiv ? 3.4 : isLiquidGlass ? 1.35 : 2.8
+    readonly property real panelBorderWidth: isFfxiv ? 2.1 : isLiquidGlass ? 1.05 : 1.8
+    readonly property real panelHighlightWidth: isFfxiv ? 1.35 : isLiquidGlass ? 1.0 : 1.2
     readonly property int surfaceBorderWidth: 2
-    readonly property int controlBorderWidth: 2
-    readonly property int panelRadius: isFfxiv ? 7 : isLiquidGlass ? 32 : 24
+    readonly property int controlBorderWidth: isLiquidGlass ? 1 : 2
+    readonly property int panelRadius: isFfxiv ? 7 : isLiquidGlass ? 36 : 24
     readonly property int panelPadding: isFfxiv ? 14 : 18
 
     readonly property color textPrimary: isFfxiv

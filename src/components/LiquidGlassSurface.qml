@@ -142,7 +142,16 @@ Item {
         antialiasing: true
         color: "transparent"
         border.width: 1
-        border.color: Qt.rgba(0.02, 0.03, 0.05, ShellTheme.liquidEdgeShadowAlpha)
+        border.color: ShellTheme.liquidRimShadow
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        radius: root.radius
+        antialiasing: true
+        color: "transparent"
+        border.width: 1
+        border.color: ShellTheme.liquidRimOuter
     }
 
     Rectangle {
@@ -154,7 +163,7 @@ Item {
         antialiasing: true
         color: "transparent"
         border.width: 1
-        border.color: ShellTheme.panelBorder
+        border.color: ShellTheme.liquidRimAmbient
     }
 
     Rectangle {
@@ -166,7 +175,7 @@ Item {
         antialiasing: true
         color: "transparent"
         border.width: 1
-        border.color: Qt.rgba(1, 1, 1, ShellTheme.liquidEdgeHighlightAlpha)
+        border.color: ShellTheme.liquidRimInner
     }
 
     Rectangle {
@@ -180,7 +189,49 @@ Item {
         }
         height: 1
         radius: 1
-        color: Qt.rgba(1, 1, 1, ShellTheme.liquidEdgeHighlightAlpha)
+        color: ShellTheme.liquidRimHighlight
+    }
+
+    Rectangle {
+        anchors {
+            left: parent.left
+            top: parent.top
+            bottom: parent.bottom
+            leftMargin: 2
+            topMargin: root.radius + 6
+            bottomMargin: root.radius + 6
+        }
+        width: 1
+        radius: 1
+        color: Qt.rgba(1, 1, 1, 0.22)
+    }
+
+    Rectangle {
+        anchors {
+            right: parent.right
+            top: parent.top
+            bottom: parent.bottom
+            rightMargin: 1
+            topMargin: root.radius + 6
+            bottomMargin: root.radius + 6
+        }
+        width: 1
+        radius: 1
+        color: ShellTheme.liquidRimShadow
+    }
+
+    Rectangle {
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+            leftMargin: root.radius + 6
+            rightMargin: root.radius + 6
+            bottomMargin: 1
+        }
+        height: 1
+        radius: 1
+        color: ShellTheme.liquidRimShadow
     }
 
     Item {
