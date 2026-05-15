@@ -143,9 +143,9 @@ Singleton {
     }
 
     function currentToplevels() {
-        const native = root.nativeToplevels()
+        const nativeWindows = root.nativeToplevels()
 
-        return native.length > 0 ? native : root.krunnerWindows
+        return nativeWindows.length > 0 ? nativeWindows : root.krunnerWindows
     }
 
     function refreshKrunnerWindows() {
@@ -275,14 +275,14 @@ Singleton {
         const result = []
 
         for (let i = 0; i < windows.length; i++) {
-            const window = windows[i] || {}
-            const matchId = String(window.matchId || "").trim()
-            const title = String(window.title || "").trim()
-            const desktopId = String(window.desktopId || "").trim()
-            const appId = String(window.appId || "").trim()
-            const resourceClass = String(window.resourceClass || "").trim()
-            const resourceName = String(window.resourceName || "").trim()
-            const iconName = String(window.iconName || "").trim()
+            const windowInfo = windows[i] || {}
+            const matchId = String(windowInfo.matchId || "").trim()
+            const title = String(windowInfo.title || "").trim()
+            const desktopId = String(windowInfo.desktopId || "").trim()
+            const appId = String(windowInfo.appId || "").trim()
+            const resourceClass = String(windowInfo.resourceClass || "").trim()
+            const resourceName = String(windowInfo.resourceName || "").trim()
+            const iconName = String(windowInfo.iconName || "").trim()
 
             if (!matchId.length || (!title.length && !appId.length && !iconName.length)) {
                 continue
@@ -296,7 +296,7 @@ Singleton {
                 resourceClass,
                 resourceName,
                 iconName,
-                !!window.activated
+                !!windowInfo.activated
             ))
         }
 
@@ -673,8 +673,8 @@ Singleton {
     function finishIconLookup(iconName, output) {
         const cleaned = String(output || "")
             .split("\n")
-            .map(line => line.trim())
-            .find(line => line.length > 0) || ""
+            .map(function(line) { return line.trim() })
+            .find(function(line) { return line.length > 0 }) || ""
         const nextCache = Object.assign({}, root.iconLookupCache)
         const nextInFlight = Object.assign({}, root.iconLookupsInFlight)
 
@@ -704,33 +704,25 @@ Singleton {
         id: process
 
         required property string iconName
+        readonly property string lookupScript: [
+            "set -eu",
+            "icon_name=\"$1\"",
+            "shift",
+            "for base in \"$@\"; do",
+            "    [ -n \"$base\" ] || continue",
+            "    [ -d \"$base\" ] || continue",
+            "    result=$(find \"$base\" -type f \\( -iname \"$icon_name.png\" -o -iname \"$icon_name.svg\" -o -iname \"$icon_name.xpm\" -o -iname \"$icon_name-symbolic.png\" -o -iname \"$icon_name-symbolic.svg\" -o -iname \"$icon_name-symbolic.xpm\" \\) -print -quit)",
+            "    if [ -n \"$result\" ]; then",
+            "        printf '%s\\n' \"$result\"",
+            "        exit 0",
+            "    fi",
+            "done"
+        ].join("\n")
 
         command: [
             "sh",
             "-c",
-            `
-set -eu
-icon_name="$1"
-shift
-for base in "$@"; do
-    [ -n "$base" ] || continue
-    [ -d "$base" ] || continue
-
-    result="$(find "$base" -type f \\( \\
-        -iname "$icon_name.png" -o \\
-        -iname "$icon_name.svg" -o \\
-        -iname "$icon_name.xpm" -o \\
-        -iname "$icon_name-symbolic.png" -o \\
-        -iname "$icon_name-symbolic.svg" -o \\
-        -iname "$icon_name-symbolic.xpm" \\
-    \\) -print -quit)"
-
-    if [ -n "$result" ]; then
-        printf '%s\\n' "$result"
-        exit 0
-    fi
-done
-            `,
+            lookupScript,
             "qs-icon-lookup",
             iconName,
             root.userIconsDir,
@@ -836,7 +828,7 @@ done
         model: root.toplevels
 
         delegate: Item {
-            required property Toplevel modelData
+            required property var modelData
 
             visible: false
             width: 0

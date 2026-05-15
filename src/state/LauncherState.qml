@@ -67,7 +67,7 @@ Singleton {
 
     function filteredApplications(applications, queryText) {
         const normalizedQuery = root.normalizedSearch(queryText)
-        const source = Array.isArray(applications) ? applications : []
+        const source = root.listValues(applications)
         const scored = []
 
         for (let i = 0; i < source.length; i++) {
@@ -100,6 +100,20 @@ Singleton {
 
         for (let i = 0; i < scored.length; i++) {
             result.push(scored[i].entry)
+        }
+
+        return result
+    }
+
+    function listValues(value) {
+        if (!value || value.length === undefined) {
+            return []
+        }
+
+        const result = []
+
+        for (let i = 0; i < value.length; i++) {
+            result.push(value[i])
         }
 
         return result

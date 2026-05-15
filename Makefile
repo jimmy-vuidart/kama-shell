@@ -1,6 +1,6 @@
 # Makefile — Kama-Shell automation
 
-.PHONY: run check fmt help install-session install-session-debug
+.PHONY: run check test fmt help install-session install-session-debug
 
 PREFIX ?= $(HOME)/.local
 SESSION_DIR ?= /usr/share/wayland-sessions
@@ -8,6 +8,19 @@ BIN_DIR ?= $(PREFIX)/bin
 SYSTEM_PREFIX ?= /usr
 SYSTEM_BIN_DIR ?= $(SYSTEM_PREFIX)/bin
 SUDO ?= sudo
+QMLLINT ?= qmllint
+QMLFORMAT ?= qmlformat
+PYTHON ?= python3
+
+# qmllint 1.0 ne parse pas les signatures IPC typees, pourtant requises par Quickshell.Io.IpcHandler.
+QML_FILES := $(shell find src -type f -name '*.qml' ! -path 'src/ipc/KamaShellIpc.qml' | sort)
+BASH_FILES := run.sh \
+	scripts/copy-screenshot-to-clipboard.sh \
+	sessions/kama-shell-session \
+	sessions/kama-shell-debug-session \
+	sessions/start-kama-shell-session \
+	sessions/start-kama-shell-debug-session
+PYTHON_FILES := scripts/kwin-running-windows.py
 
 help:
 	@echo "Usage: make [target]"
@@ -15,6 +28,7 @@ help:
 	@echo "Targets:"
 	@echo "  run    - Lancer le shell (via run.sh)"
 	@echo "  check  - Vérifier la syntaxe QML (requiert qmllint)"
+	@echo "  test   - Exécuter les vérifications QML, shell, Python et packaging"
 	@echo "  fmt    - Formater le code QML (requiert qmlformat)"
 	@echo "  install-session        - Installer la session Wayland standard dans $(SESSION_DIR)"
 	@echo "  install-session-debug  - Installer la session Wayland debug dans $(SESSION_DIR)"
@@ -23,10 +37,15 @@ run:
 	./run.sh
 
 check:
-	qmllint -I src src/shell.qml src/components/*.qml src/state/*.qml
+	$(QMLLINT) -I src $(QML_FILES)
+
+test: check
+	bash -n $(BASH_FILES)
+	$(PYTHON) -m py_compile $(PYTHON_FILES)
+	makepkg --printsrcinfo | diff -u .SRCINFO -
 
 fmt:
-	qmlformat -i src/shell.qml src/
+	$(QMLFORMAT) -i src/shell.qml src/
 
 install-session:
 	install -d "$(BIN_DIR)"

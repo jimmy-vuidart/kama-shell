@@ -1,2 +1,7 @@
 logs/
+pkg/
+.idea/
+.codex
+__pycache__/
+*.py[cod]
 *.tar.*

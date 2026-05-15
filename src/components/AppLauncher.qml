@@ -93,7 +93,7 @@ Item {
         id: appModel
 
         values: LauncherState.filteredApplications(
-            [...DesktopEntries.applications.values],
+            DesktopEntries.applications.values,
             LauncherState.query
         )
 

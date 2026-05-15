@@ -5,7 +5,7 @@ pkgbase = kama-shell
 	arch = any
 	license = custom
 	depends = kwin
-	depends = noctalia-qs
+	depends = quickshell-git
 	depends = plasma-workspace
 
 pkgname = kama-shell
