@@ -14,13 +14,14 @@ PYTHON ?= python3
 
 # qmllint 1.0 ne parse pas les signatures IPC typees, pourtant requises par Quickshell.Io.IpcHandler.
 QML_FILES := $(shell find src -type f -name '*.qml' ! -path 'src/ipc/KamaShellIpc.qml' | sort)
+PYTHON_FILES := $(shell find scripts -type f -name '*.py' | sort)
 BASH_FILES := run.sh \
 	scripts/copy-screenshot-to-clipboard.sh \
+	sessions/kama-shell-session-common.sh \
 	sessions/kama-shell-session \
 	sessions/kama-shell-debug-session \
 	sessions/start-kama-shell-session \
 	sessions/start-kama-shell-debug-session
-PYTHON_FILES := scripts/kwin-running-windows.py
 
 help:
 	@echo "Usage: make [target]"
@@ -55,6 +56,7 @@ install-session:
 	sed 's|@PREFIX@|$(PREFIX)|g' sessions/kama-shell.desktop > "$$tmp"; \
 	$(SUDO) install -D -m 644 "$$tmp" "$(SESSION_DIR)/kama-shell.desktop"
 	install -m 755 sessions/start-kama-shell-session "$(BIN_DIR)/start-kama-shell-session"
+	install -m 644 sessions/kama-shell-session-common.sh "$(BIN_DIR)/kama-shell-session-common.sh"
 	sed '0,/__KAMA_SHELL_APP_DIR__/s||$(CURDIR)|' sessions/kama-shell-session > "$(BIN_DIR)/kama-shell-session"
 	chmod 755 "$(BIN_DIR)/kama-shell-session"
 
@@ -65,6 +67,7 @@ install-session-debug:
 	sed 's|@PREFIX@|$(SYSTEM_PREFIX)|g' sessions/kama-shell-debug.desktop > "$$tmp"; \
 	$(SUDO) install -D -m 644 "$$tmp" "$(SESSION_DIR)/kama-shell-debug.desktop"
 	$(SUDO) install -D -m 755 sessions/start-kama-shell-debug-session "$(SYSTEM_BIN_DIR)/start-kama-shell-debug-session"
+	$(SUDO) install -D -m 644 sessions/kama-shell-session-common.sh "$(SYSTEM_BIN_DIR)/kama-shell-session-common.sh"
 	set -e; \
 	tmp="$$(mktemp)"; \
 	trap 'rm -f "$$tmp"' EXIT; \

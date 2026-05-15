@@ -1,7 +1,6 @@
 pragma Singleton
 
 import Quickshell
-import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
 
@@ -10,22 +9,7 @@ Singleton {
 
     property var pinnedApps: []
     property var items: []
-    property var iconLookupCache: ({})
-    property var iconLookupsInFlight: ({})
-    property var krunnerWindows: []
-    property var krunnerLookupInFlight: null
     readonly property var toplevels: ToplevelManager.toplevels.values
-    readonly property string krunnerLookupHelper: Quickshell.shellDir + "/../scripts/kwin-running-windows.py"
-    readonly property bool krunnerFallbackEnabled: (Quickshell.env("KAMA_SESSION") || "").length > 0
-        || (Quickshell.env("KDE_FULL_SESSION") || "").length > 0
-        || (Quickshell.env("XDG_CURRENT_DESKTOP") || "").indexOf("KDE") >= 0
-        || (Quickshell.env("XDG_CURRENT_DESKTOP") || "").indexOf("KamaShell") >= 0
-    readonly property string userIconsDir: Quickshell.env("HOME")
-        ? Quickshell.env("HOME") + "/.local/share/icons"
-        : ""
-    readonly property string legacyIconsDir: Quickshell.env("HOME")
-        ? Quickshell.env("HOME") + "/.icons"
-        : ""
 
     function queueRebuild() {
         root.rebuildItems()
@@ -145,215 +129,11 @@ Singleton {
     function currentToplevels() {
         const nativeWindows = root.nativeToplevels()
 
-        return nativeWindows.length > 0 ? nativeWindows : root.krunnerWindows
+        return nativeWindows.length > 0 ? nativeWindows : DockKrunnerFallback.windows
     }
 
     function refreshKrunnerWindows() {
-        console.log("dock krunner refresh", root.krunnerFallbackEnabled, root.nativeToplevels().length, !!root.krunnerLookupInFlight)
-        if (!root.krunnerFallbackEnabled) {
-            return
-        }
-
-        if (root.nativeToplevels().length > 0) {
-            if (root.krunnerWindows.length > 0) {
-                root.krunnerWindows = []
-                root.queueRebuild()
-            }
-            return
-        }
-
-        if (!root.krunnerLookupInFlight) {
-            root.startKrunnerLookup()
-        }
-    }
-
-    function startKrunnerLookup() {
-        const lookup = krunnerLookupComponent.createObject(root)
-        console.log("dock krunner create", lookup)
-
-        if (lookup) {
-            root.krunnerLookupInFlight = lookup
-            Qt.callLater(function() {
-                if (root.krunnerLookupInFlight === lookup) {
-                    lookup.exec(root.krunnerLookupCommand())
-                }
-            })
-        }
-    }
-
-    function finishKrunnerLookup(lookup, output) {
-        if (root.krunnerLookupInFlight === lookup) {
-            root.krunnerLookupInFlight = null
-        }
-
-        root.applyKrunnerOutput(output)
-        lookup.destroy()
-    }
-
-    function krunnerLookupCommand() {
-        return [
-            "/usr/bin/python3",
-            root.krunnerLookupHelper
-        ]
-    }
-
-    function krunnerActivateCommand(matchId) {
-        return [
-            "busctl",
-            "--user",
-            "call",
-            "org.kde.KWin",
-            "/WindowsRunner",
-            "org.kde.krunner1",
-            "Run",
-            "ss",
-            matchId,
-            ""
-        ]
-    }
-
-    function applyKrunnerOutput(output) {
-        const nextWindows = root.krunnerWindowsFromOutput(output)
-
-        if (nextWindows === null || root.krunnerWindowsMatch(root.krunnerWindows, nextWindows)) {
-            return
-        }
-
-        root.krunnerWindows = nextWindows
-        root.queueRebuild()
-    }
-
-    function krunnerWindowsFromOutput(output) {
-        let parsed
-
-        try {
-            parsed = JSON.parse(String(output || ""))
-        } catch (error) {
-            return null
-        }
-
-        if (parsed && Array.isArray(parsed.windows)) {
-            return root.compactKrunnerWindowsFromOutput(parsed.windows)
-        }
-
-        const matches = parsed && parsed.data && parsed.data.length > 0
-            ? parsed.data[0]
-            : []
-        const result = []
-
-        for (let i = 0; i < matches.length; i++) {
-            const match = matches[i]
-
-            if (!Array.isArray(match) || match.length < 4) {
-                continue
-            }
-
-            const matchId = String(match[0] || "").trim()
-            const title = String(match[1] || "").trim()
-            const iconName = String(match[2] || "").trim()
-
-            if (!matchId.length || (!title.length && !iconName.length)) {
-                continue
-            }
-
-            result.push(root.createKrunnerWindow(
-                matchId,
-                title,
-                "",
-                "",
-                "",
-                "",
-                iconName,
-                false
-            ))
-        }
-
-        return result
-    }
-
-    function compactKrunnerWindowsFromOutput(windows) {
-        const result = []
-
-        for (let i = 0; i < windows.length; i++) {
-            const windowInfo = windows[i] || {}
-            const matchId = String(windowInfo.matchId || "").trim()
-            const title = String(windowInfo.title || "").trim()
-            const desktopId = String(windowInfo.desktopId || "").trim()
-            const appId = String(windowInfo.appId || "").trim()
-            const resourceClass = String(windowInfo.resourceClass || "").trim()
-            const resourceName = String(windowInfo.resourceName || "").trim()
-            const iconName = String(windowInfo.iconName || "").trim()
-
-            if (!matchId.length || (!title.length && !appId.length && !iconName.length)) {
-                continue
-            }
-
-            result.push(root.createKrunnerWindow(
-                matchId,
-                title,
-                desktopId,
-                appId,
-                resourceClass,
-                resourceName,
-                iconName,
-                !!windowInfo.activated
-            ))
-        }
-
-        return result
-    }
-
-    function createKrunnerWindow(matchId, title, desktopId, appId, resourceClass, resourceName, iconName, activated) {
-        const fallbackAppId = appId || desktopId || resourceClass || resourceName || iconName || title
-        const fallbackTitle = title || fallbackAppId || iconName
-
-        return {
-            matchId: matchId,
-            desktopId: desktopId,
-            appId: fallbackAppId,
-            resourceClass: resourceClass,
-            resourceName: resourceName,
-            title: fallbackTitle,
-            iconName: iconName,
-            parent: null,
-            activated: activated,
-            activate: function() {
-                root.activateKrunnerMatch(matchId)
-            }
-        }
-    }
-
-    function krunnerWindowsMatch(left, right) {
-        if (left.length !== right.length) {
-            return false
-        }
-
-        for (let i = 0; i < left.length; i++) {
-            if (
-                left[i].matchId !== right[i].matchId
-                || left[i].title !== right[i].title
-                || left[i].desktopId !== right[i].desktopId
-                || left[i].appId !== right[i].appId
-                || left[i].iconName !== right[i].iconName
-                || left[i].activated !== right[i].activated
-            ) {
-                return false
-            }
-        }
-
-        return true
-    }
-
-    function activateKrunnerMatch(matchId) {
-        const normalized = String(matchId || "").trim()
-
-        if (!normalized.length) {
-            return
-        }
-
-        krunnerActivateComponent.createObject(root, {
-            matchId: normalized
-        })
+        DockKrunnerFallback.refresh(root.nativeToplevels().length)
     }
 
     function activateItem(item) {
@@ -632,67 +412,11 @@ Singleton {
     }
 
     function resolveIconSource(iconName) {
-        const normalized = root.basename(String(iconName || "").trim())
-
-        if (!normalized.length) {
-            return ""
-        }
-
-        if (normalized.startsWith("/") || normalized.startsWith("file:")) {
-            return normalized.startsWith("file:") ? normalized : "file://" + normalized
-        }
-
-        const resolvedPath = Quickshell.iconPath(normalized, true)
-
-        if (resolvedPath && resolvedPath.length) {
-            return resolvedPath
-        }
-
-        if (root.iconLookupCache[normalized] !== undefined) {
-            return root.iconLookupCache[normalized]
-        }
-
-        root.startIconLookup(normalized)
-        return ""
-    }
-
-    function startIconLookup(iconName) {
-        if (root.iconLookupsInFlight[iconName]) {
-            return
-        }
-
-        console.log("dock icon lookup start", iconName)
-
-        const lookup = iconLookupComponent.createObject(root, {
-            iconName: iconName
-        })
-
-        root.iconLookupsInFlight[iconName] = lookup
-    }
-
-    function finishIconLookup(iconName, output) {
-        const cleaned = String(output || "")
-            .split("\n")
-            .map(function(line) { return line.trim() })
-            .find(function(line) { return line.length > 0 }) || ""
-        const nextCache = Object.assign({}, root.iconLookupCache)
-        const nextInFlight = Object.assign({}, root.iconLookupsInFlight)
-
-        nextCache[iconName] = cleaned.length ? "file://" + cleaned : ""
-        delete nextInFlight[iconName]
-
-        console.log("dock icon lookup result", iconName, nextCache[iconName])
-
-        root.iconLookupCache = nextCache
-        root.iconLookupsInFlight = nextInFlight
-        root.queueRebuild()
+        return DockIconResolver.resolveIconSource(iconName)
     }
 
     function basename(value) {
-        const normalized = String(value || "").trim()
-        const slashIndex = normalized.lastIndexOf("/")
-
-        return slashIndex >= 0 ? normalized.slice(slashIndex + 1) : normalized
+        return DockIconResolver.basename(value)
     }
 
     Component.onCompleted: {
@@ -700,98 +424,28 @@ Singleton {
         root.refreshKrunnerWindows()
     }
 
-    component IconLookupProcess: Process {
-        id: process
-
-        required property string iconName
-        readonly property string lookupScript: [
-            "set -eu",
-            "icon_name=\"$1\"",
-            "shift",
-            "for base in \"$@\"; do",
-            "    [ -n \"$base\" ] || continue",
-            "    [ -d \"$base\" ] || continue",
-            "    result=$(find \"$base\" -type f \\( -iname \"$icon_name.png\" -o -iname \"$icon_name.svg\" -o -iname \"$icon_name.xpm\" -o -iname \"$icon_name-symbolic.png\" -o -iname \"$icon_name-symbolic.svg\" -o -iname \"$icon_name-symbolic.xpm\" \\) -print -quit)",
-            "    if [ -n \"$result\" ]; then",
-            "        printf '%s\\n' \"$result\"",
-            "        exit 0",
-            "    fi",
-            "done"
-        ].join("\n")
-
-        command: [
-            "sh",
-            "-c",
-            lookupScript,
-            "qs-icon-lookup",
-            iconName,
-            root.userIconsDir,
-            root.legacyIconsDir,
-            "/usr/share/icons",
-            "/usr/share/pixmaps"
-        ]
-        running: true
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                root.finishIconLookup(process.iconName, text)
-                process.destroy()
-            }
-        }
-    }
-
-    Component {
-        id: iconLookupComponent
-        IconLookupProcess {}
-    }
-
-    component KRunnerLookupProcess: Process {
-        id: process
-
-        command: root.krunnerLookupCommand()
-        onStarted: console.log("dock krunner process started", process.processId)
-        onExited: function(exitCode, exitStatus) {
-            console.log("dock krunner process exited", exitCode, exitStatus, process.command)
-        }
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                console.log("dock krunner stdout", text.length)
-                root.finishKrunnerLookup(process, text)
-            }
-        }
-
-        stderr: StdioCollector {
-            onStreamFinished: console.log("dock krunner stderr", text)
-        }
-    }
-
-    Component {
-        id: krunnerLookupComponent
-        KRunnerLookupProcess {}
-    }
-
-    component KRunnerActivateProcess: Process {
-        id: process
-
-        required property string matchId
-
-        command: root.krunnerActivateCommand(matchId)
-        Component.onCompleted: process.exec(command)
-        onExited: process.destroy()
-    }
-
-    Component {
-        id: krunnerActivateComponent
-        KRunnerActivateProcess {}
-    }
-
     Timer {
         interval: 2000
-        running: root.krunnerFallbackEnabled
+        running: DockKrunnerFallback.fallbackEnabled
         repeat: true
 
         onTriggered: root.refreshKrunnerWindows()
+    }
+
+    Connections {
+        target: DockIconResolver
+
+        function onIconLookupCacheChanged() {
+            root.queueRebuild()
+        }
+    }
+
+    Connections {
+        target: DockKrunnerFallback
+
+        function onWindowsChanged() {
+            root.queueRebuild()
+        }
     }
 
     Connections {

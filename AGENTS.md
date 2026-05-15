@@ -60,11 +60,15 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/components/AppLauncherOverlay.qml`, `AppLauncher.qml`, `AppLauncherItem.qml`: overlay launcher multi-écran, recherche et lignes de résultat
 - `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher depuis KWin ou `qs ipc`
 - `src/state/ShellConfig.qml`: configuration utilisateur lue depuis `~/.config/kama-shell/kama.conf`
+- `scripts/update-kama-config.py`: écriture atomique des valeurs de config modifiées par l'interface
 - `src/state/ShellTheme.qml`: thème visuel actif, actuellement `glassmorphism`, `ffxiv` et `liquid-glass`
 - `src/state/ShellGeometry.qml`: constantes de forme partagées entre ring, dock et panel maison
-- `src/state/DockState.qml`: état global du dock, apps pinned + running via `DesktopEntries` et `ToplevelManager`
+- `src/state/DockState.qml`: état global du dock, apps pinned + running via `DesktopEntries`, `ToplevelManager` et fallback KRunner
+- `src/state/DockIconResolver.qml`: résolution et cache asynchrones des icônes du dock
+- `src/state/DockKrunnerFallback.qml`: fallback KWin/KRunner des fenêtres ouvertes quand `ToplevelManager` ne fournit pas les toplevels
 - `src/state/LauncherState.qml`: état global du launcher, filtrage de `DesktopEntries.applications`, sélection et lancement
 - `kwin/scripts/kama-shell-shortcuts/`: script KWin qui mappe le raccourci Super/Meta vers l'IPC Quickshell du launcher
+- `sessions/kama-shell-session-common.sh`: fonctions partagées par les sessions Wayland standard et debug
 - `src/state/ClockState.qml`: état global de l'horloge basé sur `SystemClock`, sans processus externe
 - `src/state/WallpaperState.qml`: source du wallpaper rendu par Kama Shell, lue depuis `appearance.wallpaper`
 - `src/components/WallpaperWindow.qml`: `PanelWindow` multi-écran sur la couche `WlrLayer.Background` qui rend le wallpaper de référence pour les futurs effets de backdrop blur

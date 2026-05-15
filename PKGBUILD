@@ -31,6 +31,8 @@ package() {
 
     install -m 755 "$repo_dir/sessions/start-kama-shell-session" \
         "$bindir/start-kama-shell-session"
+    install -m 644 "$repo_dir/sessions/kama-shell-session-common.sh" \
+        "$bindir/kama-shell-session-common.sh"
 
     sed "0,/__KAMA_SHELL_APP_DIR__/s||/usr/share/$pkgname|" \
         "$repo_dir/sessions/kama-shell-session" > "$bindir/kama-shell-session"

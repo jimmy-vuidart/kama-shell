@@ -43,9 +43,11 @@
 
 ## État du dock
 
-- `DockState` agrège proprement deux sources:
+- `DockState` doit rester l'orchestrateur du dock et déléguer les traitements asynchrones dédiés à des singletons séparés, comme `DockIconResolver` et `DockKrunnerFallback`.
+- `DockState` agrège proprement ces sources:
   - `DesktopEntries` pour les métadonnées applicatives
   - `ToplevelManager.toplevels` pour les fenêtres ouvertes
+  - le fallback KRunner/KWin uniquement quand les toplevels natifs ne sont pas exposés
 - L'ordre attendu du dock est:
   - pinned
   - séparateur conditionnel
