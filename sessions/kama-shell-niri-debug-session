@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# Session debug niri: charge la config niri depuis le tree (config/niri/config.kdl)
+# et fait pointer Quickshell sur le code source local. Active les flags de
+# debug Quickshell et redirige les logs vers logs/.
+
+set -euo pipefail
+
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+APP_DIR="${KAMA_SHELL_APP_DIR:-__KAMA_SHELL_APP_DIR__}"
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+SESSION_CONFIG="${KAMA_SHELL_SESSION_CONFIG:-$CONFIG_HOME/kama-shell/session.conf}"
+DEBUG_SESSION_CONFIG="${KAMA_SHELL_DEBUG_SESSION_CONFIG:-$CONFIG_HOME/kama-shell/debug-session.conf}"
+
+if [[ "$APP_DIR" == "__KAMA_SHELL_APP_DIR__" ]]; then
+    APP_DIR=$(cd -- "$SCRIPT_DIR/.." && pwd)
+fi
+
+NIRI_CONFIG="${KAMA_NIRI_CONFIG:-$APP_DIR/config/niri/config.kdl}"
+LOG_FILE="${KAMA_RUN_LOG_FILE:-$APP_DIR/logs/kama-shell.log}"
+
+if [[ -f "$SESSION_CONFIG" ]]; then
+    # shellcheck disable=SC1090
+    source "$SESSION_CONFIG"
+fi
+
+if [[ -f "$DEBUG_SESSION_CONFIG" ]]; then
+    # shellcheck disable=SC1090
+    source "$DEBUG_SESSION_CONFIG"
+fi
+
+DEFAULT_SESSION_PATH="/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin"
+export PATH="${KAMA_SESSION_PATH:-$DEFAULT_SESSION_PATH${PATH:+:$PATH}}"
+
+if ! command -v niri >/dev/null 2>&1; then
+    echo "niri introuvable dans PATH. Installer le paquet 'niri' avant de lancer la session debug." >&2
+    exit 1
+fi
+
+if [[ ! -f "$NIRI_CONFIG" ]]; then
+    echo "Config niri introuvable: $NIRI_CONFIG" >&2
+    echo "Copier config/niri/config.kdl.example vers config/niri/config.kdl, ou definir KAMA_NIRI_CONFIG." >&2
+    exit 1
+fi
+
+mkdir -p -- "$(dirname -- "$LOG_FILE")"
+
+export KAMA_SHELL_APP_DIR="$APP_DIR"
+export XDG_CURRENT_DESKTOP="${XDG_CURRENT_DESKTOP:-KamaShell:niri}"
+export XDG_SESSION_DESKTOP="${XDG_SESSION_DESKTOP:-kama-shell-niri-debug}"
+export DESKTOP_SESSION="${DESKTOP_SESSION:-kama-shell-niri-debug}"
+export KAMA_SESSION=1
+export KAMA_COMPOSITOR=niri
+export QT_WAYLAND_SHELL_INTEGRATION="${QT_WAYLAND_SHELL_INTEGRATION:-layer-shell}"
+export KAMA_DEV="${KAMA_DEV:-1}"
+export KAMA_QS_LOG_TIMES="${KAMA_QS_LOG_TIMES:-1}"
+export KAMA_QS_VERBOSE="${KAMA_QS_VERBOSE:-2}"
+export KAMA_RUN_LOG_FILE="$LOG_FILE"
+
+# niri herite du cwd pour ses commandes spawn-at-startup. Placer cwd sur le
+# tree source pour que `quickshell -p src/shell.qml` resolve correctement.
+cd "$APP_DIR"
+
+exec niri --session --config "$NIRI_CONFIG" "$@"

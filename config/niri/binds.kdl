@@ -1,0 +1,14 @@
+// Default niri binds for a packaged Kama Shell install.
+//
+// Include from ~/.config/niri/config.kdl:
+//   include optional=true "/usr/share/doc/kama-shell/niri-binds.kdl"
+
+binds {
+    Mod+D repeat=false { spawn "/usr/bin/qs" "ipc" "--path" "/usr/share/kama-shell/src/shell.qml" "--any-display" "call" "kama-shell" "toggleLauncher"; }
+
+    Mod+Shift+E { quit; }
+
+    Print           { screenshot; }
+    Mod+Print       { screenshot-screen; }
+    Mod+Shift+Print { screenshot-window; }
+}

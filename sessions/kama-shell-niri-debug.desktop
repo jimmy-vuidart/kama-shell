@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Kama Shell - Niri (debug)
+Comment=Session niri pointant vers le tree source Kama Shell (debug)
+Exec=@PREFIX@/bin/start-kama-shell-niri-debug-session
+TryExec=@PREFIX@/bin/start-kama-shell-niri-debug-session
+DesktopNames=KamaShell:niri

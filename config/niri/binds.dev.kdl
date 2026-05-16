@@ -1,0 +1,15 @@
+// Default niri binds for the Kama Shell source-tree debug session.
+//
+// config/niri/config.kdl includes this file with a relative path. The debug
+// session starts niri with cwd = repository root, so src/shell.qml resolves
+// against this tree.
+
+binds {
+    Mod+D repeat=false { spawn "/usr/bin/qs" "ipc" "--path" "src/shell.qml" "--any-display" "call" "kama-shell" "toggleLauncher"; }
+
+    Mod+Shift+E { quit; }
+
+    Print           { screenshot; }
+    Mod+Print       { screenshot-screen; }
+    Mod+Shift+Print { screenshot-window; }
+}

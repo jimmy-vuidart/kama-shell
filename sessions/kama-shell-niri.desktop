@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Kama Shell (niri)
+Comment=Session Wayland niri pilotant Kama Shell
+Exec=@PREFIX@/bin/start-kama-shell-niri-session
+TryExec=@PREFIX@/bin/start-kama-shell-niri-session
+DesktopNames=KamaShell:niri

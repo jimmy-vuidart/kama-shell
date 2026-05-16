@@ -1,0 +1,35 @@
+// Configuration niri utilisee par la session debug Kama Shell.
+//
+// La session `kama-shell-niri-debug-session` se place dans le tree source
+// (cwd = APP_DIR), puis lance `niri --session --config config/niri/config.kdl`.
+// niri herite du cwd: les commandes `spawn-at-startup` resolvent donc leurs
+// chemins relativement a la racine du depot.
+//
+// Pour le packaging / les utilisateurs finaux, voir `config.kdl.example`.
+
+// ---------------------------------------------------------------------------
+// Lancement automatique
+// ---------------------------------------------------------------------------
+spawn-at-startup "/usr/bin/quickshell" "-p" "src/shell.qml"
+spawn-at-startup "/usr/bin/xwayland-satellite"
+
+include "binds.dev.kdl"
+
+// ---------------------------------------------------------------------------
+// Layer rules pour les namespaces Kama Shell.
+// ---------------------------------------------------------------------------
+layer-rule {
+    match namespace="^kama-shell-launcher$"
+    block-out-from "screencast"
+}
+
+layer-rule {
+    match namespace="^kama-shell-ring$"
+    block-out-from "screencast"
+}
+
+input {
+	touchpad {
+		natural-scroll
+	}
+}

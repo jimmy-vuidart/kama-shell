@@ -1,0 +1,94 @@
+// Exemple de configuration niri pour piloter Kama Shell.
+//
+// Installer ce fichier comme `~/.config/niri/config.kdl`, ou en l'incluant
+// depuis votre configuration existante via la directive `include`.
+//
+// La session `kama-shell-niri.desktop` exporte:
+//   - XDG_CURRENT_DESKTOP=KamaShell:niri
+//   - KAMA_SESSION=1
+//   - KAMA_COMPOSITOR=niri
+//
+// Ces variables permettent a Kama Shell de se reperer dans son
+// `CompositorState` singleton sans dependre des heuristiques d'environnement.
+
+// ---------------------------------------------------------------------------
+// Lancement automatique
+//
+// Kama Shell s'execute comme un client layer-shell autonome. Le binaire
+// `/usr/bin/quickshell` (paquet `quickshell-git` sur Arch) lit `src/shell.qml`.
+// Adapter les chemins si vos binaires ne sont pas sous `/usr/bin`:
+//   - paquet AUR/Arch:   /usr/share/kama-shell/src/shell.qml
+//   - clone developpeur: $HOME/Projets/kama-shell/src/shell.qml
+// ---------------------------------------------------------------------------
+spawn-at-startup "/usr/bin/quickshell" "-p" "/usr/share/kama-shell/src/shell.qml"
+
+// xwayland-satellite expose les apps X11 a niri.
+spawn-at-startup "/usr/bin/xwayland-satellite"
+
+// Si vous utilisez deja Waybar/Mako/etc., ne les lancez plus depuis niri:
+// Kama Shell rend dock, launcher, ring et wallpaper. Une seule barre suffit.
+
+// ---------------------------------------------------------------------------
+// Raccourcis
+//
+// Les binds niri par defaut vivent dans un fichier separe. L'include est
+// optionnel pour garder Kama Shell utilisable avec vos propres binds. Si vous
+// copiez ce fichier depuis le depot au lieu du paquet, utilisez:
+//   include optional=true "binds.kdl"
+// ---------------------------------------------------------------------------
+include optional=true "/usr/share/doc/kama-shell/niri-binds.kdl"
+
+// ---------------------------------------------------------------------------
+// Layer rules
+//
+// Les namespaces sont definis dans:
+//   - components/Ring.qml          -> kama-shell-ring
+//   - components/AppLauncherOverlay.qml -> kama-shell-launcher
+//   - components/WallpaperWindow.qml    -> kama-shell-wallpaper
+//
+// Ne pas activer `background-effect` sur les surfaces fullscreen de Kama Shell:
+// sous niri, cela peut composer contre le backdrop/wallpaper et masquer les
+// fenetres normales derriere le launcher.
+// ---------------------------------------------------------------------------
+layer-rule {
+    match namespace="^kama-shell-launcher$"
+    block-out-from "screencast"
+}
+
+layer-rule {
+    match namespace="^kama-shell-ring$"
+    block-out-from "screencast"
+}
+
+// ---------------------------------------------------------------------------
+// Outputs
+//
+// Adapter ces blocs selon votre materiel.
+// ---------------------------------------------------------------------------
+// output "DP-1" {
+//     mode "2560x1440@165"
+//     scale 1
+// }
+
+// ---------------------------------------------------------------------------
+// Services desktop minimaux
+//
+// niri ne fournit pas:
+//   - de daemon de notification: utilisez `mako`, `dunst`, `swaync`...
+//   - d'agent polkit: utilisez `polkit-gnome` ou `polkit-kde-agent`.
+//   - de portails xdg-desktop-portal: installez `xdg-desktop-portal-gnome`
+//     ou `xdg-desktop-portal-wlr` selon vos besoins (screencast, file-picker).
+//   - d'idle/lock natif: combinez `swayidle` et `swaylock`.
+//
+// Pour les services persistants, preferer un unit systemd `--user` rattache
+// a `graphical-session.target` plutot que `spawn-at-startup`. niri pousse
+// `niri.service` dans la cible quand il est lance via `niri-session`.
+//
+// Pre-requis recommandes:
+//   - niri                  (compositeur Wayland)
+//   - quickshell-git        (binaire `quickshell` / `qs`)
+//   - xwayland-satellite    (apps X11)
+//   - xdg-desktop-portal-gnome ou -wlr (portails)
+//   - polkit-gnome ou polkit-kde-agent (auth)
+//   - mako ou autre notification daemon
+// ---------------------------------------------------------------------------
