@@ -16,16 +16,51 @@ spawn-at-startup "/usr/bin/xwayland-satellite"
 include "binds.dev.kdl"
 
 // ---------------------------------------------------------------------------
+// Decoration des fenetres
+// ---------------------------------------------------------------------------
+prefer-no-csd
+
+layout {
+    focus-ring {
+        on
+    }
+
+    border {
+        on
+        width 2
+        active-color "#9bbcff"
+        inactive-color "#3f4560"
+        urgent-color "#ff5f6d"
+    }
+}
+
+window-rule {
+    geometry-corner-radius 12
+    clip-to-geometry true
+}
+
+// ---------------------------------------------------------------------------
 // Layer rules pour les namespaces Kama Shell.
+// Le blur Liquid Glass est demande cote Quickshell avec `BackgroundEffect.blurRegion`.
+// `xray false` force niri a flouter les fenetres derriere le shell au lieu de
+// reutiliser seulement le wallpaper floute.
 // ---------------------------------------------------------------------------
 layer-rule {
     match namespace="^kama-shell-launcher$"
     block-out-from "screencast"
+
+    background-effect {
+        xray false
+    }
 }
 
 layer-rule {
     match namespace="^kama-shell-ring$"
     block-out-from "screencast"
+
+    background-effect {
+        xray false
+    }
 }
 
 input {

@@ -39,6 +39,34 @@ spawn-at-startup "/usr/bin/xwayland-satellite"
 include optional=true "/usr/share/doc/kama-shell/niri-binds.kdl"
 
 // ---------------------------------------------------------------------------
+// Decoration des fenetres
+//
+// `prefer-no-csd` demande aux apps compatibles de laisser niri dessiner les
+// decorations. Les apps qui gardent leurs CSD peuvent ignorer cette demande.
+// ---------------------------------------------------------------------------
+prefer-no-csd
+
+layout {
+    focus-ring {
+        off
+    }
+
+    border {
+        on
+        width 2
+        active-color "#9bbcff"
+        inactive-color "#3f4560"
+        urgent-color "#ff5f6d"
+    }
+}
+
+// Arrondit les fenetres et clippe leur contenu pour eviter les coins carres.
+window-rule {
+    geometry-corner-radius 12
+    clip-to-geometry true
+}
+
+// ---------------------------------------------------------------------------
 // Layer rules
 //
 // Les namespaces sont definis dans:
@@ -46,18 +74,27 @@ include optional=true "/usr/share/doc/kama-shell/niri-binds.kdl"
 //   - components/AppLauncherOverlay.qml -> kama-shell-launcher
 //   - components/WallpaperWindow.qml    -> kama-shell-wallpaper
 //
-// Ne pas activer `background-effect` sur les surfaces fullscreen de Kama Shell:
-// sous niri, cela peut composer contre le backdrop/wallpaper et masquer les
-// fenetres normales derriere le launcher.
+// Kama Shell demande le blur Liquid Glass lui-meme via `BackgroundEffect.blurRegion`
+// sur des regions bornees. `xray false` demande a niri de flouter les fenetres
+// derriere les panneaux au lieu de reutiliser seulement le wallpaper floute.
+// Ne pas ajouter `blur true` ici: la region de blur vient de Quickshell.
 // ---------------------------------------------------------------------------
 layer-rule {
     match namespace="^kama-shell-launcher$"
     block-out-from "screencast"
+
+    background-effect {
+        xray false
+    }
 }
 
 layer-rule {
     match namespace="^kama-shell-ring$"
     block-out-from "screencast"
+
+    background-effect {
+        xray false
+    }
 }
 
 // ---------------------------------------------------------------------------

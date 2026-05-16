@@ -4,7 +4,15 @@
 //   include optional=true "/usr/share/doc/kama-shell/niri-binds.kdl"
 
 binds {
+    // Mouse resize is a built-in niri gesture: hold Mod + right-click and drag.
+    // Do not bind Mod+MouseRight here; that would override the resize gesture.
+
     Mod+D repeat=false { spawn "/usr/bin/qs" "ipc" "--path" "/usr/share/kama-shell/src/shell.qml" "--any-display" "call" "kama-shell" "toggleLauncher"; }
+
+    Mod+WheelScrollDown cooldown-ms=150 { focus-window-down; }
+    Mod+WheelScrollUp   cooldown-ms=150 { focus-window-up; }
+
+    Mod+Q { close-window; }
 
     Mod+Shift+E { quit; }
 

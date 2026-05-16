@@ -56,7 +56,7 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/components/HomePanel.qml`: contenu visuel du panel maison, intégré dans le `PanelWindow` du ring
 - `src/components/HomeRoomRow.qml`, `HomeDeviceControl.qml`, `HouseIcon.qml`: primitives visuelles du panel maison
 - `src/components/AppDock.qml`: layout visuel du dock
-- `src/components/ThemedPanelSurface.qml`, `LiquidGlassSurface.qml`: surfaces de panel thémables, avec rendu backdrop blur pour `liquid-glass`
+- `src/components/ThemedPanelSurface.qml`, `LiquidGlassSurface.qml`: surfaces de panel thémables, avec rendu Liquid Glass; utilisent le blur compositeur via `BackgroundEffect.blurRegion` quand disponible et un fallback wallpaper local sinon
 - `src/components/AppLauncherOverlay.qml`, `AppLauncher.qml`, `AppLauncherItem.qml`: overlay launcher multi-écran, recherche et lignes de résultat
 - `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher depuis un bind niri ou `qs ipc`
 - `src/state/ShellConfig.qml`: configuration utilisateur lue depuis `~/.config/kama-shell/kama.conf`
@@ -76,7 +76,7 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `config/niri/binds.kdl`, `config/niri/binds.dev.kdl`: binds niri separes de la config principale (`Mod+D`, screenshots, quit), version paquet et version source-tree
 - `src/state/ClockState.qml`: état global de l'horloge basé sur `SystemClock`, sans processus externe
 - `src/state/WallpaperState.qml`: source du wallpaper rendu par Kama Shell, lue depuis `appearance.wallpaper`
-- `src/components/WallpaperWindow.qml`: `PanelWindow` multi-écran sur la couche `WlrLayer.Background` qui rend le wallpaper de référence pour les futurs effets de backdrop blur
+- `src/components/WallpaperWindow.qml`: `PanelWindow` multi-écran sur la couche `WlrLayer.Background` qui rend le wallpaper de référence et le fallback local des surfaces Liquid Glass
 
 Pour le dock applicatif:
 

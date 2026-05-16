@@ -11,6 +11,7 @@ Item {
     property int radius: ShellTheme.panelRadius
     property int padding: ShellTheme.panelPadding
     property bool clipContent: false
+    property bool useLocalBackdrop: true
 
     readonly property var hostWindow: Window.window
     readonly property real geometryRevision: root.x + root.y + root.width + root.height
@@ -60,6 +61,7 @@ Item {
         y: -root.cropY
         width: root.backdropWidth
         height: root.backdropHeight
+        visible: root.useLocalBackdrop
 
         Rectangle {
             anchors.fill: parent
@@ -68,8 +70,8 @@ Item {
 
         Image {
             anchors.fill: parent
-            source: WallpaperState.source
-            visible: WallpaperState.hasWallpaper
+            source: root.useLocalBackdrop ? WallpaperState.source : ""
+            visible: root.useLocalBackdrop && WallpaperState.hasWallpaper
             fillMode: Image.PreserveAspectCrop
             sourceSize: Qt.size(backdropScene.width, backdropScene.height)
             cache: true
@@ -88,7 +90,7 @@ Item {
         sourceRect: Qt.rect(root.cropX, root.cropY, root.cropWidth, root.cropHeight)
         textureSize: Qt.size(Math.max(1, root.width), Math.max(1, root.height))
         hideSource: true
-        live: true
+        live: root.useLocalBackdrop
         recursive: false
         mipmap: true
         visible: false
@@ -113,6 +115,7 @@ Item {
         blur: ShellTheme.liquidBlurAmount
         saturation: ShellTheme.liquidSaturation
         brightness: ShellTheme.liquidBrightness
+        visible: root.useLocalBackdrop
         maskEnabled: true
         maskSource: roundedMask
         maskThresholdMin: 0.5

@@ -16,23 +16,30 @@ ShellConfig.visualTheme === "liquid-glass"
 ShellTheme  ──►  expose des tokens visuels (alpha, radius, etc.)
         │
         ▼
+PanelWindow liquid-glass sur niri       → BackgroundEffect.blurRegion borne
 ThemedPanelSurface (existant)
-   ├── thème glassmorphism / ffxiv → rendu actuel par dégradé
-   └── thème liquid-glass         → délègue à LiquidGlassSurface
-                                       │
-                                       ├── Image privée (source = WallpaperState.source)
-                                       │   recadrée via mapToItem sur la zone du panel
-                                       ├── ShaderEffectSource (capture de l'Image)
-                                       ├── MultiEffect (blur + saturation + brightness)
-                                       ├── voile blanc très clair
-                                       ├── inner stroke clair + outer stroke sombre
-                                       └── RectangularShadow
+   ├── thème glassmorphism / ffxiv      → rendu actuel par dégradé
+   └── thème liquid-glass               → délègue à LiquidGlassSurface
+                                           │
+                                           ├── si blur compositeur actif:
+                                           │   voile blanc très clair + strokes/ombre
+                                           ├── sinon:
+                                           │   Image privée du wallpaper + MultiEffect
+                                           │   (fallback blur + saturation + brightness)
+                                           ├── inner stroke clair + outer stroke sombre
+                                           └── RectangularShadow
 ```
 
 Contrainte Wayland: chaque `PanelWindow` est une surface séparée. `ShaderEffectSource`
 ne peut pas capturer un Item d'une autre fenêtre. Donc chaque `LiquidGlassSurface`
 charge **sa propre Image** à partir de `WallpaperState.source` et la repositionne
 en interne pour que le crop visible corresponde à ce qu'il y a sous le panel.
+Ce rendu local reste un fallback: quand niri expose `ext-background-effect-v1`,
+Kama Shell préfère `BackgroundEffect.blurRegion`, qui floute réellement les
+fenêtres derrière le shell. niri active toutefois `xray` par défaut pour les
+background effects; les layer rules Kama Shell doivent donc définir
+`background-effect { xray false }` pour flouter les fenêtres au lieu de
+réutiliser seulement le wallpaper flouté.
 
 ## Phase 1 — socle thème (sans shader custom)
 
@@ -97,6 +104,10 @@ Suffit pour ~80% du rendu Apple perçu.
 
 - Reload Quickshell, basculer `theme = liquid-glass` dans la conf.
 - Le wallpaper sous chaque panel doit apparaître flouté + saturé.
+- Sous niri récent, les fenêtres derrière les panneaux doivent apparaître
+  floutées si les layer rules `kama-shell-ring` et `kama-shell-launcher`
+  définissent `background-effect { xray false }`; le fallback wallpaper ne doit
+  pas les recouvrir.
 - Bordure claire visible en haut, ombre douce sous le panel.
 - Pas de flicker au changement de thème (live reload).
 - Sur multi-écran: le crop doit suivre l'écran, pas afficher le wallpaper du

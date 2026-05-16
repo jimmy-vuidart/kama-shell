@@ -9,6 +9,7 @@ Item {
     property int radius: ShellTheme.panelRadius
     property int padding: ShellTheme.panelPadding
     property bool clipContent: false
+    property bool compositorBlurActive: false
 
     implicitWidth: 336
     implicitHeight: 170
@@ -21,6 +22,7 @@ Item {
                 radius: root.radius
                 padding: root.padding
                 clipContent: root.clipContent
+                useLocalBackdrop: !root.compositorBlurActive
             }
         }
     }

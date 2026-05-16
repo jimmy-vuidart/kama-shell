@@ -114,6 +114,9 @@ Item {
         radius: ShellTheme.isFfxiv ? 10 : 28
         padding: 20
         clipContent: false
+        compositorBlurActive: root.active
+            && ShellTheme.isLiquidGlass
+            && CompositorState.supportsBackgroundEffect
 
         Rectangle {
             id: searchBox

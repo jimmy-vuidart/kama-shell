@@ -25,6 +25,22 @@ Variants {
                     ? WlrKeyboardFocus.Exclusive
                     : WlrKeyboardFocus.None
 
+                readonly property bool backgroundBlurEnabled: visible
+                    && ShellTheme.isLiquidGlass
+                    && CompositorState.supportsBackgroundEffect
+
+                BackgroundEffect.blurRegion: window.backgroundBlurEnabled ? launcherBlurRegion : null
+
+                function refreshLauncherBlurRegion() {
+                    if (window.backgroundBlurEnabled) {
+                        launcherBlurRegion.changed()
+                    }
+                }
+
+                onBackgroundBlurEnabledChanged: Qt.callLater(refreshLauncherBlurRegion)
+                onWidthChanged: Qt.callLater(refreshLauncherBlurRegion)
+                onHeightChanged: Qt.callLater(refreshLauncherBlurRegion)
+
                 anchors {
                     top: true
                     left: true
@@ -34,6 +50,18 @@ Variants {
 
                 color: "transparent"
                 surfaceFormat.opaque: false
+
+                Region {
+                    id: launcherBlurRegion
+
+                    Region {
+                        x: Math.floor(launcher.x)
+                        y: Math.floor(launcher.y)
+                        width: Math.ceil(launcher.width)
+                        height: Math.ceil(launcher.height)
+                        radius: Math.ceil(ShellTheme.isFfxiv ? 10 : 28)
+                    }
+                }
 
                 Rectangle {
                     anchors.fill: parent
@@ -53,6 +81,11 @@ Variants {
                     width: Math.min(760, Math.max(320, window.width - 72))
                     height: Math.min(640, Math.max(360, window.height - 128))
                     active: window.visible
+
+                    onXChanged: Qt.callLater(window.refreshLauncherBlurRegion)
+                    onYChanged: Qt.callLater(window.refreshLauncherBlurRegion)
+                    onWidthChanged: Qt.callLater(window.refreshLauncherBlurRegion)
+                    onHeightChanged: Qt.callLater(window.refreshLauncherBlurRegion)
                 }
             }
         }
