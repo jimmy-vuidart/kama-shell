@@ -1,14 +1,19 @@
 pkgname=kama-shell
 pkgver=0.1.0
 pkgrel=1
-pkgdesc="Minimal Quickshell session running on KWin Wayland"
+pkgdesc="Quickshell session running on niri"
 arch=('any')
 url=""
 license=('custom')
 depends=(
-    'kwin'
+    'niri'
     'quickshell-git'
-    'plasma-workspace'
+    'xwayland-satellite'
+)
+optdepends=(
+    'mako: notification daemon'
+    'polkit-gnome: authentication agent'
+    'xdg-desktop-portal-gnome: portals for Flatpak / screencast'
 )
 makedepends=()
 source=()
@@ -27,22 +32,23 @@ package() {
     install -m 644 "$repo_dir/qmldir" "$appdir/qmldir"
     cp -r "$repo_dir/src" "$appdir/src"
     cp -r "$repo_dir/scripts" "$appdir/scripts"
-    cp -r "$repo_dir/kwin" "$appdir/kwin"
 
-    install -m 755 "$repo_dir/sessions/start-kama-shell-session" \
-        "$bindir/start-kama-shell-session"
-    install -m 644 "$repo_dir/sessions/kama-shell-session-common.sh" \
-        "$bindir/kama-shell-session-common.sh"
+    install -m 755 "$repo_dir/sessions/start-kama-shell-niri-session" \
+        "$bindir/start-kama-shell-niri-session"
 
     sed "0,/__KAMA_SHELL_APP_DIR__/s||/usr/share/$pkgname|" \
-        "$repo_dir/sessions/kama-shell-session" > "$bindir/kama-shell-session"
-    chmod 755 "$bindir/kama-shell-session"
+        "$repo_dir/sessions/kama-shell-niri-session" > "$bindir/kama-shell-niri-session"
+    chmod 755 "$bindir/kama-shell-niri-session"
 
     sed "s|@PREFIX@|/usr|g" \
-        "$repo_dir/sessions/kama-shell.desktop" > "$sessiondir/kama-shell.desktop"
+        "$repo_dir/sessions/kama-shell-niri.desktop" > "$sessiondir/kama-shell-niri.desktop"
 
     install -m 644 "$repo_dir/sessions/session.conf.example" \
         "$docdir/session.conf.example"
     install -m 644 "$repo_dir/config/kama.conf.example" \
         "$docdir/kama.conf.example"
+    install -m 644 "$repo_dir/config/niri/config.kdl.example" \
+        "$docdir/niri-config.kdl.example"
+    install -m 644 "$repo_dir/config/niri/binds.kdl" \
+        "$docdir/niri-binds.kdl"
 }

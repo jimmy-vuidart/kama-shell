@@ -19,7 +19,7 @@ Variants {
                 screen: root.modelData
                 visible: LauncherState.shouldShowOnScreen(root.modelData)
                 focusable: visible
-                WlrLayershell.layer: WlrLayershell.Overlay
+                WlrLayershell.layer: WlrLayer.Overlay
                 WlrLayershell.namespace: "kama-shell-launcher"
                 WlrLayershell.keyboardFocus: visible
                     ? WlrKeyboardFocus.Exclusive
@@ -37,7 +37,7 @@ Variants {
 
                 Rectangle {
                     anchors.fill: parent
-                    color: Qt.rgba(0, 0, 0, ShellTheme.isFfxiv ? 0.42 : 0.24)
+                    color: Qt.rgba(0, 0, 0, ShellTheme.isFfxiv ? 0.34 : 0.18)
                 }
 
                 MouseArea {

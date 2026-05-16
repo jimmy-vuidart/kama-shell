@@ -14,8 +14,10 @@ Variants {
             PanelWindow {
                 id: window
                 screen: root.modelData
-                WlrLayershell.layer: WlrLayershell.Background
+                WlrLayershell.layer: WlrLayer.Background
                 WlrLayershell.namespace: "kama-shell-wallpaper"
+                WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+                exclusionMode: ExclusionMode.Ignore
                 color: "transparent"
                 focusable: false
 

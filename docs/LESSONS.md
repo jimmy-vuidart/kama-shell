@@ -43,11 +43,11 @@
 
 ## État du dock
 
-- `DockState` doit rester l'orchestrateur du dock et déléguer les traitements asynchrones dédiés à des singletons séparés, comme `DockIconResolver` et `DockKrunnerFallback`.
+- `DockState` doit rester l'orchestrateur du dock et déléguer les traitements asynchrones dédiés à des singletons séparés, comme `DockIconResolver`.
 - `DockState` agrège proprement ces sources:
   - `DesktopEntries` pour les métadonnées applicatives
-  - `ToplevelManager.toplevels` pour les fenêtres ouvertes
-  - le fallback KRunner/KWin uniquement quand les toplevels natifs ne sont pas exposés
+  - `ToplevelManager.toplevels` pour les fenêtres ouvertes (source unique sous niri)
+  - si `ToplevelManager` manque un champ utile, ajouter un backend dedié basé sur `NiriIpc` plutôt que de retomber sur un service tiers
 - L'ordre attendu du dock est:
   - pinned
   - séparateur conditionnel

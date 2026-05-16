@@ -15,7 +15,7 @@ Variants {
             PanelWindow {
                 id: window
                 screen: root.modelData
-                WlrLayershell.layer: WlrLayershell.Overlay
+                WlrLayershell.layer: WlrLayer.Overlay
                 WlrLayershell.namespace: "kama-shell-ring"
 
                 readonly property real innerLeft: ShellGeometry.frameInset
@@ -339,23 +339,6 @@ Variants {
                     }
                 }
 
-                BackgroundEffect.blurRegion: Region {
-                    width: window.width
-                    height: window.height
-
-                    Region {
-                        width: window.width
-                        height: window.height
-                    }
-
-                    Region {
-                        item: InnerCutout {
-                            width: window.width
-                            height: window.height
-                        }
-                        intersection: Intersection.Subtract
-                    }
-                }
                 anchors {
                     top: true
                     left: true

@@ -127,13 +127,13 @@ Singleton {
     }
 
     function currentToplevels() {
+        if (CompositorState.isNiri) {
+            return NiriWindowBackend.windows
+        }
+
         const nativeWindows = root.nativeToplevels()
 
-        return nativeWindows.length > 0 ? nativeWindows : DockKrunnerFallback.windows
-    }
-
-    function refreshKrunnerWindows() {
-        DockKrunnerFallback.refresh(root.nativeToplevels().length)
+        return nativeWindows
     }
 
     function activateItem(item) {
@@ -421,29 +421,12 @@ Singleton {
 
     Component.onCompleted: {
         root.applyPinnedAppsFromConfig()
-        root.refreshKrunnerWindows()
-    }
-
-    Timer {
-        interval: 2000
-        running: DockKrunnerFallback.fallbackEnabled
-        repeat: true
-
-        onTriggered: root.refreshKrunnerWindows()
     }
 
     Connections {
         target: DockIconResolver
 
         function onIconLookupCacheChanged() {
-            root.queueRebuild()
-        }
-    }
-
-    Connections {
-        target: DockKrunnerFallback
-
-        function onWindowsChanged() {
             root.queueRebuild()
         }
     }
@@ -476,6 +459,12 @@ Singleton {
         target: ToplevelManager
 
         function onActiveToplevelChanged() { root.queueRebuild() }
+    }
+
+    Connections {
+        target: NiriWindowBackend
+
+        function onWindowsChanged() { root.queueRebuild() }
     }
 
     Instantiator {

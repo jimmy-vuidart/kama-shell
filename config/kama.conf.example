@@ -12,9 +12,14 @@ theme = glassmorphism
 # wallpaper = ~/Pictures/wallpaper.jpg
 
 [launcher]
-# KWin key sequence for the app launcher. Meta means the Super/Windows key alone.
-# Changing this key requires restarting the Kama Shell session.
-shortcut = Meta
+# Niri owns the global shortcut. Default niri binds live in a separate KDL file.
+# Include them from `~/.config/niri/config.kdl`:
+#
+#   include optional=true "/usr/share/doc/kama-shell/niri-binds.kdl"
+#
+# The value below is purely documentary: Kama Shell does not register a global
+# shortcut by itself. Keep it in sync with the binds file or your own config.
+shortcut = Mod+D
 
 [dock]
 # Comma-separated desktop entries. A fallback label can be provided after "|".

@@ -1,11 +1,14 @@
 pkgbase = kama-shell
-	pkgdesc = Minimal Quickshell session running on KWin Wayland
+	pkgdesc = Quickshell session running on niri
 	pkgver = 0.1.0
 	pkgrel = 1
 	arch = any
 	license = custom
-	depends = kwin
+	depends = niri
 	depends = quickshell-git
-	depends = plasma-workspace
+	depends = xwayland-satellite
+	optdepends = mako: notification daemon
+	optdepends = polkit-gnome: authentication agent
+	optdepends = xdg-desktop-portal-gnome: portals for Flatpak / screencast
 
 pkgname = kama-shell

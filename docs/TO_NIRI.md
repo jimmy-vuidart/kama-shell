@@ -56,7 +56,7 @@ La session niri ne doit pas installer ou modifier de configuration KDE. Elle doi
 - exporter `DESKTOP_SESSION=kama-shell-niri`;
 - exporter `KAMA_SESSION=1`;
 - lancer `quickshell -p src/shell.qml` via `run.sh` ou via un service utilisateur systemd;
-- laisser niri gerer la session, les binds, les outputs et les services graphiques.
+- laisser niri gerer la session, les outputs et les services graphiques; les binds par defaut vivent dans un fichier KDL separe.
 
 Attention: dans l'etat actuel, `KAMA_SESSION` et `XDG_CURRENT_DESKTOP` contenant `KamaShell` peuvent activer le fallback KRunner/KWin du dock. La session niri ne doit donc etre ajoutee comme chemin utilisable qu'apres la phase 0, quand ce fallback est supprime ou neutralise definitivement.
 
@@ -140,7 +140,7 @@ Taches:
 - Exporter `KAMA_COMPOSITOR=niri`.
 - Ajouter un exemple de config niri avec:
   - lancement de Kama Shell;
-  - bind launcher vers `qs ipc call kama-shell toggleLauncher`;
+  - include optionnel du fichier de binds niri;
   - suppression ou non-lancement de Waybar pour eviter deux barres;
   - layer rules pour les namespaces Kama Shell.
 - Mettre a jour le packaging pour installer la session niri et retirer la session KWin du paquet.
@@ -152,12 +152,10 @@ Taches:
   - agent polkit;
   - notification daemon si Kama Shell ne le fournit pas encore.
 
-Exemple de bind niri a viser dans la config utilisateur:
+Exemple d'include niri a viser dans la config utilisateur:
 
 ```kdl
-binds {
-    Mod+D repeat=false { spawn "qs" "ipc" "--any-display" "call" "kama-shell" "toggleLauncher"; }
-}
+include optional=true "/usr/share/doc/kama-shell/niri-binds.kdl"
 ```
 
 Si la session continue a lancer `run.sh`, celui-ci doit rester neutre: il ne doit pas lancer un compositeur imbrique quand `NIRI_SOCKET` ou une session niri est active.
@@ -192,22 +190,11 @@ Exemple de layer rules:
 layer-rule {
     match namespace="^kama-shell-launcher$"
     block-out-from "screencast"
-    background-effect {
-        blur true
-    }
 }
 
 layer-rule {
     match namespace="^kama-shell-ring$"
-    background-effect {
-        blur true
-        xray true
-    }
-}
-
-layer-rule {
-    match namespace="^kama-shell-wallpaper$"
-    place-within-backdrop true
+    block-out-from "screencast"
 }
 ```
 
@@ -285,7 +272,7 @@ Objectif: retirer les scripts KWin de raccourcis et confier les raccourcis globa
 
 Taches:
 
-- Pour niri, definir les binds dans `config.kdl`, pas dans Quickshell.
+- Pour niri, definir les binds dans un fichier separe (`config/niri/binds.kdl`), pas dans Quickshell.
 - Conserver `KamaShellIpc.qml` comme API stable:
   - `toggleLauncher [screenName]`;
   - futurs appels: screenshot, settings, theme reload.
@@ -298,7 +285,7 @@ Taches:
 Verification:
 
 - bind niri ouvre le launcher;
-- changement de raccourci documente dans `config.kdl.example`;
+- changement de raccourci documente dans `config/niri/binds.kdl` et reference depuis `config.kdl.example`;
 - aucune tentative `kwriteconfig6` ne reste dans le chemin de session.
 
 ### Phase 6: screenshots et services desktop
@@ -434,7 +421,7 @@ Mitigation: garder le launcher sur `Overlay` sous niri.
 
 Risque: le ring ou le wallpaper se comporte mal dans l'overview.
 
-Mitigation: tester explicitement `Top`, `Overlay`, `Background` et `place-within-backdrop`.
+Mitigation: tester explicitement `Top`, `Overlay` et `Background`. Ne pas activer `place-within-backdrop` ni `background-effect` sur une surface fullscreen tant que le rendu normal des apps n'est pas valide.
 
 ### Config utilisateur
 

@@ -12,6 +12,10 @@
 #   KAMA_QS_WAIT_FOR_DEBUG=1
 #   KAMA_RUN_LOG_FILE=/path/to/kama-shell.log
 #
+# Display managers can start sessions with a reduced PATH. Override it here if
+# niri, quickshell, qs or helper binaries are installed outside standard paths.
+# KAMA_SESSION_PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin
+#
 # Keyboard layout examples:
 #   KAMA_XKB_LAYOUT=fr
 #   KAMA_XKB_LAYOUT=us,fr

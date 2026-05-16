@@ -3,6 +3,13 @@
 > Plan de construction du shell Kama-Shell sur **Quickshell / Qt6 / QML / GLSL**.
 > Worktree : branche `quickshell-v3` dans `glass-shell-qs/`.
 
+> **Note 2026-05** — la cible compositeur officielle est désormais **niri**, pas
+> KWin / Plasma. Les sections de ce document qui dépendent de KWin, KRunner,
+> `kwriteconfig6`, des KWin scripts ou de DBus `org.kde.*` sont superseded par
+> [`docs/TO_NIRI.md`](docs/TO_NIRI.md). Quand un jalon de PLAN.md mentionne
+> KWin, lire la section correspondante de TO_NIRI.md (binds dans
+> `config/niri/binds.kdl`, IPC `niri msg --json`, layer rules niri) avant d'agir.
+
 ---
 
 ## 0. Principes directeurs

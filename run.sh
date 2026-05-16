@@ -28,6 +28,16 @@ is_gnome_session() {
     [[ "$desktop" == *GNOME* ]] || [[ "$session" == *gnome* ]] || [[ -n "$mode" ]]
 }
 
+is_niri_session() {
+    local desktop="${XDG_CURRENT_DESKTOP:-}"
+    local session="${DESKTOP_SESSION:-}"
+
+    [[ -n "${NIRI_SOCKET:-}" ]] \
+        || [[ "${KAMA_COMPOSITOR:-}" == "niri" ]] \
+        || [[ "$desktop" == *niri* ]] \
+        || [[ "$session" == *niri* ]]
+}
+
 run_quickshell() {
     local quickshell_args=()
     local verbose_count=0
@@ -112,7 +122,7 @@ if [[ "${KAMA_NESTED_HYPRLAND:-0}" == "1" ]]; then
     run_quickshell "$@"
 fi
 
-if [[ -n "${WAYLAND_DISPLAY:-}" ]] && is_gnome_session; then
+if [[ -n "${WAYLAND_DISPLAY:-}" ]] && ! is_niri_session && is_gnome_session; then
     setup_logging
     run_nested_hyprland "$@"
 fi

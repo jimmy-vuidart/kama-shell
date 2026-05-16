@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Ce dépôt contient une configuration Quickshell minimale, actuellement centrée sur [`src/shell.qml`](/mnt/d/Projets/kama-shell/src/shell.qml). Les changements doivent rester compatibles avec Quickshell et avec un usage Wayland via `PanelWindow` + `WlrLayershell`.
+Ce dépôt contient une configuration Quickshell minimale, actuellement centrée sur [`src/shell.qml`](src/shell.qml). Kama Shell est un shell Quickshell autonome lancé dans une session [niri](https://niri-wm.github.io/niri/). niri est la seule cible de session supportée; les intégrations KWin/KRunner ont été retirées (voir [`docs/TO_NIRI.md`](docs/TO_NIRI.md)). Les changements doivent rester compatibles avec Quickshell et avec un usage Wayland via `PanelWindow` + `WlrLayershell`.
 
 ## Objectif
 
@@ -58,17 +58,22 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/components/AppDock.qml`: layout visuel du dock
 - `src/components/ThemedPanelSurface.qml`, `LiquidGlassSurface.qml`: surfaces de panel thémables, avec rendu backdrop blur pour `liquid-glass`
 - `src/components/AppLauncherOverlay.qml`, `AppLauncher.qml`, `AppLauncherItem.qml`: overlay launcher multi-écran, recherche et lignes de résultat
-- `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher depuis KWin ou `qs ipc`
+- `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher depuis un bind niri ou `qs ipc`
 - `src/state/ShellConfig.qml`: configuration utilisateur lue depuis `~/.config/kama-shell/kama.conf`
 - `scripts/update-kama-config.py`: écriture atomique des valeurs de config modifiées par l'interface
 - `src/state/ShellTheme.qml`: thème visuel actif, actuellement `glassmorphism`, `ffxiv` et `liquid-glass`
 - `src/state/ShellGeometry.qml`: constantes de forme partagées entre ring, dock et panel maison
-- `src/state/DockState.qml`: état global du dock, apps pinned + running via `DesktopEntries`, `ToplevelManager` et fallback KRunner
+- `src/state/CompositorState.qml`: détection du backend (`niri` / `generic-wlr` / `unknown`) et capacités (`hasNativeToplevels`, `hasNiriIpc`, `hasLayerRules`, `supportsBackgroundEffect`); priorité à `KAMA_COMPOSITOR` puis aux heuristiques d'environnement
+- `src/state/NiriIpc.qml`: helper d'IPC vers niri qui wrappe `niri msg --json`, parse la sortie et ignore les champs inconnus
+- `src/state/NiriWorkspaceState.qml`: état normalisé des outputs, workspaces et fenêtre focus exposé via `NiriIpc`; expose aussi des actions (`focusWorkspaceUp`, `toggleOverview`, etc.)
+- `src/state/DockState.qml`: état global du dock, apps pinned + running via `DesktopEntries` et `ToplevelManager`
 - `src/state/DockIconResolver.qml`: résolution et cache asynchrones des icônes du dock
-- `src/state/DockKrunnerFallback.qml`: fallback KWin/KRunner des fenêtres ouvertes quand `ToplevelManager` ne fournit pas les toplevels
 - `src/state/LauncherState.qml`: état global du launcher, filtrage de `DesktopEntries.applications`, sélection et lancement
-- `kwin/scripts/kama-shell-shortcuts/`: script KWin qui mappe le raccourci Super/Meta vers l'IPC Quickshell du launcher
-- `sessions/kama-shell-session-common.sh`: fonctions partagées par les sessions Wayland standard et debug
+- `sessions/kama-shell-niri-session`, `sessions/start-kama-shell-niri-session`, `sessions/kama-shell-niri.desktop`: session niri installable via Makefile/PKGBUILD; exporte `KAMA_COMPOSITOR=niri`, `XDG_CURRENT_DESKTOP=KamaShell:niri`
+- `sessions/kama-shell-niri-debug-session`, `sessions/start-kama-shell-niri-debug-session`, `sessions/kama-shell-niri-debug.desktop`: session niri debug; lance `niri --config config/niri/config.kdl` depuis le tree source et expose `KAMA_DEV=1` + log dans `logs/kama-shell.log`. Installable via `make install-session-niri-debug` uniquement (jamais empaquetee)
+- `config/niri/config.kdl.example`: exemple de configuration niri (lancement de Kama Shell installe, include optionnel de `niri-binds.kdl`, layer rules sur les namespaces `kama-shell-*`, services attendus)
+- `config/niri/config.kdl`: variante dev consommee par la session debug, avec `spawn-at-startup "/usr/bin/quickshell" "-p" "src/shell.qml"` et include de `binds.dev.kdl` (chemins relatifs resolus contre `$APP_DIR/config/niri`)
+- `config/niri/binds.kdl`, `config/niri/binds.dev.kdl`: binds niri separes de la config principale (`Mod+D`, screenshots, quit), version paquet et version source-tree
 - `src/state/ClockState.qml`: état global de l'horloge basé sur `SystemClock`, sans processus externe
 - `src/state/WallpaperState.qml`: source du wallpaper rendu par Kama Shell, lue depuis `appearance.wallpaper`
 - `src/components/WallpaperWindow.qml`: `PanelWindow` multi-écran sur la couche `WlrLayer.Background` qui rend le wallpaper de référence pour les futurs effets de backdrop blur
@@ -77,15 +82,21 @@ Pour le dock applicatif:
 
 - garder la séparation nette entre état (`DockState`) et rendu (`AppDock`, `AppDockItem`)
 - préférer `DesktopEntries` pour les métadonnées applicatives
-- préférer `ToplevelManager` pour les fenêtres ouvertes tant que le compositeur expose correctement les toplevels
+- utiliser `ToplevelManager` comme source unique des fenêtres ouvertes; n'introduire un `NiriWindowBackend` basé sur `niri msg --json windows` que si `ToplevelManager` ne fournit pas un champ utile
 - éviter d'introduire de nouveaux fallbacks spécifiques à une application si un fallback générique de résolution d'icônes suffit
 
 Pour le launcher applicatif:
 
 - garder la séparation nette entre état (`LauncherState`) et rendu (`AppLauncher`, `AppLauncherItem`)
 - utiliser `DesktopEntries.applications` comme source native des applications affichées
-- déclencher l'ouverture globale via `IpcHandler` cible `kama-shell` et le script KWin `kama-shell-shortcuts`; ne pas utiliser `Quickshell.Hyprland.GlobalShortcut` pour la session KWin
-- définir le raccourci global dans `~/.config/kama-shell/kama.conf` via `launcher.shortcut`; si cette clé change, mettre à jour `config/kama.conf.example`
+- déclencher l'ouverture globale via `IpcHandler` cible `kama-shell`; le raccourci global est fourni par `config/niri/binds.kdl` ou par la config niri utilisateur — Kama Shell n'enregistre plus de raccourci global lui-même
+- `launcher.shortcut` dans `~/.config/kama-shell/kama.conf` est purement documentaire: garder la clé en sync avec `config/niri/binds.kdl` ou le bind niri utilisateur si elle change, mettre à jour `config/kama.conf.example`
+
+Pour l'intégration niri:
+
+- consommer l'état compositeur via `CompositorState`; ne jamais lire `XDG_CURRENT_DESKTOP` ou `NIRI_SOCKET` ailleurs
+- toute requête à `niri` doit passer par le singleton `NiriIpc` (`niri msg --json`), pas par un `Process` ad hoc
+- déclarer les layer rules dans `~/.config/niri/config.kdl` (voir `config/niri/config.kdl.example`); les binds globaux vivent dans `config/niri/binds.kdl` et sont inclus via niri `include`; namespaces utilisés: `kama-shell-ring`, `kama-shell-launcher`, `kama-shell-wallpaper`
 
 ## Documentation
 
