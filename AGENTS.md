@@ -52,11 +52,12 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 
 - `src/shell.qml`: point d'entrée Quickshell
 - `src/components/Ring.qml`: `PanelWindow` multi-écran et géométrie du ring
+- `src/components/RingBlurRegion.qml`: génération exacte du `BackgroundEffect.blurRegion` du ring à partir de la même géométrie que le tracé visible; ne pas remplacer par des rectangles approximatifs
 - `src/components/DateTimeNotch.qml`: encoche haute centrale affichant la date et l'heure
 - `src/components/HomePanel.qml`: contenu visuel du panel maison, intégré dans le `PanelWindow` du ring
 - `src/components/HomeRoomRow.qml`, `HomeDeviceControl.qml`, `HouseIcon.qml`: primitives visuelles du panel maison
 - `src/components/AppDock.qml`: layout visuel du dock
-- `src/components/ThemedPanelSurface.qml`, `LiquidGlassSurface.qml`: surfaces de panel thémables, avec rendu Liquid Glass; utilisent le blur compositeur via `BackgroundEffect.blurRegion` quand disponible et un fallback wallpaper local sinon
+- `src/components/ThemedPanelSurface.qml`, `LiquidGlassSurface.qml`: surfaces de panel thémables, avec rendu Liquid Glass; les surfaces simples peuvent utiliser le blur compositeur via `BackgroundEffect.blurRegion` quand leur région est exacte, avec fallback wallpaper local sinon
 - `src/components/AppLauncherOverlay.qml`, `AppLauncher.qml`, `AppLauncherItem.qml`: overlay launcher multi-écran, recherche et lignes de résultat
 - `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher depuis un bind niri ou `qs ipc`
 - `src/state/ShellConfig.qml`: configuration utilisateur lue depuis `~/.config/kama-shell/kama.conf`
@@ -97,6 +98,7 @@ Pour l'intégration niri:
 - consommer l'état compositeur via `CompositorState`; ne jamais lire `XDG_CURRENT_DESKTOP` ou `NIRI_SOCKET` ailleurs
 - toute requête à `niri` doit passer par le singleton `NiriIpc` (`niri msg --json`), pas par un `Process` ad hoc
 - déclarer les layer rules dans `~/.config/niri/config.kdl` (voir `config/niri/config.kdl.example`); les binds globaux vivent dans `config/niri/binds.kdl` et sont inclus via niri `include`; namespaces utilisés: `kama-shell-ring`, `kama-shell-launcher`, `kama-shell-wallpaper`
+- ne jamais approximer le blur du `kama-shell-ring`: sa courbe visible est un `ShapePath` complexe, donc tout changement de panels/notches doit mettre à jour `RingBlurRegion.qml` avec la même géométrie
 
 ## Documentation
 

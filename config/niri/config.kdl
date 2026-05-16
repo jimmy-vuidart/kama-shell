@@ -44,6 +44,9 @@ window-rule {
 // Le blur Liquid Glass est demande cote Quickshell avec `BackgroundEffect.blurRegion`.
 // `xray false` force niri a flouter les fenetres derriere le shell au lieu de
 // reutiliser seulement le wallpaper floute.
+//
+// Le Ring fournit sa propre region exacte via `RingBlurRegion`; ne pas ajouter
+// `blur true` cote niri, sinon niri flouterait la geometrie de surface entiere.
 // ---------------------------------------------------------------------------
 layer-rule {
     match namespace="^kama-shell-launcher$"
@@ -57,7 +60,6 @@ layer-rule {
 layer-rule {
     match namespace="^kama-shell-ring$"
     block-out-from "screencast"
-
     background-effect {
         xray false
     }

@@ -208,90 +208,32 @@ Variants {
                     }
                 }
 
-                component DockBlurBand: Region {
-                    required property int index
-
-                    readonly property int bandCount: 16
-                    readonly property real bandTop: window.dockPeakY
-                    readonly property real bandBottom: window.innerBottom
-                    readonly property real bandHeight: Math.max(1, (bandBottom - bandTop) / bandCount)
-                    readonly property real y1: Math.min(bandBottom, bandTop + ((index + 1) * bandHeight))
-                    readonly property real progress: Math.max(0, Math.min(1, (y1 - bandTop) / Math.max(1, bandBottom - bandTop)))
-                    readonly property real easedProgress: progress * progress * (3 - (2 * progress))
-                    readonly property real leftEdge: window.dockTopFlatLeft
-                        + ((window.dockSlopeStartLeft - window.dockTopFlatLeft) * easedProgress)
-                    readonly property real rightEdge: window.dockTopFlatRight
-                        + ((window.dockSlopeStartRight - window.dockTopFlatRight) * easedProgress)
-
-                    x: Math.floor(leftEdge)
-                    y: Math.floor(bandTop + (index * bandHeight))
-                    width: Math.ceil(rightEdge - leftEdge)
-                    height: Math.ceil(y1 - y + 1)
-                }
-
-                Region {
+                RingBlurRegion {
                     id: shellBlurRegion
 
-                    Region {
-                        x: 0
-                        y: 0
-                        width: Math.ceil(window.width)
-                        height: Math.ceil(ShellGeometry.frameInset)
-                    }
-
-                    Region {
-                        x: 0
-                        y: 0
-                        width: Math.ceil(ShellGeometry.frameInset)
-                        height: Math.ceil(window.height)
-                    }
-
-                    Region {
-                        x: Math.floor(window.width - ShellGeometry.frameInset)
-                        y: 0
-                        width: Math.ceil(ShellGeometry.frameInset)
-                        height: Math.ceil(window.height)
-                    }
-
-                    Region {
-                        x: 0
-                        y: Math.floor(window.height - ShellGeometry.frameInset)
-                        width: Math.ceil(window.width)
-                        height: Math.ceil(ShellGeometry.frameInset)
-                    }
-
-                    Region {
-                        x: Math.floor(window.clockNotchLeft)
-                        y: Math.floor(ShellGeometry.frameInset)
-                        width: Math.ceil(window.clockNotchWidth)
-                        height: Math.ceil(ShellGeometry.clockNotchDepth)
-                        radius: Math.ceil(window.clockNotchRadius)
-                    }
-
-                    DockBlurBand { index: 0 }
-                    DockBlurBand { index: 1 }
-                    DockBlurBand { index: 2 }
-                    DockBlurBand { index: 3 }
-                    DockBlurBand { index: 4 }
-                    DockBlurBand { index: 5 }
-                    DockBlurBand { index: 6 }
-                    DockBlurBand { index: 7 }
-                    DockBlurBand { index: 8 }
-                    DockBlurBand { index: 9 }
-                    DockBlurBand { index: 10 }
-                    DockBlurBand { index: 11 }
-                    DockBlurBand { index: 12 }
-                    DockBlurBand { index: 13 }
-                    DockBlurBand { index: 14 }
-                    DockBlurBand { index: 15 }
-
-                    Region {
-                        x: Math.floor(window.homePanelShapeLeft)
-                        y: Math.floor(window.homePanelShapeTop)
-                        width: Math.ceil(window.homePanelShapeRight - window.homePanelShapeLeft)
-                        height: Math.ceil(window.homePanelShapeBottom - window.homePanelShapeTop)
-                        radius: Math.ceil(window.homePanelShapeRadius)
-                    }
+                    active: window.backgroundBlurEnabled
+                    surfaceWidth: Math.ceil(window.width)
+                    surfaceHeight: Math.ceil(window.height)
+                    innerLeft: window.innerLeft
+                    innerTop: window.innerTop
+                    innerRight: window.innerRight
+                    innerBottom: window.innerBottom
+                    cornerRadius: ShellGeometry.cornerRadius
+                    clockNotchLeft: window.clockNotchLeft
+                    clockNotchRight: window.clockNotchRight
+                    clockNotchBottom: window.clockNotchBottom
+                    clockNotchRadius: window.clockNotchRadius
+                    dockSlopeStartLeft: window.dockSlopeStartLeft
+                    dockSlopeStartRight: window.dockSlopeStartRight
+                    dockTopFlatLeft: window.dockTopFlatLeft
+                    dockTopFlatRight: window.dockTopFlatRight
+                    dockPeakY: window.dockPeakY
+                    dockCurveRun: window.dockCurveRun
+                    homePanelShapeLeft: window.homePanelShapeLeft
+                    homePanelShapeRight: window.homePanelShapeRight
+                    homePanelShapeTop: window.homePanelShapeTop
+                    homePanelShapeBottom: window.homePanelShapeBottom
+                    homePanelShapeRadius: window.homePanelShapeRadius
                 }
 
                 component RingOutlinePath: ShapePath {

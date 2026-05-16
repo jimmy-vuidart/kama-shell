@@ -421,7 +421,7 @@ Mitigation: garder le launcher sur `Overlay` sous niri.
 
 Risque: le ring ou le wallpaper se comporte mal dans l'overview.
 
-Mitigation: tester explicitement `Top`, `Overlay` et `Background`. Ne pas activer `place-within-backdrop` ni `blur true` global sur une surface fullscreen; pour Liquid Glass, preferer `BackgroundEffect.blurRegion` limite aux panneaux visibles et seulement `background-effect { xray false }` cote niri si le vrai contenu derriere les panneaux doit etre floute.
+Mitigation: tester explicitement `Top`, `Overlay` et `Background`. Ne pas activer `place-within-backdrop` ni `blur true` global sur une surface fullscreen; pour Liquid Glass, preferer `BackgroundEffect.blurRegion` limite aux panneaux visibles et seulement quand la region suit exactement la geometrie rendue. Pour le Ring, la region exacte vient de `RingBlurRegion`; `background-effect { xray false }` cote niri sert uniquement a flouter les vraies fenetres derriere la surface.
 
 ### Config utilisateur
 

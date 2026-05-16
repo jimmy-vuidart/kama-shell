@@ -75,9 +75,12 @@ window-rule {
 //   - components/WallpaperWindow.qml    -> kama-shell-wallpaper
 //
 // Kama Shell demande le blur Liquid Glass lui-meme via `BackgroundEffect.blurRegion`
-// sur des regions bornees. `xray false` demande a niri de flouter les fenetres
-// derriere les panneaux au lieu de reutiliser seulement le wallpaper floute.
-// Ne pas ajouter `blur true` ici: la region de blur vient de Quickshell.
+// sur des regions bornees et exactes. `xray false` demande a niri de flouter les
+// fenetres derriere les panneaux au lieu de reutiliser seulement le wallpaper
+// floute. Ne pas ajouter `blur true` ici: la region de blur vient de Quickshell.
+//
+// Le Ring fournit sa propre region exacte via `RingBlurRegion`; ne pas ajouter
+// `blur true` cote niri, sinon niri flouterait la geometrie de surface entiere.
 // ---------------------------------------------------------------------------
 layer-rule {
     match namespace="^kama-shell-launcher$"

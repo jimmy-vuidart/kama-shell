@@ -9,10 +9,11 @@ binds {
 
     Mod+D repeat=false { spawn "/usr/bin/qs" "ipc" "--path" "/usr/share/kama-shell/src/shell.qml" "--any-display" "call" "kama-shell" "toggleLauncher"; }
 
-    Mod+WheelScrollDown cooldown-ms=150 { focus-window-down; }
-    Mod+WheelScrollUp   cooldown-ms=150 { focus-window-up; }
+    Mod+WheelScrollDown cooldown-ms=150 { focus-column-left; }
+    Mod+WheelScrollUp   cooldown-ms=150 { focus-column-right; }
 
     Mod+Q { close-window; }
+    Mod+Return { spawn "kitty"; }
 
     Mod+Shift+E { quit; }
 

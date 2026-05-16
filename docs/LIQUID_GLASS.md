@@ -16,7 +16,8 @@ ShellConfig.visualTheme === "liquid-glass"
 ShellTheme  ──►  expose des tokens visuels (alpha, radius, etc.)
         │
         ▼
-PanelWindow liquid-glass sur niri       → BackgroundEffect.blurRegion borne
+PanelWindow liquid-glass simple sur niri → BackgroundEffect.blurRegion exact
+Ring ShapePath complexe                  → RingBlurRegion exact + BackgroundEffect
 ThemedPanelSurface (existant)
    ├── thème glassmorphism / ffxiv      → rendu actuel par dégradé
    └── thème liquid-glass               → délègue à LiquidGlassSurface
@@ -34,12 +35,22 @@ Contrainte Wayland: chaque `PanelWindow` est une surface séparée. `ShaderEffec
 ne peut pas capturer un Item d'une autre fenêtre. Donc chaque `LiquidGlassSurface`
 charge **sa propre Image** à partir de `WallpaperState.source` et la repositionne
 en interne pour que le crop visible corresponde à ce qu'il y a sous le panel.
-Ce rendu local reste un fallback: quand niri expose `ext-background-effect-v1`,
-Kama Shell préfère `BackgroundEffect.blurRegion`, qui floute réellement les
-fenêtres derrière le shell. niri active toutefois `xray` par défaut pour les
-background effects; les layer rules Kama Shell doivent donc définir
-`background-effect { xray false }` pour flouter les fenêtres au lieu de
-réutiliser seulement le wallpaper flouté.
+Ce rendu local reste un fallback pour les surfaces de panel classiques. Quand
+niri expose `ext-background-effect-v1`, Kama Shell préfère
+`BackgroundEffect.blurRegion`, qui floute réellement les fenêtres derrière le
+shell. niri active toutefois `xray` par défaut pour les background effects; les
+layer rules Kama Shell doivent donc définir `background-effect { xray false }`
+sur les surfaces qui demandent ce blur exact, afin de flouter les fenêtres au
+lieu de réutiliser seulement le wallpaper flouté.
+
+Contrainte stricte: le Ring est dessiné avec un `ShapePath` complexe (notch,
+dock, panel latéral et courbes cubiques). Sa région de blur est générée par
+`RingBlurRegion` depuis les mêmes paramètres géométriques, rasterisée en spans
+horizontaux puis compressée avant d'être transmise à
+`BackgroundEffect.blurRegion`. Ce n'est pas un `ScreencopyView`: le flou reste
+calculé par niri via `ext-background-effect`. Les futurs panels/notches doivent
+suivre la même règle: ajouter leur géométrie au générateur exact, pas empiler des
+rectangles approximatifs à la main.
 
 ## Phase 1 — socle thème (sans shader custom)
 
@@ -104,10 +115,14 @@ Suffit pour ~80% du rendu Apple perçu.
 
 - Reload Quickshell, basculer `theme = liquid-glass` dans la conf.
 - Le wallpaper sous chaque panel doit apparaître flouté + saturé.
-- Sous niri récent, les fenêtres derrière les panneaux doivent apparaître
-  floutées si les layer rules `kama-shell-ring` et `kama-shell-launcher`
-  définissent `background-effect { xray false }`; le fallback wallpaper ne doit
-  pas les recouvrir.
+- Sous niri récent, les fenêtres derrière le launcher doivent apparaître
+  floutées si la layer rule `kama-shell-launcher` définit
+  `background-effect { xray false }`; le fallback wallpaper ne doit pas les
+  recouvrir.
+- Les fenêtres derrière le Ring doivent être floutées par niri si la layer rule
+  `kama-shell-ring` définit `background-effect { xray false }`.
+- Le `blurRegion` du Ring doit venir de `RingBlurRegion`, pas d'une collection
+  manuelle de rectangles approximatifs.
 - Bordure claire visible en haut, ombre douce sous le panel.
 - Pas de flicker au changement de thème (live reload).
 - Sur multi-écran: le crop doit suivre l'écran, pas afficher le wallpaper du
@@ -163,6 +178,9 @@ Suffit pour ~80% du rendu Apple perçu.
 - **`sourceRect` négatif**: si la surface est partiellement hors écran (ce qui
   ne devrait pas arriver avec les `PanelWindow`), `mapToItem` peut retourner
   des coordonnées négatives. Clamp à `[0, screen.width/height]`.
+- **Ring et courbes complexes**: ne pas approximer le blur du Ring par bandes
+  dessinées à la main. `RingBlurRegion` rasterise le tracé en spans exacts à la
+  grille de pixels, puis niri applique le blur compositeur sur cette région.
 
 ## Hors scope
 

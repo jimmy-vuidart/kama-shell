@@ -9,7 +9,8 @@
 
 ## Ring / Dock
 
-- Le dock intégré au ring est plus fiable s'il est sculpté dans la géométrie du ring lui-même, au niveau du `mask`, du `blurRegion` et du tracé du cutout intérieur. Superposer une forme de dock indépendante donne vite un rendu de "deux pièces empilées".
+- Le dock intégré au ring est plus fiable s'il est sculpté dans la géométrie du ring lui-même, au niveau du `mask` et du tracé du cutout intérieur. Superposer une forme de dock indépendante donne vite un rendu de "deux pièces empilées".
+- Le blur compositeur du Ring ne doit jamais être approximé par bandes, rectangles ou régions qui ne partagent pas exactement le `ShapePath` visible. Dans ce dépôt, `src/components/RingBlurRegion.qml` génère la région de blur depuis les mêmes paramètres géométriques que le tracé du Ring, sous forme de spans pixellisés et compressés.
 - Les coins bas du ring doivent rester de vrais quarts de cercle, puis le segment inférieur doit rester parfaitement horizontal jusqu'au départ de la bosse du dock.
 - Pour une bosse de dock crédible, une géométrie symétrique construite avec deux grandes `PathCubic` miroir donne un meilleur résultat que des `PathArc` ou des segments cassés.
 - La largeur visuelle de la bosse ne doit pas être confondue avec la largeur du contenu du dock. Il faut distinguer:
