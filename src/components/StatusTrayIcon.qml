@@ -51,9 +51,23 @@ Item {
         id: trayMenu
 
         menu: root.trayItem ? root.trayItem.menu : null
-        anchor.item: root
-        anchor.edges: Edges.Bottom | Edges.Right
-        anchor.gravity: Edges.Bottom | Edges.Right
+        anchor.window: root.QsWindow.window
+        anchor.adjustment: PopupAdjustment.Flip
+
+        anchor.onAnchoring: {
+            const win = root.QsWindow.window
+            if (!win) return
+            const rect = win.contentItem.mapFromItem(
+                root, 0, root.height, root.width, root.height
+            )
+            trayMenu.anchor.rect = rect
+            console.log(
+                "status-notch tray anchoring",
+                "id=" + String(root.trayItem ? root.trayItem.id : "<null>"),
+                "rect=(" + Math.round(rect.x) + "," + Math.round(rect.y) + "," + Math.round(rect.width) + "," + Math.round(rect.height) + ")",
+                "window=" + String(win)
+            )
+        }
 
         onMenuChanged: console.log(
             "status-notch tray menu-ref changed",
@@ -123,7 +137,6 @@ Item {
         )
 
         if (hasItem && hasMenu) {
-            trayMenu.anchor.updateAnchor()
             console.log(
                 "status-notch tray open-menu",
                 "id=" + String(root.trayItem.id),

@@ -19,6 +19,7 @@ Item {
         anchors {
             centerIn: parent
             horizontalCenterOffset: 0
+            verticalCenterOffset: -4
         }
         height: root.iconSize
         spacing: root.itemGap
