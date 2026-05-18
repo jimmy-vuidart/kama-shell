@@ -167,6 +167,7 @@ Item {
                     pinned: modelData.isPinned || false
                     running: modelData.isRunning || false
                     active: modelData.isActive || false
+                    launching: modelData.isLaunching || false
                     onClicked: {
                         root.closeContextMenu()
                         DockState.activateItem(modelData)

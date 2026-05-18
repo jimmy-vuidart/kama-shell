@@ -9,6 +9,7 @@ Singleton {
 
     property var pinnedApps: []
     property var items: []
+    property var launchingApps: ({})
     readonly property var toplevels: ToplevelManager.toplevels.values
 
     function queueRebuild() {
@@ -63,6 +64,37 @@ Singleton {
             item.label = root.itemLabel(item.desktopEntry, item.label || root.fallbackLabelForToplevel(toplevel))
         }
 
+        // Update launching state: remove apps that are now running, mark pending ones
+        const now = Date.now()
+        const nextLaunching = {}
+        let launchingChanged = false
+
+        for (const id in root.launchingApps) {
+            if (now - root.launchingApps[id] < 15000) {
+                nextLaunching[id] = root.launchingApps[id]
+            } else {
+                launchingChanged = true
+            }
+        }
+
+        for (let i = 0; i < ordered.length; i++) {
+            const item = ordered[i]
+            if (item.kind !== "app") continue
+            const dId = root.normalizedDesktopId(item.desktopId)
+            if (dId in nextLaunching) {
+                if (item.isRunning) {
+                    delete nextLaunching[dId]
+                    launchingChanged = true
+                } else {
+                    item.isLaunching = true
+                }
+            }
+        }
+
+        if (launchingChanged) {
+            root.launchingApps = nextLaunching
+        }
+
         const finalItems = []
         let hasRunningUnpinned = false
 
@@ -106,6 +138,7 @@ Singleton {
             isPinned: false,
             isRunning: false,
             isActive: false,
+            isLaunching: false,
             label: root.itemLabel(desktopEntry, fallbackLabel)
         }
     }
@@ -152,6 +185,14 @@ Singleton {
             const entry = item.desktopEntry || root.resolveDesktopEntry(root.itemDesktopId(item))
 
             if (entry) {
+                const dId = root.normalizedDesktopId(entry.id || "")
+                if (dId.length) {
+                    const next = Object.assign({}, root.launchingApps)
+                    next[dId] = Date.now()
+                    root.launchingApps = next
+                    launchTimeoutTimer.restart()
+                    root.queueRebuild()
+                }
                 entry.execute()
             }
         }
@@ -417,6 +458,20 @@ Singleton {
 
     function basename(value) {
         return DockIconResolver.basename(value)
+    }
+
+    Timer {
+        id: launchTimeoutTimer
+
+        interval: 15000
+        repeat: false
+
+        onTriggered: {
+            if (Object.keys(root.launchingApps).length > 0) {
+                root.launchingApps = {}
+                root.queueRebuild()
+            }
+        }
     }
 
     Component.onCompleted: {
