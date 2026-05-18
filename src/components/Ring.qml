@@ -76,7 +76,7 @@ Variants {
                 RingSurfaceRenderer {
                     anchors.fill: parent
                     panels: ringPanels
-                    backend: "sdf"
+                    backend: "shape"
                     z: 0
                 }
             }
