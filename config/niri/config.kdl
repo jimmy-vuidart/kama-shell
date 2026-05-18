@@ -12,6 +12,7 @@
 // ---------------------------------------------------------------------------
 spawn-at-startup "/usr/bin/quickshell" "-p" "src/shell.qml"
 spawn-at-startup "/usr/bin/xwayland-satellite"
+spawn-at-startup "/bin/sh" "-c" "command -v arch-update >/dev/null 2>&1 && exec arch-update --tray"
 
 include "binds.dev.kdl"
 

@@ -41,7 +41,6 @@ QtObject {
         innerRight - ShellGeometry.cornerRadius - ShellGeometry.statusNotchRightGap
     )
     readonly property real statusNotchWidth: Math.min(
-        ShellGeometry.statusNotchMaxWidth,
         StatusNotchState.statusNotchImplicitWidth,
         Math.max(0, statusNotchRight - clockNotchRight - ShellGeometry.statusNotchMinClockGap)
     )

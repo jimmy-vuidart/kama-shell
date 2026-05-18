@@ -11,9 +11,7 @@ Singleton {
     id: root
 
     readonly property var trayItems: SystemTray.items.values || []
-    readonly property var visibleTrayItems: root.trayItems.slice(0, ShellGeometry.statusNotchMaxTrayItems)
-    readonly property int overflowTrayCount: Math.max(0, root.trayItems.length - root.visibleTrayItems.length)
-    readonly property bool hasTraySection: root.visibleTrayItems.length > 0 || root.overflowTrayCount > 0
+    readonly property bool hasTraySection: root.trayItems.length > 0
 
     readonly property var audioSink: Pipewire.defaultAudioSink
     readonly property bool hasAudio: !!audioSink && !!audioSink.audio
@@ -52,8 +50,7 @@ Singleton {
         : "battery-missing-symbolic"
     readonly property string batteryIconSource: DockIconResolver.resolveIconSource(batteryIconName)
 
-    readonly property int visibleStatusIconCount: root.visibleTrayItems.length
-        + (root.overflowTrayCount > 0 ? 1 : 0)
+    readonly property int visibleStatusIconCount: root.trayItems.length
         + 2
         + (root.batteryVisible ? 1 : 0)
     readonly property int visibleStatusGapCount: root.hasTraySection
@@ -98,9 +95,7 @@ Singleton {
     function logTrayItems() {
         console.log(
             "status-notch tray items changed",
-            "count=" + root.trayItems.length,
-            "visible=" + root.visibleTrayItems.length,
-            "overflow=" + root.overflowTrayCount
+            "count=" + root.trayItems.length
         )
 
         for (let i = 0; i < root.trayItems.length; i++) {

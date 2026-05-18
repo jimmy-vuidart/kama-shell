@@ -25,6 +25,9 @@ spawn-at-startup "/usr/bin/quickshell" "-p" "/usr/share/kama-shell/src/shell.qml
 // xwayland-satellite expose les apps X11 a niri.
 spawn-at-startup "/usr/bin/xwayland-satellite"
 
+// Cachy-Update fournit un indicateur SystemTray si le paquet est installe.
+spawn-at-startup "/bin/sh" "-c" "command -v arch-update >/dev/null 2>&1 && exec arch-update --tray"
+
 // Si vous utilisez deja Waybar/Mako/etc., ne les lancez plus depuis niri:
 // Kama Shell rend dock, launcher, ring et wallpaper. Une seule barre suffit.
 

@@ -26,7 +26,7 @@ Item {
         spacing: root.itemGap
 
         Repeater {
-            model: StatusNotchState.visibleTrayItems
+            model: StatusNotchState.trayItems
 
             StatusTrayIcon {
                 required property var modelData
@@ -34,20 +34,6 @@ Item {
                 trayItem: modelData
                 screen: root.screen
             }
-        }
-
-        Text {
-            width: root.iconSize
-            height: root.iconSize
-            text: "+" + StatusNotchState.overflowTrayCount
-            color: ShellTheme.textPrimary
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            font.pixelSize: 10
-            font.weight: Font.Bold
-            style: ShellTheme.controlTextStyle
-            styleColor: ShellTheme.textShadow
-            visible: StatusNotchState.overflowTrayCount > 0
         }
 
         Item {
