@@ -12,6 +12,9 @@ binds {
     Mod+WheelScrollDown cooldown-ms=150 { focus-column-left; }
     Mod+WheelScrollUp   cooldown-ms=150 { focus-column-right; }
 
+    Mod+Equal      { set-column-width "+10%"; }
+    Mod+ParenRight { set-column-width "-10%"; }
+
     Mod+Q { close-window; }
     Mod+Return { spawn "kitty"; }
 

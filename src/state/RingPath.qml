@@ -47,6 +47,7 @@ Singleton {
     // du ring. `g` doit contenir les champs scalaires suivants:
     //   innerLeft, innerTop, innerRight, innerBottom, cornerRadius
     //   clockNotchLeft, clockNotchRight, clockNotchBottom, clockNotchRadius
+    //   statusNotchLeft, statusNotchRight, statusNotchBottom, statusNotchRadius
     //   dockSlopeStartLeft, dockSlopeStartRight,
     //   dockTopFlatLeft, dockTopFlatRight, dockPeakY, dockCurveRun
     //   homePanelShapeLeft, homePanelShapeRight,
@@ -54,7 +55,7 @@ Singleton {
     //
     // Le tracé démarre au coin supérieur gauche (juste après l'arc) et se
     // referme à ce même point après avoir parcouru: top edge, clock notch,
-    // upper-right arc, right edge, home panel évidement, lower-right arc,
+    // status notch, upper-right arc, right edge, home panel évidement, lower-right arc,
     // bottom edge avec dock, lower-left arc, left edge, upper-left arc.
     function buildInnerSegments(g) {
         const left = g.innerLeft
@@ -63,6 +64,7 @@ Singleton {
         const bottom = g.innerBottom
         const r = g.cornerRadius
         const notchK = g.clockNotchRadius * cubicNotchFactor
+        const statusK = g.statusNotchRadius * cubicNotchFactor
         const homeK = g.homePanelShapeRadius * cubicHomeFactor
 
         return [
@@ -87,8 +89,29 @@ Singleton {
                 g.clockNotchRight, top
             ),
 
-            // Top edge: clock notch exit → upper-right arc start
-            line(g.clockNotchRight, top, right - r, top),
+            // Top edge: clock notch exit → status notch
+            line(g.clockNotchRight, top, g.statusNotchLeft, top),
+
+            // Status notch: descend
+            cubic(
+                g.statusNotchLeft, top,
+                g.statusNotchLeft + statusK, top,
+                g.statusNotchLeft, g.statusNotchBottom - statusK,
+                g.statusNotchLeft + g.statusNotchRadius, g.statusNotchBottom
+            ),
+            line(
+                g.statusNotchLeft + g.statusNotchRadius, g.statusNotchBottom,
+                g.statusNotchRight - g.statusNotchRadius, g.statusNotchBottom
+            ),
+            cubic(
+                g.statusNotchRight - g.statusNotchRadius, g.statusNotchBottom,
+                g.statusNotchRight, g.statusNotchBottom - statusK,
+                g.statusNotchRight - statusK, top,
+                g.statusNotchRight, top
+            ),
+
+            // Top edge: status notch exit → upper-right arc start
+            line(g.statusNotchRight, top, right - r, top),
             arc(right - r, top + r, r, 1, top, top + r),
 
             // Right edge: down to home panel top

@@ -60,6 +60,10 @@ Variants {
                     clockNotchRight: ringPanels.clockNotchRight
                     clockNotchBottom: ringPanels.clockNotchBottom
                     clockNotchRadius: ringPanels.clockNotchRadius
+                    statusNotchLeft: ringPanels.statusNotchLeft
+                    statusNotchRight: ringPanels.statusNotchRight
+                    statusNotchBottom: ringPanels.statusNotchBottom
+                    statusNotchRadius: ringPanels.statusNotchRadius
                     dockSlopeStartLeft: ringPanels.dockSlopeStartLeft
                     dockSlopeStartRight: ringPanels.dockSlopeStartRight
                     dockTopFlatLeft: ringPanels.dockTopFlatLeft

@@ -36,6 +36,22 @@ QtObject {
         ShellGeometry.clockNotchDepth
     )
 
+    readonly property real statusNotchRight: Math.max(
+        clockNotchRight,
+        innerRight - ShellGeometry.cornerRadius - ShellGeometry.statusNotchRightGap
+    )
+    readonly property real statusNotchWidth: Math.min(
+        ShellGeometry.statusNotchWidth,
+        Math.max(0, statusNotchRight - clockNotchRight - ShellGeometry.statusNotchMinClockGap)
+    )
+    readonly property real statusNotchLeft: statusNotchRight - statusNotchWidth
+    readonly property real statusNotchBottom: innerTop + ShellGeometry.statusNotchHeight
+    readonly property real statusNotchRadius: Math.min(
+        ShellGeometry.statusNotchRadius,
+        statusNotchWidth / 2,
+        ShellGeometry.statusNotchHeight
+    )
+
     readonly property real dockRestCenter: surfaceWidth / 2
     readonly property real dockShapeLeft: dockRestCenter - (dockCurrentWidth / 2)
     readonly property real dockShapeRight: dockRestCenter + (dockCurrentWidth / 2)

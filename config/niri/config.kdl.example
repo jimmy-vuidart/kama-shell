@@ -58,6 +58,13 @@ layout {
         inactive-color "#3f4560"
         urgent-color "#ff5f6d"
     }
+
+    struts {
+        left 16
+        right 16
+        top 16
+        bottom 16
+    }
 }
 
 // Arrondit les fenetres et clippe leur contenu pour eviter les coins carres.

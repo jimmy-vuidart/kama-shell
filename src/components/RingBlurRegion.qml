@@ -21,6 +21,11 @@ Region {
     property real clockNotchBottom: 0
     property real clockNotchRadius: 0
 
+    property real statusNotchLeft: 0
+    property real statusNotchRight: 0
+    property real statusNotchBottom: 0
+    property real statusNotchRadius: 0
+
     property real dockSlopeStartLeft: 0
     property real dockSlopeStartRight: 0
     property real dockTopFlatLeft: 0
@@ -47,6 +52,10 @@ Region {
         clockNotchRight,
         clockNotchBottom,
         clockNotchRadius,
+        statusNotchLeft,
+        statusNotchRight,
+        statusNotchBottom,
+        statusNotchRadius,
         dockSlopeStartLeft,
         dockSlopeStartRight,
         dockTopFlatLeft,
@@ -234,6 +243,10 @@ Region {
             clockNotchRight: root.clockNotchRight,
             clockNotchBottom: root.clockNotchBottom,
             clockNotchRadius: root.clockNotchRadius,
+            statusNotchLeft: root.statusNotchLeft,
+            statusNotchRight: root.statusNotchRight,
+            statusNotchBottom: root.statusNotchBottom,
+            statusNotchRadius: root.statusNotchRadius,
             dockSlopeStartLeft: root.dockSlopeStartLeft,
             dockSlopeStartRight: root.dockSlopeStartRight,
             dockTopFlatLeft: root.dockTopFlatLeft,

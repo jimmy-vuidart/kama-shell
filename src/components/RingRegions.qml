@@ -38,6 +38,10 @@ Region {
         item: root.panels.homePanelItem
     }
 
+    Region {
+        item: root.panels.statusNotchItem
+    }
+
     component InnerCutout: Item {
         required property Item panels
 
@@ -54,6 +58,10 @@ Region {
                 clockNotchRight: panels.clockNotchRight
                 clockNotchBottom: panels.clockNotchBottom
                 clockNotchRadius: panels.clockNotchRadius
+                statusNotchLeft: panels.statusNotchLeft
+                statusNotchRight: panels.statusNotchRight
+                statusNotchBottom: panels.statusNotchBottom
+                statusNotchRadius: panels.statusNotchRadius
                 dockSlopeStartLeft: panels.dockSlopeStartLeft
                 dockSlopeStartRight: panels.dockSlopeStartRight
                 dockTopFlatLeft: panels.dockTopFlatLeft

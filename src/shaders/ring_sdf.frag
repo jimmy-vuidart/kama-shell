@@ -9,10 +9,12 @@ layout(std140, binding = 0) uniform buf {
     vec2 surfaceSize;
     vec4 innerRect;
     vec4 clockRect;
+    vec4 statusRect;
     vec4 homeRect;
     vec4 dockRect;
     float cornerRadius;
     float clockRadius;
+    float statusRadius;
     float homeRadius;
     float dockCurveRun;
     float supportWidth;
@@ -58,6 +60,10 @@ void main() {
     vec2 clockHalf = (clockRect.zw - clockRect.xy) * 0.5;
     float clock = sdRoundedBox(p - clockCenter, clockHalf, clockRadius);
 
+    vec2 statusCenter = (statusRect.xy + statusRect.zw) * 0.5;
+    vec2 statusHalf = (statusRect.zw - statusRect.xy) * 0.5;
+    float status = sdRoundedBox(p - statusCenter, statusHalf, statusRadius);
+
     vec2 homeCenter = (homeRect.xy + homeRect.zw) * 0.5;
     vec2 homeHalf = (homeRect.zw - homeRect.xy) * 0.5;
     float home = sdRoundedBox(p - homeCenter, homeHalf, homeRadius);
@@ -71,6 +77,7 @@ void main() {
     );
 
     float cutout = smin(inner, clock, 18.0);
+    cutout = smin(cutout, status, 18.0);
     cutout = smin(cutout, home, 20.0);
     cutout = smin(cutout, dock, 24.0);
 

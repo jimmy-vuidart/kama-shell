@@ -34,6 +34,18 @@ Singleton {
     readonly property int clockNotchFontSize: 13
     readonly property int clockNotchTextVerticalOffset: -8
 
+    readonly property int statusNotchMaxTrayItems: 5
+    readonly property int statusNotchIconSize: dockRestIconSize
+    readonly property int statusNotchHeight: dockRestHeight
+    readonly property int statusNotchHorizontalPadding: 12
+    readonly property int statusNotchItemGap: 8
+    readonly property int statusNotchRightGap: 18
+    readonly property int statusNotchMinClockGap: 16
+    readonly property int statusNotchWidth: (statusNotchHorizontalPadding * 2)
+        + ((statusNotchMaxTrayItems + 4) * statusNotchIconSize)
+        + ((statusNotchMaxTrayItems + 3) * statusNotchItemGap)
+    readonly property int statusNotchRadius: 18
+
     readonly property real homePanelTopRatio: 0.25
     readonly property int homePanelExpandedWidth: 380
     readonly property int homePanelExpandedHeight: 472

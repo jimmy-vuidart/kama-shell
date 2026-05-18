@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Shapes
 
 // ShapePath réutilisable qui dessine la silhouette intérieure du ring
-// (top edge, clock notch, upper-right arc, right edge, home panel,
+// (top edge, clock notch, status notch, upper-right arc, right edge, home panel,
 // lower-right arc, dock bump, lower-left arc, left edge, upper-left arc).
 //
 // La même silhouette est définie en JavaScript par `RingPath` (singleton),
@@ -35,6 +35,11 @@ ShapePath {
     property real clockNotchBottom: 0
     property real clockNotchRadius: 0
 
+    property real statusNotchLeft: 0
+    property real statusNotchRight: 0
+    property real statusNotchBottom: 0
+    property real statusNotchRadius: 0
+
     property real dockSlopeStartLeft: 0
     property real dockSlopeStartRight: 0
     property real dockTopFlatLeft: 0
@@ -63,6 +68,9 @@ ShapePath {
     readonly property real effClockLeft: clockNotchLeft + inset
     readonly property real effClockRight: clockNotchRight - inset
     readonly property real effClockBottom: clockNotchBottom - inset
+    readonly property real effStatusLeft: statusNotchLeft + inset
+    readonly property real effStatusRight: statusNotchRight - inset
+    readonly property real effStatusBottom: statusNotchBottom - inset
     readonly property real effDockSlopeLeft: dockSlopeStartLeft + inset
     readonly property real effDockSlopeRight: dockSlopeStartRight - inset
     readonly property real effDockTopFlatLeft: dockTopFlatLeft + inset
@@ -75,6 +83,7 @@ ShapePath {
 
     // Bézier control offsets (≈ quart de cercle)
     readonly property real notchControlOffset: clockNotchRadius * 0.55
+    readonly property real statusControlOffset: statusNotchRadius * 0.55
     readonly property real homeControlOffset: homePanelShapeRadius * 0.45
 
     // Point de départ du contour intérieur (juste après l'arc supérieur gauche).
@@ -113,6 +122,18 @@ ShapePath {
         x: root.effClockRight; y: root.effTop
         control1X: root.effClockRight; control1Y: root.effClockBottom - root.notchControlOffset
         control2X: root.effClockRight - root.notchControlOffset; control2Y: root.effTop
+    }
+    PathLine { x: root.effStatusLeft; y: root.effTop }
+    PathCubic {
+        x: root.effStatusLeft + root.statusNotchRadius; y: root.effStatusBottom
+        control1X: root.effStatusLeft + root.statusControlOffset; control1Y: root.effTop
+        control2X: root.effStatusLeft; control2Y: root.effStatusBottom - root.statusControlOffset
+    }
+    PathLine { x: root.effStatusRight - root.statusNotchRadius; y: root.effStatusBottom }
+    PathCubic {
+        x: root.effStatusRight; y: root.effTop
+        control1X: root.effStatusRight; control1Y: root.effStatusBottom - root.statusControlOffset
+        control2X: root.effStatusRight - root.statusControlOffset; control2Y: root.effTop
     }
     PathLine { x: root.effRight - root.cornerRadius; y: root.effTop }
 

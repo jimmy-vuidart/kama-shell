@@ -17,6 +17,10 @@ Item {
     readonly property alias clockNotchRight: slotModel.clockNotchRight
     readonly property alias clockNotchBottom: slotModel.clockNotchBottom
     readonly property alias clockNotchRadius: slotModel.clockNotchRadius
+    readonly property alias statusNotchLeft: slotModel.statusNotchLeft
+    readonly property alias statusNotchRight: slotModel.statusNotchRight
+    readonly property alias statusNotchBottom: slotModel.statusNotchBottom
+    readonly property alias statusNotchRadius: slotModel.statusNotchRadius
     readonly property alias dockSlopeStartLeft: slotModel.dockSlopeStartLeft
     readonly property alias dockSlopeStartRight: slotModel.dockSlopeStartRight
     readonly property alias dockTopFlatLeft: slotModel.dockTopFlatLeft
@@ -33,6 +37,7 @@ Item {
     readonly property alias dockContentItem: dockSlot.contentItem
     readonly property alias dockHoverItem: dockSlot.hoverItem
     readonly property alias homePanelItem: homePanel
+    readonly property alias statusNotchItem: statusNotch
 
     RingSlotModel {
         id: slotModel
@@ -55,6 +60,16 @@ Item {
         width: root.clockNotchWidth
         height: ShellGeometry.clockNotchDepth
         visible: root.clockNotchWidth > 0
+    }
+
+    StatusNotch {
+        id: statusNotch
+
+        x: root.statusNotchLeft
+        y: ShellGeometry.frameInset
+        width: Math.max(0, root.statusNotchRight - root.statusNotchLeft)
+        height: ShellGeometry.statusNotchHeight
+        visible: width > 0
     }
 
     HomePanel {

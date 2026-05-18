@@ -24,6 +24,10 @@ Shape {
         clockNotchRight: panels.clockNotchRight
         clockNotchBottom: panels.clockNotchBottom
         clockNotchRadius: panels.clockNotchRadius
+        statusNotchLeft: panels.statusNotchLeft
+        statusNotchRight: panels.statusNotchRight
+        statusNotchBottom: panels.statusNotchBottom
+        statusNotchRadius: panels.statusNotchRadius
         dockSlopeStartLeft: panels.dockSlopeStartLeft
         dockSlopeStartRight: panels.dockSlopeStartRight
         dockTopFlatLeft: panels.dockTopFlatLeft
@@ -53,6 +57,10 @@ Shape {
         clockNotchRight: root.panels.clockNotchRight
         clockNotchBottom: root.panels.clockNotchBottom
         clockNotchRadius: root.panels.clockNotchRadius
+        statusNotchLeft: root.panels.statusNotchLeft
+        statusNotchRight: root.panels.statusNotchRight
+        statusNotchBottom: root.panels.statusNotchBottom
+        statusNotchRadius: root.panels.statusNotchRadius
         dockSlopeStartLeft: root.panels.dockSlopeStartLeft
         dockSlopeStartRight: root.panels.dockSlopeStartRight
         dockTopFlatLeft: root.panels.dockTopFlatLeft
@@ -117,6 +125,22 @@ Shape {
             x: root.panels.clockNotchRight - 0.5; y: ShellGeometry.frameInset + 0.5
             control1X: root.panels.clockNotchRight - 0.5; control1Y: root.panels.clockNotchBottom - 0.5 - (root.panels.clockNotchRadius * 0.55)
             control2X: root.panels.clockNotchRight - 0.5 - (root.panels.clockNotchRadius * 0.55); control2Y: ShellGeometry.frameInset + 0.5
+        }
+        PathLine {
+            x: root.panels.statusNotchLeft + 0.5; y: ShellGeometry.frameInset + 0.5
+        }
+        PathCubic {
+            x: root.panels.statusNotchLeft + root.panels.statusNotchRadius; y: root.panels.statusNotchBottom - 0.5
+            control1X: root.panels.statusNotchLeft + 0.5 + (root.panels.statusNotchRadius * 0.55); control1Y: ShellGeometry.frameInset + 0.5
+            control2X: root.panels.statusNotchLeft + 0.5; control2Y: root.panels.statusNotchBottom - 0.5 - (root.panels.statusNotchRadius * 0.55)
+        }
+        PathLine {
+            x: root.panels.statusNotchRight - root.panels.statusNotchRadius; y: root.panels.statusNotchBottom - 0.5
+        }
+        PathCubic {
+            x: root.panels.statusNotchRight - 0.5; y: ShellGeometry.frameInset + 0.5
+            control1X: root.panels.statusNotchRight - 0.5; control1Y: root.panels.statusNotchBottom - 0.5 - (root.panels.statusNotchRadius * 0.55)
+            control2X: root.panels.statusNotchRight - 0.5 - (root.panels.statusNotchRadius * 0.55); control2Y: ShellGeometry.frameInset + 0.5
         }
         PathLine {
             x: root.width - ShellGeometry.frameInset - 0.5 - ShellGeometry.cornerRadius; y: ShellGeometry.frameInset + 0.5
