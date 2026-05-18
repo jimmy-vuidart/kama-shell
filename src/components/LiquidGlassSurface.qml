@@ -33,25 +33,14 @@ Item {
     implicitWidth: 336
     implicitHeight: 170
 
-    Rectangle {
-        id: shadowShape
-
+    RectangularShadow {
         anchors.fill: parent
         radius: root.radius
-        antialiasing: true
-        color: "black"
-    }
-
-    MultiEffect {
-        anchors.fill: shadowShape
-        source: shadowShape
-        autoPaddingEnabled: true
-        shadowEnabled: true
-        shadowBlur: 1.0
-        shadowColor: Qt.rgba(0, 0, 0, 1)
-        shadowOpacity: ShellTheme.liquidShadowAlpha
-        shadowVerticalOffset: ShellTheme.liquidShadowOffsetY
-        blurMax: ShellTheme.liquidShadowBlur
+        blur: ShellTheme.liquidShadowBlur
+        spread: 0
+        offset: Qt.vector2d(0, ShellTheme.liquidShadowOffsetY)
+        color: Qt.rgba(0, 0, 0, ShellTheme.liquidShadowAlpha)
+        cached: true
     }
 
     Item {

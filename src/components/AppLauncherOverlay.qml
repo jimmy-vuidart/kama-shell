@@ -63,9 +63,46 @@ Variants {
                     }
                 }
 
-                Rectangle {
+                Item {
                     anchors.fill: parent
-                    color: Qt.rgba(0, 0, 0, ShellTheme.isFfxiv ? 0.34 : 0.18)
+
+                    readonly property color scrimColor: Qt.rgba(0, 0, 0, ShellTheme.isFfxiv ? 0.34 : 0.18)
+
+                    Rectangle {
+                        anchors {
+                            top: parent.top
+                            left: parent.left
+                            right: parent.right
+                        }
+                        height: Math.max(0, launcher.y)
+                        color: parent.scrimColor
+                    }
+
+                    Rectangle {
+                        anchors {
+                            left: parent.left
+                            right: parent.right
+                            bottom: parent.bottom
+                        }
+                        height: Math.max(0, parent.height - launcher.y - launcher.height)
+                        color: parent.scrimColor
+                    }
+
+                    Rectangle {
+                        x: 0
+                        y: launcher.y
+                        width: Math.max(0, launcher.x)
+                        height: launcher.height
+                        color: parent.scrimColor
+                    }
+
+                    Rectangle {
+                        x: launcher.x + launcher.width
+                        y: launcher.y
+                        width: Math.max(0, parent.width - launcher.x - launcher.width)
+                        height: launcher.height
+                        color: parent.scrimColor
+                    }
                 }
 
                 MouseArea {
