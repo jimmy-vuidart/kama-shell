@@ -1,6 +1,6 @@
 # Makefile — Kama-Shell automation
 
-.PHONY: run check test fmt help install-session-niri install-session-niri-debug
+.PHONY: run check test fmt shaders help install-session-niri install-session-niri-debug
 
 PREFIX ?= $(HOME)/.local
 SESSION_DIR ?= /usr/share/wayland-sessions
@@ -11,10 +11,13 @@ SUDO ?= sudo
 QMLLINT ?= qmllint
 QMLFORMAT ?= qmlformat
 PYTHON ?= python3
+QSB ?= /usr/lib/qt6/bin/qsb
 
 # qmllint 1.0 ne parse pas les signatures IPC typees, pourtant requises par Quickshell.Io.IpcHandler.
 QML_FILES := $(shell find src -type f -name '*.qml' ! -path 'src/ipc/KamaShellIpc.qml' | sort)
 PYTHON_FILES := $(shell find scripts -type f -name '*.py' | sort)
+SHADER_SOURCES := $(shell find src/shaders -type f -name '*.frag' | sort)
+SHADER_PACKS := $(SHADER_SOURCES:%=%.qsb)
 BASH_FILES := run.sh \
 	sessions/kama-shell-niri-session \
 	sessions/start-kama-shell-niri-session \
@@ -29,6 +32,7 @@ help:
 	@echo "  check  - Vérifier la syntaxe QML (requiert qmllint)"
 	@echo "  test   - Exécuter les vérifications QML, shell, Python et packaging"
 	@echo "  fmt    - Formater le code QML (requiert qmlformat)"
+	@echo "  shaders - Régénérer les shaders Qt .qsb (requiert qsb)"
 	@echo "  install-session-niri       - Installer la session niri (paquet) dans $(SESSION_DIR)"
 	@echo "  install-session-niri-debug - Installer la session niri debug (tree source) dans $(SESSION_DIR)"
 
@@ -45,6 +49,11 @@ test: check
 
 fmt:
 	$(QMLFORMAT) -i src/shell.qml src/
+
+shaders: $(SHADER_PACKS)
+
+%.frag.qsb: %.frag
+	$(QSB) --qt6 -o $@ $<
 
 install-session-niri:
 	set -e; \

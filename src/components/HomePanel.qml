@@ -11,7 +11,11 @@ Item {
         { name: "Chambre", status: "Nuit calme", lightCount: 1, lightsOn: false, shutters: 18, temperature: 18.5 },
         { name: "Bureau", status: "Concentration", lightCount: 2, lightsOn: true, shutters: 62, temperature: 20.5 }
     ]
-    property real revealProgress: panelHover.hovered ? 1 : 0
+    readonly property real revealTarget: panelHover.hovered ? 1 : 0
+    property real revealProgress: 0
+    // Proxy de vélocité (cf. ExpandableEdgeWidget) consommé par `Ring.qml`
+    // pour le squash de la silhouette pendant la transition.
+    readonly property real revealVelocity: revealTarget - revealProgress
     readonly property real currentWidth: ShellGeometry.homePanelHandleWidth
         + ((ShellGeometry.homePanelExpandedWidth - ShellGeometry.homePanelHandleWidth) * revealProgress)
     readonly property real currentHeight: ShellGeometry.homePanelHandleHeight
@@ -21,10 +25,14 @@ Item {
     height: currentHeight
     clip: true
 
+    onRevealTargetChanged: revealProgress = revealTarget
+
     Behavior on revealProgress {
-        NumberAnimation {
-            duration: ShellGeometry.homePanelAnimationDuration
-            easing.type: Easing.InOutCubic
+        SpringAnimation {
+            spring: 2.6
+            damping: 0.35
+            mass: 1.0
+            epsilon: 0.005
         }
     }
 

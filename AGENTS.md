@@ -51,8 +51,13 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 ## Structure actuelle
 
 - `src/shell.qml`: point d'entrée Quickshell
-- `src/components/Ring.qml`: `PanelWindow` multi-écran et composition haut niveau du ring (instancie `RingSilhouettePath` pour fill + outlines + mask, `RingBlurRegion` pour le blur, et les widgets internes — DateTimeNotch, HomePanel, AppDock)
-- `src/components/RingSilhouettePath.qml`: `ShapePath` réutilisable qui dessine la silhouette intérieure complète du ring (top edge, clock notch, upper-right arc, right edge, home panel évidement, lower-right arc, dock bump, lower-left arc, left edge, upper-left arc). Mode `withOuterRectangle` pour le fill OddEvenFill; propriété `inset` pour les variantes outline. **Source de vérité côté GPU** — toute évolution géométrique du ring se fait ici et dans `RingPath`, jamais en dupliquant les segments
+- `src/components/Ring.qml`: `PanelWindow` multi-écran et composition haut niveau du ring; délègue les métriques/contenus à `RingPanels`, le mask à `RingRegions`, et le dessin à `RingSurfaceRenderer`
+- `src/components/RingPanels.qml`: composition des slots internes fixes du ring (`DateTimeNotch`, `HomePanel`, handle maison, `ExpandableEdgeWidget` + `AppDock`) et exposition des items interactifs au mask
+- `src/components/RingSlotModel.qml`: modèle géométrique interne des slots du ring; consomme les dimensions de fenêtre et états de reveal des panels pour produire les métriques utilisées par le rendu, le mask et le blur
+- `src/components/RingRegions.qml`: `mask: Region` du ring, construit depuis `RingSlotModel`/`RingPanels`; soustrait la silhouette intérieure et ajoute les zones interactives du dock et du panel maison
+- `src/components/RingSurfaceRenderer.qml`, `RingSdfSurface.qml`, `RingShapeSurface.qml`: rendu du ring depuis les métriques des slots; `RingSdfSurface` utilise `src/shaders/ring_sdf.frag.qsb`, `RingShapeSurface` conserve le fallback `ShapePath`
+- `src/shaders/ring_sdf.frag`, `src/shaders/ring_sdf.frag.qsb`: shader SDF du ring et version Qt Shader Baker précompilée; régénérer avec `/usr/lib/qt6/bin/qsb --qt6 -o src/shaders/ring_sdf.frag.qsb src/shaders/ring_sdf.frag` après modification du `.frag`
+- `src/components/RingSilhouettePath.qml`: `ShapePath` réutilisable qui dessine la silhouette intérieure complète du ring (top edge, clock notch, upper-right arc, right edge, home panel évidement, lower-right arc, dock bump, lower-left arc, left edge, upper-left arc). Mode `withOuterRectangle` pour le fill OddEvenFill; propriété `inset` pour les variantes outline. Fallback de rendu et source utilisée par `RingRegions`
 - `src/state/RingPath.qml` (singleton): producteur JS des segments de la silhouette intérieure. Helpers `line/cubic/arc` + `buildInnerSegments(g)` qui retourne le tableau ordonné. **Source de vérité côté CPU**, consommée par `RingBlurRegion`
 - `src/components/RingBlurRegion.qml`: génération exacte du `BackgroundEffect.blurRegion` du ring via `RingPath.buildInnerSegments(g)` et un scan-line pixel-spans CPU; ne pas remplacer par des rectangles approximatifs
 - `src/components/DateTimeNotch.qml`: encoche haute centrale affichant la date et l'heure
@@ -100,7 +105,7 @@ Pour l'intégration niri:
 - consommer l'état compositeur via `CompositorState`; ne jamais lire `XDG_CURRENT_DESKTOP` ou `NIRI_SOCKET` ailleurs
 - toute requête à `niri` doit passer par le singleton `NiriIpc` (`niri msg --json`), pas par un `Process` ad hoc
 - déclarer les layer rules dans `~/.config/niri/config.kdl` (voir `config/niri/config.kdl.example`); les binds globaux vivent dans `config/niri/binds.kdl` et sont inclus via niri `include`; namespaces utilisés: `kama-shell-ring`, `kama-shell-launcher`, `kama-shell-wallpaper`
-- ne jamais approximer le blur du `kama-shell-ring`: sa courbe visible est complexe; toute évolution géométrique (notch supplémentaire, panneau additionnel, changement de courbe) doit mettre à jour les **deux jumeaux** — `src/components/RingSilhouettePath.qml` (rendu GPU) et `src/state/RingPath.qml` (`buildInnerSegments`, consommé par `RingBlurRegion`) — pour que le tracé visible et le blur restent strictement alignés
+- ne jamais approximer le blur du `kama-shell-ring`: sa courbe visible est complexe; toute évolution géométrique (notch supplémentaire, panneau additionnel, changement de courbe) doit mettre à jour `src/components/RingSlotModel.qml`, le fallback `src/components/RingSilhouettePath.qml`, `src/state/RingPath.qml` (`buildInnerSegments`, consommé par `RingBlurRegion`) et le shader `src/shaders/ring_sdf.frag` puis régénérer son `.qsb`
 
 ## Documentation
 

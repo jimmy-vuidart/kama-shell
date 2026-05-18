@@ -63,8 +63,11 @@ Region {
     property var spanPool: []
     property bool rebuildQueued: false
 
-    width: Math.max(0, root.surfaceWidth)
-    height: Math.max(0, root.surfaceHeight)
+    // Cette Region sert uniquement de conteneur pour les spans enfants.
+    // Lui donner la taille de la surface ajouterait un rectangle plein à
+    // BackgroundEffect.blurRegion et flouterait tout le PanelWindow.
+    width: 0
+    height: 0
 
     Component.onCompleted: scheduleRebuild()
     onGeometryValuesChanged: scheduleRebuild()
