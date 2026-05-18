@@ -1,3 +1,4 @@
+import Quickshell
 import QtQuick
 import QtQuick.Window
 
@@ -46,6 +47,15 @@ Item {
         visible: root.iconSource.length === 0 || iconImage.status !== Image.Ready
     }
 
+    QsMenuAnchor {
+        id: trayMenu
+
+        menu: root.trayItem ? root.trayItem.menu : null
+        anchor.item: root
+        anchor.edges: Edges.Bottom | Edges.Right
+        anchor.gravity: Edges.Bottom | Edges.Right
+    }
+
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
@@ -69,8 +79,15 @@ Item {
 
     function showMenu(relativeX, relativeY) {
         if (root.trayItem && root.trayItem.hasMenu) {
-            const point = root.mapToItem(root.Window.window.contentItem, relativeX, relativeY)
-            root.trayItem.display(root.Window.window, Math.round(point.x), Math.round(point.y))
+            console.log(
+                "status-notch tray menu open",
+                "id=" + String(root.trayItem.id),
+                "relativeX=" + Math.round(relativeX),
+                "relativeY=" + Math.round(relativeY),
+                "hasMenu=" + String(root.trayItem.hasMenu)
+            )
+            trayMenu.anchor.updateAnchor()
+            trayMenu.open()
         }
     }
 

@@ -75,5 +75,6 @@ layer-rule {
 input {
 	touchpad {
 		natural-scroll
+		tap
 	}
 }
