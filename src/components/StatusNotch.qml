@@ -1,4 +1,3 @@
-import Quickshell.Widgets
 import QtQuick
 
 import "../state"
@@ -44,19 +43,19 @@ Item {
 
         StatusIndicatorIcon {
             kind: "volume"
-            iconSource: StatusNotchState.audioIconSource
+            iconName: StatusNotchState.audioIndicatorIconName
             fallbackText: StatusNotchState.audioMuted ? "M" : "V"
         }
 
         StatusIndicatorIcon {
             kind: "network"
-            iconSource: StatusNotchState.networkIconSource
+            iconName: StatusNotchState.networkIndicatorIconName
             fallbackText: StatusNotchState.networkConnected ? "N" : "X"
         }
 
         StatusIndicatorIcon {
             kind: "battery"
-            iconSource: StatusNotchState.batteryIconSource
+            iconName: StatusNotchState.batteryIndicatorIconName
             fallbackText: "B"
             visible: StatusNotchState.batteryVisible
         }
@@ -64,21 +63,25 @@ Item {
 
     component StatusIndicatorIcon: Item {
         property string kind: ""
-        property string iconSource: ""
+        property string iconName: ""
         property string fallbackText: "?"
+        readonly property string iconSource: iconName.length > 0
+            ? "../assets/icons/status/" + iconName
+            : ""
 
         width: root.iconSize
         height: root.iconSize
 
-        IconImage {
+        Image {
             id: iconImage
 
             anchors.fill: parent
             source: parent.iconSource
-            implicitSize: root.iconSize
+            sourceSize.width: root.iconSize
+            sourceSize.height: root.iconSize
             asynchronous: true
             mipmap: true
-            visible: source.length > 0 && status === Image.Ready
+            visible: source.toString().length > 0 && status === Image.Ready
         }
 
         Text {

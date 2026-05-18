@@ -17,27 +17,25 @@ Singleton {
     readonly property bool hasAudio: !!audioSink && !!audioSink.audio
     readonly property bool audioMuted: hasAudio ? audioSink.audio.muted : false
     readonly property real audioVolume: hasAudio ? audioSink.audio.volume : 0
-    readonly property string audioIconName: !hasAudio
-        ? "audio-volume-muted-symbolic"
+    readonly property string audioIndicatorIconName: !hasAudio
+        ? "fluent-speaker-mute-24-regular.svg"
         : audioMuted || audioVolume <= 0.01
-            ? "audio-volume-muted-symbolic"
+            ? "fluent-speaker-mute-24-regular.svg"
             : audioVolume < 0.34
-                ? "audio-volume-low-symbolic"
+                ? "fluent-speaker-0-24-regular.svg"
                 : audioVolume < 0.67
-                    ? "audio-volume-medium-symbolic"
-                    : "audio-volume-high-symbolic"
-    readonly property string audioIconSource: DockIconResolver.resolveIconSource(audioIconName)
+                    ? "fluent-speaker-1-24-regular.svg"
+                    : "fluent-speaker-2-24-regular.svg"
 
     readonly property var networkDevices: Networking.devices.values || []
     readonly property var connectedNetworkDevices: root.connectedDevices()
     readonly property bool networkConnected: connectedNetworkDevices.length > 0
     readonly property bool networkUsesWifi: root.hasWifiDevice(connectedNetworkDevices)
-    readonly property string networkIconName: !networkConnected
-        ? "network-offline-symbolic"
+    readonly property string networkIndicatorIconName: !networkConnected
+        ? "fluent-wifi-off-24-regular.svg"
         : networkUsesWifi
-            ? "network-wireless-signal-good-symbolic"
-            : "network-wired-symbolic"
-    readonly property string networkIconSource: DockIconResolver.resolveIconSource(networkIconName)
+            ? "fluent-wifi-1-24-regular.svg"
+            : "fluent-plug-connected-24-regular.svg"
 
     readonly property var batteryDevice: UPower.displayDevice
     readonly property bool batteryVisible: !!batteryDevice
@@ -45,10 +43,7 @@ Singleton {
         && batteryDevice.isLaptopBattery
         && batteryDevice.isPresent
     readonly property real batteryPercentage: batteryVisible ? batteryDevice.percentage : 0
-    readonly property string batteryIconName: batteryVisible && batteryDevice.iconName
-        ? batteryDevice.iconName
-        : "battery-missing-symbolic"
-    readonly property string batteryIconSource: DockIconResolver.resolveIconSource(batteryIconName)
+    readonly property string batteryIndicatorIconName: root.batteryIndicatorIconFor(batteryPercentage)
 
     readonly property int visibleStatusIconCount: root.trayItems.length
         + 2
@@ -90,6 +85,24 @@ Singleton {
         }
 
         return false
+    }
+
+    function batteryIndicatorIconFor(percentage) {
+        const value = Number(percentage || 0)
+
+        if (value >= 90) {
+            return "fluent-battery-full-24-regular.svg"
+        }
+
+        if (value >= 60) {
+            return "fluent-battery-6-24-regular.svg"
+        }
+
+        if (value >= 30) {
+            return "fluent-battery-3-24-regular.svg"
+        }
+
+        return "fluent-battery-0-24-regular.svg"
     }
 
     function logTrayItems() {
