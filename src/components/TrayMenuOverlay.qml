@@ -14,6 +14,9 @@ Variants {
 
             readonly property bool menuVisible: TrayMenuState.visible
                 && TrayMenuState.screenName === modelData.name
+            readonly property bool backgroundBlurEnabled: menuVisible
+                && ShellTheme.isLiquidGlass
+                && CompositorState.supportsBackgroundEffect
 
             screen: modelData
             visible: menuVisible
@@ -23,11 +26,35 @@ Variants {
             WlrLayershell.namespace: "kama-shell-tray-menu"
             WlrLayershell.keyboardFocus: menuVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
+            BackgroundEffect.blurRegion: window.backgroundBlurEnabled ? trayMenuBlurRegion : null
+
+            function refreshTrayMenuBlurRegion() {
+                if (window.backgroundBlurEnabled) {
+                    trayMenuBlurRegion.changed()
+                }
+            }
+
+            onBackgroundBlurEnabledChanged: Qt.callLater(refreshTrayMenuBlurRegion)
+            onWidthChanged: Qt.callLater(refreshTrayMenuBlurRegion)
+            onHeightChanged: Qt.callLater(refreshTrayMenuBlurRegion)
+
             anchors {
                 top: true
                 left: true
                 right: true
                 bottom: true
+            }
+
+            Region {
+                id: trayMenuBlurRegion
+
+                Region {
+                    x: Math.floor(panelLoader.item ? panelLoader.item.x : 0)
+                    y: Math.floor(panelLoader.item ? panelLoader.item.y : 0)
+                    width: Math.ceil(panelLoader.item ? panelLoader.item.width : 0)
+                    height: Math.ceil(panelLoader.item ? panelLoader.item.height : 0)
+                    radius: Math.ceil(ShellTheme.isFfxiv ? 8 : 18)
+                }
             }
 
             Item {
@@ -50,6 +77,7 @@ Variants {
                         id: menuPanel
 
                         menu: TrayMenuState.menu
+                        compositorBlurActive: window.backgroundBlurEnabled
                         x: window.clamp(
                             TrayMenuState.anchorRect.x + TrayMenuState.anchorRect.width - width,
                             8,
@@ -57,6 +85,10 @@ Variants {
                         )
                         y: window.menuY(height)
                         onCloseRequested: TrayMenuState.close()
+                        onXChanged: Qt.callLater(window.refreshTrayMenuBlurRegion)
+                        onYChanged: Qt.callLater(window.refreshTrayMenuBlurRegion)
+                        onWidthChanged: Qt.callLater(window.refreshTrayMenuBlurRegion)
+                        onHeightChanged: Qt.callLater(window.refreshTrayMenuBlurRegion)
                     }
                 }
             }

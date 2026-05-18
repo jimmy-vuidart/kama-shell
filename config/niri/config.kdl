@@ -83,6 +83,10 @@ layer-rule {
 layer-rule {
     match namespace="^kama-shell-tray-menu$"
     block-out-from "screencast"
+
+    background-effect {
+        xray false
+    }
 }
 
 input {
