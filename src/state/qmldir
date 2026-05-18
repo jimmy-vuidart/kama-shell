@@ -1,6 +1,7 @@
 singleton ShellConfig 1.0 ShellConfig.qml
 singleton ShellTheme 1.0 ShellTheme.qml
 singleton ShellGeometry 1.0 ShellGeometry.qml
+singleton RingPath 1.0 RingPath.qml
 singleton CompositorState 1.0 CompositorState.qml
 singleton NiriIpc 1.0 NiriIpc.qml
 singleton NiriWindowBackend 1.0 NiriWindowBackend.qml

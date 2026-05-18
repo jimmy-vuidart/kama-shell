@@ -1,6 +1,8 @@
 import Quickshell
 import QtQuick
 
+import "../state"
+
 Region {
     id: root
 
@@ -215,149 +217,32 @@ Region {
         return unique
     }
 
+    // Délègue la production des segments à `RingPath` (singleton). Toute
+    // évolution géométrique du ring se fait dans RingPath et le composant
+    // QML jumeau `RingSilhouettePath`, jamais en dupliquant ici.
     function innerCutoutSegments() {
-        const left = root.innerLeft
-        const top = root.innerTop
-        const right = root.innerRight
-        const bottom = root.innerBottom
-        const r = root.cornerRadius
-        const notchK = root.clockNotchRadius * 0.55
-        const homeK = root.homePanelShapeRadius * 0.45
-
-        return [
-            root.line(left + r, top, root.clockNotchLeft, top),
-            root.cubic(
-                root.clockNotchLeft,
-                top,
-                root.clockNotchLeft + notchK,
-                top,
-                root.clockNotchLeft,
-                root.clockNotchBottom - notchK,
-                root.clockNotchLeft + root.clockNotchRadius,
-                root.clockNotchBottom
-            ),
-            root.line(
-                root.clockNotchLeft + root.clockNotchRadius,
-                root.clockNotchBottom,
-                root.clockNotchRight - root.clockNotchRadius,
-                root.clockNotchBottom
-            ),
-            root.cubic(
-                root.clockNotchRight - root.clockNotchRadius,
-                root.clockNotchBottom,
-                root.clockNotchRight,
-                root.clockNotchBottom - notchK,
-                root.clockNotchRight - notchK,
-                top,
-                root.clockNotchRight,
-                top
-            ),
-            root.line(root.clockNotchRight, top, right - r, top),
-            root.arc(right - r, top + r, r, 1, top, top + r),
-            root.line(right, top + r, root.homePanelShapeRight, root.homePanelShapeTop),
-            root.line(
-                root.homePanelShapeRight,
-                root.homePanelShapeTop,
-                root.homePanelShapeLeft + root.homePanelShapeRadius,
-                root.homePanelShapeTop
-            ),
-            root.cubic(
-                root.homePanelShapeLeft + root.homePanelShapeRadius,
-                root.homePanelShapeTop,
-                root.homePanelShapeLeft + homeK,
-                root.homePanelShapeTop,
-                root.homePanelShapeLeft,
-                root.homePanelShapeTop + homeK,
-                root.homePanelShapeLeft,
-                root.homePanelShapeTop + root.homePanelShapeRadius
-            ),
-            root.line(
-                root.homePanelShapeLeft,
-                root.homePanelShapeTop + root.homePanelShapeRadius,
-                root.homePanelShapeLeft,
-                root.homePanelShapeBottom - root.homePanelShapeRadius
-            ),
-            root.cubic(
-                root.homePanelShapeLeft,
-                root.homePanelShapeBottom - root.homePanelShapeRadius,
-                root.homePanelShapeLeft,
-                root.homePanelShapeBottom - homeK,
-                root.homePanelShapeLeft + homeK,
-                root.homePanelShapeBottom,
-                root.homePanelShapeLeft + root.homePanelShapeRadius,
-                root.homePanelShapeBottom
-            ),
-            root.line(
-                root.homePanelShapeLeft + root.homePanelShapeRadius,
-                root.homePanelShapeBottom,
-                root.homePanelShapeRight,
-                root.homePanelShapeBottom
-            ),
-            root.line(root.homePanelShapeRight, root.homePanelShapeBottom, right, bottom - r),
-            root.arc(right - r, bottom - r, r, 1, bottom - r, bottom),
-            root.line(right - r, bottom, root.dockSlopeStartRight, bottom),
-            root.cubic(
-                root.dockSlopeStartRight,
-                bottom,
-                root.dockSlopeStartRight - root.dockCurveRun,
-                bottom,
-                root.dockTopFlatRight + (root.dockCurveRun * 0.55),
-                root.dockPeakY,
-                root.dockTopFlatRight,
-                root.dockPeakY
-            ),
-            root.line(root.dockTopFlatRight, root.dockPeakY, root.dockTopFlatLeft, root.dockPeakY),
-            root.cubic(
-                root.dockTopFlatLeft,
-                root.dockPeakY,
-                root.dockTopFlatLeft - (root.dockCurveRun * 0.55),
-                root.dockPeakY,
-                root.dockSlopeStartLeft + root.dockCurveRun,
-                bottom,
-                root.dockSlopeStartLeft,
-                bottom
-            ),
-            root.line(root.dockSlopeStartLeft, bottom, left + r, bottom),
-            root.arc(left + r, bottom - r, r, -1, bottom - r, bottom),
-            root.line(left, bottom - r, left, top + r),
-            root.arc(left + r, top + r, r, -1, top, top + r)
-        ]
-    }
-
-    function line(x1, y1, x2, y2) {
-        return {
-            kind: "line",
-            x1: x1,
-            y1: y1,
-            x2: x2,
-            y2: y2
-        }
-    }
-
-    function cubic(x0, y0, x1, y1, x2, y2, x3, y3) {
-        return {
-            kind: "cubic",
-            x0: x0,
-            y0: y0,
-            x1: x1,
-            y1: y1,
-            x2: x2,
-            y2: y2,
-            x3: x3,
-            y3: y3
-        }
-    }
-
-    function arc(cx, cy, radius, side, yMin, yMax) {
-        return {
-            kind: "arc",
-            cx: cx,
-            cy: cy,
-            radius: radius,
-            side: side,
-            yMin: yMin,
-            yMax: yMax
-        }
+        return RingPath.buildInnerSegments({
+            innerLeft: root.innerLeft,
+            innerTop: root.innerTop,
+            innerRight: root.innerRight,
+            innerBottom: root.innerBottom,
+            cornerRadius: root.cornerRadius,
+            clockNotchLeft: root.clockNotchLeft,
+            clockNotchRight: root.clockNotchRight,
+            clockNotchBottom: root.clockNotchBottom,
+            clockNotchRadius: root.clockNotchRadius,
+            dockSlopeStartLeft: root.dockSlopeStartLeft,
+            dockSlopeStartRight: root.dockSlopeStartRight,
+            dockTopFlatLeft: root.dockTopFlatLeft,
+            dockTopFlatRight: root.dockTopFlatRight,
+            dockPeakY: root.dockPeakY,
+            dockCurveRun: root.dockCurveRun,
+            homePanelShapeLeft: root.homePanelShapeLeft,
+            homePanelShapeRight: root.homePanelShapeRight,
+            homePanelShapeTop: root.homePanelShapeTop,
+            homePanelShapeBottom: root.homePanelShapeBottom,
+            homePanelShapeRadius: root.homePanelShapeRadius
+        })
     }
 
     function addLineIntersection(xs, segment, scanY) {

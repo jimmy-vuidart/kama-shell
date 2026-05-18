@@ -51,8 +51,10 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 ## Structure actuelle
 
 - `src/shell.qml`: point d'entrée Quickshell
-- `src/components/Ring.qml`: `PanelWindow` multi-écran et géométrie du ring
-- `src/components/RingBlurRegion.qml`: génération exacte du `BackgroundEffect.blurRegion` du ring à partir de la même géométrie que le tracé visible; ne pas remplacer par des rectangles approximatifs
+- `src/components/Ring.qml`: `PanelWindow` multi-écran et composition haut niveau du ring (instancie `RingSilhouettePath` pour fill + outlines + mask, `RingBlurRegion` pour le blur, et les widgets internes — DateTimeNotch, HomePanel, AppDock)
+- `src/components/RingSilhouettePath.qml`: `ShapePath` réutilisable qui dessine la silhouette intérieure complète du ring (top edge, clock notch, upper-right arc, right edge, home panel évidement, lower-right arc, dock bump, lower-left arc, left edge, upper-left arc). Mode `withOuterRectangle` pour le fill OddEvenFill; propriété `inset` pour les variantes outline. **Source de vérité côté GPU** — toute évolution géométrique du ring se fait ici et dans `RingPath`, jamais en dupliquant les segments
+- `src/state/RingPath.qml` (singleton): producteur JS des segments de la silhouette intérieure. Helpers `line/cubic/arc` + `buildInnerSegments(g)` qui retourne le tableau ordonné. **Source de vérité côté CPU**, consommée par `RingBlurRegion`
+- `src/components/RingBlurRegion.qml`: génération exacte du `BackgroundEffect.blurRegion` du ring via `RingPath.buildInnerSegments(g)` et un scan-line pixel-spans CPU; ne pas remplacer par des rectangles approximatifs
 - `src/components/DateTimeNotch.qml`: encoche haute centrale affichant la date et l'heure
 - `src/components/HomePanel.qml`: contenu visuel du panel maison, intégré dans le `PanelWindow` du ring
 - `src/components/HomeRoomRow.qml`, `HomeDeviceControl.qml`, `HouseIcon.qml`: primitives visuelles du panel maison
@@ -98,7 +100,7 @@ Pour l'intégration niri:
 - consommer l'état compositeur via `CompositorState`; ne jamais lire `XDG_CURRENT_DESKTOP` ou `NIRI_SOCKET` ailleurs
 - toute requête à `niri` doit passer par le singleton `NiriIpc` (`niri msg --json`), pas par un `Process` ad hoc
 - déclarer les layer rules dans `~/.config/niri/config.kdl` (voir `config/niri/config.kdl.example`); les binds globaux vivent dans `config/niri/binds.kdl` et sont inclus via niri `include`; namespaces utilisés: `kama-shell-ring`, `kama-shell-launcher`, `kama-shell-wallpaper`
-- ne jamais approximer le blur du `kama-shell-ring`: sa courbe visible est un `ShapePath` complexe, donc tout changement de panels/notches doit mettre à jour `RingBlurRegion.qml` avec la même géométrie
+- ne jamais approximer le blur du `kama-shell-ring`: sa courbe visible est complexe; toute évolution géométrique (notch supplémentaire, panneau additionnel, changement de courbe) doit mettre à jour les **deux jumeaux** — `src/components/RingSilhouettePath.qml` (rendu GPU) et `src/state/RingPath.qml` (`buildInnerSegments`, consommé par `RingBlurRegion`) — pour que le tracé visible et le blur restent strictement alignés
 
 ## Documentation
 
