@@ -15,7 +15,7 @@ Item {
     property real hoverBottomMargin: 0
     property real hoverWidth: Math.max(compactWidth, expandedWidth)
     property real hoverHeight: compactHeight
-    property int animationDuration: 220
+    property int animationDuration: 120
     property bool keepExpanded: false
     property Component compactContent
     property alias contentItem: contentContainer
@@ -23,10 +23,7 @@ Item {
     readonly property bool hovered: hoverArea.containsMouse
     readonly property real revealTarget: (hovered || keepExpanded) ? 1 : 0
     property real revealProgress: 0
-    // Proxy de vélocité: positif lors d'expansion, négatif lors de fermeture,
-    // décay automatiquement à 0 quand le ressort se stabilise. Utilisé par
-    // `Ring.qml` pour ajouter un bonus de squash à la silhouette.
-    readonly property real revealVelocity: revealTarget - revealProgress
+    readonly property real revealVelocity: 0
     readonly property real currentWidth: compactWidth + ((expandedWidth - compactWidth) * revealProgress)
     readonly property real currentHeight: compactHeight + ((expandedHeight - compactHeight) * revealProgress)
 
@@ -35,11 +32,9 @@ Item {
     onRevealTargetChanged: revealProgress = revealTarget
 
     Behavior on revealProgress {
-        SpringAnimation {
-            spring: 3.2
-            damping: 0.32
-            mass: 1.0
-            epsilon: 0.005
+        NumberAnimation {
+            duration: root.animationDuration
+            easing.type: Easing.OutCubic
         }
     }
 

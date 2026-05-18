@@ -62,7 +62,7 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/components/RingBlurRegion.qml`: génération exacte du `BackgroundEffect.blurRegion` du ring via `RingPath.buildInnerSegments(g)` et un scan-line pixel-spans CPU; ne pas remplacer par des rectangles approximatifs
 - `src/components/DateTimeNotch.qml`: encoche haute centrale affichant la date et l'heure
 - `src/components/StatusNotch.qml`, `StatusTrayIcon.qml`: encoche haute droite fixe affichant les items `SystemTray` déclarés par les apps et les indicateurs système volume/réseau/CPU/batterie
-- `src/assets/icons/status/`: icônes Fluent UI System embarquées pour les indicateurs système internes du `StatusNotch`; les icônes tray applicatives restent fournies par `SystemTray`
+- `src/assets/icons/status/`: icônes Fluent UI System embarquées pour les indicateurs système internes du `StatusNotch`; les icônes tray applicatives restent fournies par `SystemTray`. Toute nouvelle icône système interne doit être récupérée de la même façon (SVG Fluent UI System via Iconify/API ou source upstream, licence MIT documentée dans le README local) puis embarquée ici avec un fill blanc explicite.
 - `src/state/TrayMenuState.qml`, `src/components/TrayMenuOverlay.qml`, `TrayMenuPanel.qml`: état et rendu QML du menu contextuel `SystemTray`; évite les menus natifs Qt (`QMenu`) qui deviennent des `xdg-toplevel` problématiques sous niri/layer-shell
 - `src/components/HomePanel.qml`: contenu visuel du panel maison, intégré dans le `PanelWindow` du ring
 - `src/components/HomeRoomRow.qml`, `HomeDeviceControl.qml`, `HouseIcon.qml`: primitives visuelles du panel maison

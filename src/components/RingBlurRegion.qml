@@ -71,6 +71,8 @@ Region {
 
     property var spanPool: []
     property bool rebuildQueued: false
+    readonly property bool tracePerformance: Quickshell.env("KAMA_TRACE_PERF") === "1"
+    property int rebuildCount: 0
 
     // Cette Region sert uniquement de conteneur pour les spans enfants.
     // Lui donner la taille de la surface ajouterait un rectangle plein à
@@ -93,6 +95,7 @@ Region {
     function rebuild() {
         root.rebuildQueued = false
 
+        const startedAt = root.tracePerformance ? Date.now() : 0
         const spans = root.active ? root.buildCompressedSpans() : []
         root.ensureSpanPool(spans.length)
 
@@ -107,6 +110,15 @@ Region {
         }
 
         root.changed()
+
+        if (root.tracePerformance) {
+            root.rebuildCount += 1
+            console.log(
+                "RingBlurRegion rebuild #" + root.rebuildCount
+                + " spans=" + spans.length
+                + " durationMs=" + (Date.now() - startedAt)
+            )
+        }
     }
 
     function ensureSpanPool(count) {

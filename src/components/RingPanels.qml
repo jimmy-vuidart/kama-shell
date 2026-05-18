@@ -45,12 +45,12 @@ Item {
         surfaceWidth: root.width
         surfaceHeight: root.height
         dockRevealProgress: dockSlot.revealProgress
-        dockRevealVelocity: dockSlot.revealVelocity
+        dockRevealVelocity: 0
         dockBumpWidth: dock.bumpWidth
         dockCurrentWidth: dockSlot.currentWidth
         dockCurrentHeight: dockSlot.currentHeight
         homeRevealProgress: homePanel.revealProgress
-        homeRevealVelocity: homePanel.revealVelocity
+        homeRevealVelocity: 0
         homeCurrentHeight: homePanel.currentHeight
     }
 
@@ -82,8 +82,8 @@ Item {
         transform: Scale {
             origin.x: homePanel.width
             origin.y: homePanel.height / 2
-            xScale: 1 + (homePanel.revealVelocity * 0.04)
-            yScale: 1 - (Math.abs(homePanel.revealVelocity) * 0.012)
+            xScale: 1
+            yScale: 1
         }
     }
 
@@ -162,8 +162,8 @@ Item {
             transform: Scale {
                 origin.x: dock.width / 2
                 origin.y: dock.height
-                xScale: 1 + (dockSlot.revealVelocity * 0.018)
-                yScale: 1 + (dockSlot.revealVelocity * 0.035)
+                xScale: 1
+                yScale: 1
             }
         }
     }

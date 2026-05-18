@@ -12,10 +12,9 @@ Item {
         { name: "Bureau", status: "Concentration", lightCount: 2, lightsOn: true, shutters: 62, temperature: 20.5 }
     ]
     readonly property real revealTarget: panelHover.hovered ? 1 : 0
+    property int animationDuration: 150
     property real revealProgress: 0
-    // Proxy de vélocité (cf. ExpandableEdgeWidget) consommé par `Ring.qml`
-    // pour le squash de la silhouette pendant la transition.
-    readonly property real revealVelocity: revealTarget - revealProgress
+    readonly property real revealVelocity: 0
     readonly property real currentWidth: ShellGeometry.homePanelHandleWidth
         + ((ShellGeometry.homePanelExpandedWidth - ShellGeometry.homePanelHandleWidth) * revealProgress)
     readonly property real currentHeight: ShellGeometry.homePanelHandleHeight
@@ -28,11 +27,9 @@ Item {
     onRevealTargetChanged: revealProgress = revealTarget
 
     Behavior on revealProgress {
-        SpringAnimation {
-            spring: 2.6
-            damping: 0.35
-            mass: 1.0
-            epsilon: 0.005
+        NumberAnimation {
+            duration: root.animationDuration
+            easing.type: Easing.OutCubic
         }
     }
 
