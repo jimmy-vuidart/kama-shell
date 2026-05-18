@@ -91,6 +91,18 @@ Singleton {
             }
         }
 
+        // Insert launching-only apps (not pinned, not yet running) into ordered
+        for (const launchId in nextLaunching) {
+            const entry = root.resolveDesktopEntry(launchId)
+            const key = entry ? entry.id : "launching:" + launchId
+            if (!(key in byKey)) {
+                const item = root.createItem(key, entry, launchId)
+                item.isLaunching = true
+                ordered.push(item)
+                byKey[key] = item
+            }
+        }
+
         if (launchingChanged) {
             root.launchingApps = nextLaunching
         }
@@ -101,7 +113,7 @@ Singleton {
         for (let i = 0; i < ordered.length; i++) {
             if (ordered[i].isPinned) {
                 finalItems.push(ordered[i])
-            } else if (ordered[i].isRunning) {
+            } else if (ordered[i].isRunning || ordered[i].isLaunching) {
                 hasRunningUnpinned = true
             }
         }
@@ -114,7 +126,7 @@ Singleton {
         }
 
         for (let i = 0; i < ordered.length; i++) {
-            if (!ordered[i].isPinned && ordered[i].isRunning) {
+            if (!ordered[i].isPinned && (ordered[i].isRunning || ordered[i].isLaunching)) {
                 finalItems.push(ordered[i])
             }
         }
@@ -169,6 +181,24 @@ Singleton {
         return nativeWindows
     }
 
+    function trackLaunch(entry) {
+        if (!entry || !entry.id) {
+            return
+        }
+
+        const dId = root.normalizedDesktopId(entry.id)
+
+        if (!dId.length) {
+            return
+        }
+
+        const next = Object.assign({}, root.launchingApps)
+        next[dId] = Date.now()
+        root.launchingApps = next
+        launchTimeoutTimer.restart()
+        root.queueRebuild()
+    }
+
     function activateItem(item) {
         if (!item || item.kind !== "app") {
             return
@@ -185,14 +215,7 @@ Singleton {
             const entry = item.desktopEntry || root.resolveDesktopEntry(root.itemDesktopId(item))
 
             if (entry) {
-                const dId = root.normalizedDesktopId(entry.id || "")
-                if (dId.length) {
-                    const next = Object.assign({}, root.launchingApps)
-                    next[dId] = Date.now()
-                    root.launchingApps = next
-                    launchTimeoutTimer.restart()
-                    root.queueRebuild()
-                }
+                root.trackLaunch(entry)
                 entry.execute()
             }
         }

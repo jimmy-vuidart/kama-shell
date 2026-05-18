@@ -60,9 +60,9 @@ Singleton {
             return
         }
 
+        DockState.trackLaunch(entry)
         entry.execute()
         root.hide()
-        DockState.queueRebuild()
     }
 
     function filteredApplications(applications, queryText) {
