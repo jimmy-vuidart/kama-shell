@@ -46,6 +46,16 @@ window-rule {
     clip-to-geometry true
 }
 
+// Quickshell utilise UseQApplication pour les menus SystemTray (QsMenuAnchor).
+// Qt cree ces popups comme des xdg-toplevel (pas xdg-popup, car les surfaces
+// layer-shell ne peuvent pas etre parents de xdg-popup). Sans cette regle,
+// niri tile la fenetre en plein ecran. Open-floating la laisse a sa taille
+// naturelle et la positionne la ou Qt le demande.
+window-rule {
+    match app-id="^quickshell$"
+    open-floating true
+}
+
 // ---------------------------------------------------------------------------
 // Layer rules pour les namespaces Kama Shell.
 // Le blur Liquid Glass est demande cote Quickshell avec `BackgroundEffect.blurRegion`.

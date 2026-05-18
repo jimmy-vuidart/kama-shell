@@ -73,6 +73,14 @@ window-rule {
     clip-to-geometry true
 }
 
+// Menus SystemTray (QsMenuAnchor avec UseQApplication).
+// Qt cree ces popups comme des xdg-toplevel; sans cette regle niri les tile
+// en plein ecran. Open-floating les laisse a leur taille naturelle.
+window-rule {
+    match app-id="^quickshell$"
+    open-floating true
+}
+
 // ---------------------------------------------------------------------------
 // Layer rules
 //

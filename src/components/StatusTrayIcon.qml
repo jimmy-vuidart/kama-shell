@@ -54,13 +54,41 @@ Item {
         anchor.item: root
         anchor.edges: Edges.Bottom | Edges.Right
         anchor.gravity: Edges.Bottom | Edges.Right
+
+        onMenuChanged: console.log(
+            "status-notch tray menu-ref changed",
+            "id=" + String(root.trayItem ? root.trayItem.id : "<null>"),
+            "menu=" + String(menu),
+            "menu-is-null=" + String(menu === null)
+        )
     }
 
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
 
+        onPressed: function(mouse) {
+            console.log(
+                "status-notch tray mouse-pressed",
+                "id=" + String(root.trayItem ? root.trayItem.id : "<null>"),
+                "button=" + root.buttonName(mouse.button),
+                "x=" + Math.round(mouse.x),
+                "y=" + Math.round(mouse.y)
+            )
+        }
+
         onClicked: function(mouse) {
+            console.log(
+                "status-notch tray mouse-clicked",
+                "id=" + String(root.trayItem ? root.trayItem.id : "<null>"),
+                "button=" + root.buttonName(mouse.button),
+                "hasItem=" + String(!!root.trayItem),
+                "hasMenu=" + String(root.trayItem ? root.trayItem.hasMenu : "<null>"),
+                "onlyMenu=" + String(root.trayItem ? root.trayItem.onlyMenu : "<null>"),
+                "menu=" + String(root.trayItem ? root.trayItem.menu : "<null>"),
+                "trayMenu.menu=" + String(trayMenu.menu)
+            )
+
             if (!root.trayItem) {
                 return
             }
@@ -78,16 +106,34 @@ Item {
     }
 
     function showMenu(relativeX, relativeY) {
-        if (root.trayItem && root.trayItem.hasMenu) {
-            console.log(
-                "status-notch tray menu open",
-                "id=" + String(root.trayItem.id),
-                "relativeX=" + Math.round(relativeX),
-                "relativeY=" + Math.round(relativeY),
-                "hasMenu=" + String(root.trayItem.hasMenu)
-            )
+        const hasItem = !!root.trayItem
+        const hasMenu = hasItem && root.trayItem.hasMenu
+        const menuObj = hasItem ? root.trayItem.menu : null
+
+        console.log(
+            "status-notch tray show-menu called",
+            "id=" + String(hasItem ? root.trayItem.id : "<null>"),
+            "relativeX=" + Math.round(relativeX),
+            "relativeY=" + Math.round(relativeY),
+            "hasItem=" + hasItem,
+            "hasMenu=" + hasMenu,
+            "menu=" + String(menuObj),
+            "trayMenu.menu=" + String(trayMenu.menu),
+            "anchor.item=" + String(trayMenu.anchor.item)
+        )
+
+        if (hasItem && hasMenu) {
             trayMenu.anchor.updateAnchor()
+            console.log(
+                "status-notch tray open-menu",
+                "id=" + String(root.trayItem.id),
+                "calling trayMenu.open()"
+            )
             trayMenu.open()
+            console.log(
+                "status-notch tray open-menu done",
+                "id=" + String(root.trayItem.id)
+            )
         }
     }
 
@@ -112,6 +158,13 @@ Item {
             "imageVisible=" + iconImage.visible,
             "fallbackLabel=" + root.fallbackLabel()
         )
+    }
+
+    function buttonName(button) {
+        if (button === Qt.LeftButton) return "Left"
+        if (button === Qt.RightButton) return "Right"
+        if (button === Qt.MiddleButton) return "Middle"
+        return "Unknown(" + button + ")"
     }
 
     function imageStatusName(status) {
