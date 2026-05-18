@@ -54,6 +54,7 @@ Item {
         }
 
         onVisibleChanged: requestPaint()
+        Component.onCompleted: if (visible) requestPaint()
 
         RotationAnimator on rotation {
             from: 0
