@@ -13,6 +13,7 @@ Singleton {
     readonly property var trayItems: SystemTray.items.values || []
     readonly property var visibleTrayItems: root.trayItems.slice(0, ShellGeometry.statusNotchMaxTrayItems)
     readonly property int overflowTrayCount: Math.max(0, root.trayItems.length - root.visibleTrayItems.length)
+    readonly property bool hasTraySection: root.visibleTrayItems.length > 0 || root.overflowTrayCount > 0
 
     readonly property var audioSink: Pipewire.defaultAudioSink
     readonly property bool hasAudio: !!audioSink && !!audioSink.audio
@@ -50,6 +51,18 @@ Singleton {
         ? batteryDevice.iconName
         : "battery-missing-symbolic"
     readonly property string batteryIconSource: DockIconResolver.resolveIconSource(batteryIconName)
+
+    readonly property int visibleStatusIconCount: root.visibleTrayItems.length
+        + (root.overflowTrayCount > 0 ? 1 : 0)
+        + 2
+        + (root.batteryVisible ? 1 : 0)
+    readonly property int visibleStatusGapCount: root.hasTraySection
+        ? root.visibleStatusIconCount
+        : Math.max(0, root.visibleStatusIconCount - 1)
+    readonly property int statusNotchImplicitWidth: (ShellGeometry.statusNotchHorizontalPadding * 2)
+        + (root.visibleStatusIconCount * ShellGeometry.statusNotchIconSize)
+        + (root.visibleStatusGapCount * ShellGeometry.statusNotchItemGap)
+        + (root.hasTraySection ? ShellGeometry.statusNotchSectionGapWidth : 0)
 
     PwObjectTracker {
         objects: [root.audioSink]

@@ -11,7 +11,7 @@ Item {
     readonly property int iconSize: ShellGeometry.statusNotchIconSize
     readonly property int itemGap: ShellGeometry.statusNotchItemGap
 
-    implicitWidth: ShellGeometry.statusNotchWidth
+    implicitWidth: StatusNotchState.statusNotchImplicitWidth
     implicitHeight: ShellGeometry.statusNotchHeight
     clip: true
 
@@ -51,11 +51,9 @@ Item {
         }
 
         Item {
-            width: StatusNotchState.visibleTrayItems.length > 0
-                || StatusNotchState.overflowTrayCount > 0
-                ? 4
-                : 0
+            width: ShellGeometry.statusNotchSectionGapWidth
             height: root.iconSize
+            visible: StatusNotchState.hasTraySection
         }
 
         StatusIndicatorIcon {
