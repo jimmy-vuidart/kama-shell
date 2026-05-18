@@ -1,6 +1,7 @@
 pragma Singleton
 
 import Quickshell
+import Quickshell.Io
 import Quickshell.Networking
 import Quickshell.Services.Pipewire
 import Quickshell.Services.SystemTray
@@ -45,23 +46,45 @@ Singleton {
     readonly property real batteryPercentage: batteryVisible ? batteryDevice.percentage : 0
     readonly property string batteryIndicatorIconName: root.batteryIndicatorIconFor(batteryPercentage)
 
+    property real previousCpuTotal: -1
+    property real previousCpuIdle: -1
+    property real cpuLoad: 0
+    property bool cpuLoadAvailable: false
+    readonly property int cpuLoadPercentage: cpuLoadAvailable
+        ? Math.max(0, Math.min(100, Math.round(cpuLoad * 100)))
+        : 0
+    readonly property string cpuLoadText: cpuLoadAvailable
+        ? cpuLoadPercentage + "%"
+        : "--%"
+
     readonly property int visibleStatusIconCount: root.trayItems.length
-        + 2
+        + 3
         + (root.batteryVisible ? 1 : 0)
-    readonly property int visibleStatusGapCount: root.hasTraySection
-        ? root.visibleStatusIconCount
-        : Math.max(0, root.visibleStatusIconCount - 1)
+    readonly property int visibleStatusSpacerCount: 1
+        + (root.hasTraySection ? 1 : 0)
+    readonly property int visibleStatusGapCount: Math.max(
+        0,
+        root.visibleStatusIconCount + root.visibleStatusSpacerCount - 1
+    )
     readonly property int statusNotchImplicitWidth: (ShellGeometry.statusNotchHorizontalPadding * 2)
-        + (root.visibleStatusIconCount * ShellGeometry.statusNotchIconSize)
+        + ((root.visibleStatusIconCount - 1) * ShellGeometry.statusNotchIconSize)
+        + ShellGeometry.statusNotchCpuIndicatorWidth
+        + ShellGeometry.statusNotchCpuTrailingGap
         + (root.visibleStatusGapCount * ShellGeometry.statusNotchItemGap)
-        + (root.hasTraySection ? ShellGeometry.statusNotchSectionGapWidth : 0)
+        + (root.hasTraySection ? ShellGeometry.statusNotchCpuTrailingGap : 0)
 
     PwObjectTracker {
         objects: [root.audioSink]
     }
 
     onTrayItemsChanged: root.logTrayItems()
-    Component.onCompleted: root.logTrayItems()
+    Component.onCompleted: {
+        root.logTrayItems()
+
+        if (cpuStatFile.waitForJob()) {
+            root.updateCpuLoad(cpuStatFile.text())
+        }
+    }
 
     function connectedDevices() {
         const result = []
@@ -105,6 +128,57 @@ Singleton {
         return "fluent-battery-0-24-regular.svg"
     }
 
+    function updateCpuLoad(text) {
+        const lines = String(text || "").split("\n")
+        let cpuLine = ""
+
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].indexOf("cpu ") === 0) {
+                cpuLine = lines[i]
+                break
+            }
+        }
+
+        if (!cpuLine.length) {
+            root.cpuLoadAvailable = false
+            return
+        }
+
+        const parts = cpuLine.trim().split(/\s+/)
+        if (parts.length < 5) {
+            root.cpuLoadAvailable = false
+            return
+        }
+
+        const idle = Number(parts[4] || 0) + Number(parts[5] || 0)
+        let total = 0
+
+        for (let i = 1; i < parts.length; i++) {
+            const value = Number(parts[i] || 0)
+            if (isFinite(value)) {
+                total += value
+            }
+        }
+
+        if (total <= 0 || idle < 0) {
+            root.cpuLoadAvailable = false
+            return
+        }
+
+        if (root.previousCpuTotal >= 0 && root.previousCpuIdle >= 0) {
+            const totalDelta = total - root.previousCpuTotal
+            const idleDelta = idle - root.previousCpuIdle
+
+            if (totalDelta > 0) {
+                root.cpuLoad = Math.max(0, Math.min(1, 1 - (idleDelta / totalDelta)))
+                root.cpuLoadAvailable = true
+            }
+        }
+
+        root.previousCpuTotal = total
+        root.previousCpuIdle = idle
+    }
+
     function logTrayItems() {
         console.log(
             "status-notch tray items changed",
@@ -127,5 +201,25 @@ Singleton {
                 "onlyMenu=" + String(item ? item.onlyMenu : "<null>")
             )
         }
+    }
+
+    FileView {
+        id: cpuStatFile
+
+        path: "/proc/stat"
+        printErrors: false
+        blockLoading: true
+        watchChanges: false
+
+        onLoaded: root.updateCpuLoad(text())
+        onLoadFailed: root.cpuLoadAvailable = false
+    }
+
+    Timer {
+        interval: 2000
+        repeat: true
+        running: true
+
+        onTriggered: cpuStatFile.reload()
     }
 }

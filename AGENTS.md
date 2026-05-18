@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Ce dépôt contient une configuration Quickshell minimale, actuellement centrée sur [`src/shell.qml`](src/shell.qml). Kama Shell est un shell Quickshell autonome lancé dans une session [niri](https://niri-wm.github.io/niri/). niri est la seule cible de session supportée; les intégrations KWin/KRunner ont été retirées (voir [`docs/TO_NIRI.md`](docs/TO_NIRI.md)). Les changements doivent rester compatibles avec Quickshell et avec un usage Wayland via `PanelWindow` + `WlrLayershell`.
+Ce dépôt contient une configuration Quickshell minimale, actuellement centrée sur [`src/shell.qml`](src/shell.qml). Kama Shell est un shell Quickshell autonome lancé dans une session [niri](https://niri-wm.github.io/niri/). niri est la seule cible de session supportée; les intégrations KWin/KRunner ont été retirées. Les changements doivent rester compatibles avec Quickshell et avec un usage Wayland via `PanelWindow` + `WlrLayershell`.
 
 ## Objectif
 
@@ -61,7 +61,7 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/state/RingPath.qml` (singleton): producteur JS des segments de la silhouette intérieure. Helpers `line/cubic/arc` + `buildInnerSegments(g)` qui retourne le tableau ordonné. **Source de vérité côté CPU**, consommée par `RingBlurRegion`
 - `src/components/RingBlurRegion.qml`: génération exacte du `BackgroundEffect.blurRegion` du ring via `RingPath.buildInnerSegments(g)` et un scan-line pixel-spans CPU; ne pas remplacer par des rectangles approximatifs
 - `src/components/DateTimeNotch.qml`: encoche haute centrale affichant la date et l'heure
-- `src/components/StatusNotch.qml`, `StatusTrayIcon.qml`: encoche haute droite fixe affichant les items `SystemTray` déclarés par les apps et les indicateurs système volume/réseau/batterie
+- `src/components/StatusNotch.qml`, `StatusTrayIcon.qml`: encoche haute droite fixe affichant les items `SystemTray` déclarés par les apps et les indicateurs système volume/réseau/CPU/batterie
 - `src/assets/icons/status/`: icônes Fluent UI System embarquées pour les indicateurs système internes du `StatusNotch`; les icônes tray applicatives restent fournies par `SystemTray`
 - `src/state/TrayMenuState.qml`, `src/components/TrayMenuOverlay.qml`, `TrayMenuPanel.qml`: état et rendu QML du menu contextuel `SystemTray`; évite les menus natifs Qt (`QMenu`) qui deviennent des `xdg-toplevel` problématiques sous niri/layer-shell
 - `src/components/HomePanel.qml`: contenu visuel du panel maison, intégré dans le `PanelWindow` du ring
@@ -80,7 +80,7 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/state/DockState.qml`: état global du dock, apps pinned + running via `DesktopEntries` et `ToplevelManager`
 - `src/state/DockIconResolver.qml`: résolution et cache asynchrones des icônes du dock
 - `src/state/LauncherState.qml`: état global du launcher, filtrage de `DesktopEntries.applications`, sélection et lancement
-- `src/state/StatusNotchState.qml`: état global de l'encoche haut-droite; agrège `SystemTray.items`, `Pipewire.defaultAudioSink`, `Networking.devices` et `UPower.displayDevice`
+- `src/state/StatusNotchState.qml`: état global de l'encoche haut-droite; agrège `SystemTray.items`, `Pipewire.defaultAudioSink`, `Networking.devices`, `/proc/stat` et `UPower.displayDevice`
 - `sessions/kama-shell-niri-session`, `sessions/start-kama-shell-niri-session`, `sessions/kama-shell-niri.desktop`: session niri installable via Makefile/PKGBUILD; exporte `KAMA_COMPOSITOR=niri`, `XDG_CURRENT_DESKTOP=KamaShell:niri`
 - `sessions/kama-shell-niri-debug-session`, `sessions/start-kama-shell-niri-debug-session`, `sessions/kama-shell-niri-debug.desktop`: session niri debug; lance `niri --config config/niri/config.kdl` depuis le tree source et expose `KAMA_DEV=1` + log dans `logs/kama-shell.log`. Installable via `make install-session-niri-debug` uniquement (jamais empaquetee)
 - `config/niri/config.kdl.example`: exemple de configuration niri (lancement de Kama Shell installe, include optionnel de `niri-binds.kdl`, layer rules sur les namespaces `kama-shell-*`, services attendus)

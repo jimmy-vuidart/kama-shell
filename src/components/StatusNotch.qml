@@ -35,11 +35,13 @@ Item {
             }
         }
 
-        Item {
-            width: ShellGeometry.statusNotchSectionGapWidth
-            height: root.iconSize
+        SectionSeparator {
             visible: StatusNotchState.hasTraySection
         }
+
+        CpuIndicator {}
+
+        SectionSeparator {}
 
         StatusIndicatorIcon {
             kind: "volume"
@@ -187,6 +189,135 @@ Item {
                 radius: 1
                 color: ShellTheme.glyphColor
             }
+        }
+    }
+
+    component CpuIndicator: Item {
+        readonly property int iconGap: 4
+
+        width: ShellGeometry.statusNotchCpuIndicatorWidth
+        height: root.iconSize
+
+        Text {
+            id: cpuLabel
+
+            anchors {
+                left: parent.left
+                verticalCenter: parent.verticalCenter
+            }
+            width: parent.width - root.iconSize - parent.iconGap
+            text: StatusNotchState.cpuLoadText
+            color: ShellTheme.textPrimary
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+            font.pixelSize: 10
+            font.weight: Font.DemiBold
+            style: ShellTheme.controlTextStyle
+            styleColor: ShellTheme.textShadow
+        }
+
+        Item {
+            anchors {
+                right: parent.right
+                verticalCenter: parent.verticalCenter
+            }
+            width: root.iconSize
+            height: root.iconSize
+
+            Rectangle {
+                x: 4
+                y: 4
+                width: 8
+                height: 8
+                radius: 2
+                color: "transparent"
+                border.color: ShellTheme.glyphColor
+                border.width: 1
+            }
+
+            Rectangle {
+                x: 6
+                y: 6
+                width: 4
+                height: 4
+                radius: 1
+                color: ShellTheme.glyphColor
+                opacity: 0.76
+            }
+
+            Repeater {
+                model: [3, 7, 11]
+
+                Rectangle {
+                    required property int modelData
+
+                    x: modelData
+                    y: 1
+                    width: 1
+                    height: 3
+                    radius: 1
+                    color: ShellTheme.glyphColor
+                }
+            }
+
+            Repeater {
+                model: [3, 7, 11]
+
+                Rectangle {
+                    required property int modelData
+
+                    x: modelData
+                    y: 12
+                    width: 1
+                    height: 3
+                    radius: 1
+                    color: ShellTheme.glyphColor
+                }
+            }
+
+            Repeater {
+                model: [3, 7, 11]
+
+                Rectangle {
+                    required property int modelData
+
+                    x: 1
+                    y: modelData
+                    width: 3
+                    height: 1
+                    radius: 1
+                    color: ShellTheme.glyphColor
+                }
+            }
+
+            Repeater {
+                model: [3, 7, 11]
+
+                Rectangle {
+                    required property int modelData
+
+                    x: 12
+                    y: modelData
+                    width: 3
+                    height: 1
+                    radius: 1
+                    color: ShellTheme.glyphColor
+                }
+            }
+        }
+    }
+
+    component SectionSeparator: Item {
+        width: ShellGeometry.statusNotchCpuTrailingGap
+        height: root.iconSize
+
+        Rectangle {
+            anchors.centerIn: parent
+            width: 1
+            height: 10
+            radius: 1
+            color: ShellTheme.glyphColor
+            opacity: 0.42
         }
     }
 }

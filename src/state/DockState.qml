@@ -10,10 +10,17 @@ Singleton {
     property var pinnedApps: []
     property var items: []
     property var launchingApps: ({})
+    property bool rebuildQueued: false
+    property string itemsSignature: ""
     readonly property var toplevels: ToplevelManager.toplevels.values
 
     function queueRebuild() {
-        root.rebuildItems()
+        if (root.rebuildQueued) {
+            return
+        }
+
+        root.rebuildQueued = true
+        Qt.callLater(root.rebuildItems)
     }
 
     function applyPinnedAppsFromConfig() {
@@ -22,6 +29,8 @@ Singleton {
     }
 
     function rebuildItems() {
+        root.rebuildQueued = false
+
         const ordered = []
         const byKey = {}
 
@@ -131,7 +140,43 @@ Singleton {
             }
         }
 
-        root.items = finalItems
+        const signature = root.signatureForItems(finalItems)
+
+        if (signature !== root.itemsSignature) {
+            root.itemsSignature = signature
+            root.items = finalItems
+        }
+    }
+
+    function signatureForItems(sourceItems) {
+        const parts = []
+        const source = Array.isArray(sourceItems) ? sourceItems : []
+
+        for (let i = 0; i < source.length; i++) {
+            const item = source[i]
+
+            if (!item || item.kind !== "app") {
+                parts.push(item && item.key ? "separator:" + item.key : "separator")
+                continue
+            }
+
+            parts.push([
+                "app",
+                item.key || "",
+                item.desktopId || "",
+                item.appId || "",
+                item.iconName || "",
+                item.iconSource || "",
+                item.label || "",
+                item.windowCount || 0,
+                item.isPinned ? "p" : "",
+                item.isRunning ? "r" : "",
+                item.isActive ? "a" : "",
+                item.isLaunching ? "l" : ""
+            ].join("|"))
+        }
+
+        return parts.join("\n")
     }
 
     function createItem(key, desktopEntry, fallbackLabel) {
@@ -527,6 +572,7 @@ Singleton {
 
     Connections {
         target: ToplevelManager.toplevels
+        enabled: !CompositorState.isNiri
 
         function onObjectInsertedPost() { root.queueRebuild() }
         function onObjectRemovedPost() { root.queueRebuild() }
@@ -535,6 +581,7 @@ Singleton {
 
     Connections {
         target: ToplevelManager
+        enabled: !CompositorState.isNiri
 
         function onActiveToplevelChanged() { root.queueRebuild() }
     }
@@ -546,7 +593,7 @@ Singleton {
     }
 
     Instantiator {
-        model: root.toplevels
+        model: CompositorState.isNiri ? [] : root.toplevels
 
         delegate: Item {
             required property var modelData

@@ -4,16 +4,19 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// Helper d'IPC vers niri. Phase initiale: chaque appel lance `niri msg --json`,
-// parse le JSON, ignore les champs inconnus. Une evolution future devra se
-// brancher directement sur `$NIRI_SOCKET` avec un event stream long-running
+// Helper d'IPC vers niri. Les requetes ponctuelles passent par
+// `niri msg --json`; l'etat fenetres consomme un event stream long-running
 // pour eviter le polling.
 Singleton {
     id: root
 
     readonly property bool available: CompositorState.hasNiriIpc
+    property bool eventStreamWanted: false
+    property int eventStreamRestartDelay: 1000
 
     signal queryFailed(var args, string reason)
+    signal eventReceived(var event)
+    signal eventStreamFailed(string reason)
 
     function query(args, callback) {
         const normalizedArgs = root.normalizeArgs(args)
@@ -64,6 +67,56 @@ Singleton {
         }
     }
 
+    function startEventStream() {
+        root.eventStreamWanted = true
+
+        if (!root.available || eventStreamProcess.running) {
+            return
+        }
+
+        eventStreamRestartTimer.stop()
+        eventStreamProcess.running = true
+    }
+
+    function stopEventStream() {
+        root.eventStreamWanted = false
+        eventStreamRestartTimer.stop()
+
+        if (eventStreamProcess.running) {
+            eventStreamProcess.running = false
+        }
+    }
+
+    function restartEventStream() {
+        root.stopEventStream()
+        Qt.callLater(root.startEventStream)
+    }
+
+    function handleEventLine(data) {
+        const raw = String(data || "").trim()
+
+        if (!raw.length) {
+            return
+        }
+
+        try {
+            root.eventReceived(JSON.parse(raw))
+        } catch (error) {
+            root.eventStreamFailed("parse " + String(error))
+        }
+    }
+
+    function scheduleEventStreamRestart(reason) {
+        if (!root.eventStreamWanted || !root.available) {
+            return
+        }
+
+        root.eventStreamFailed(reason)
+        eventStreamRestartTimer.interval = root.eventStreamRestartDelay
+        root.eventStreamRestartDelay = Math.min(5000, root.eventStreamRestartDelay * 2)
+        eventStreamRestartTimer.restart()
+    }
+
     component QueryProcess: Process {
         id: process
 
@@ -91,5 +144,42 @@ Singleton {
     Component {
         id: queryComponent
         QueryProcess {}
+    }
+
+    Process {
+        id: eventStreamProcess
+
+        command: ["niri", "msg", "--json", "event-stream"]
+        running: false
+
+        stdout: SplitParser {
+            splitMarker: "\n"
+
+            onRead: function(data) {
+                root.handleEventLine(data)
+            }
+        }
+
+        stderr: StdioCollector {}
+
+        onStarted: {
+            root.eventStreamRestartDelay = 1000
+        }
+
+        onExited: function(exitCode, _exitStatus) {
+            root.scheduleEventStreamRestart("exit " + exitCode)
+        }
+    }
+
+    Timer {
+        id: eventStreamRestartTimer
+
+        repeat: false
+
+        onTriggered: {
+            if (root.eventStreamWanted && root.available && !eventStreamProcess.running) {
+                eventStreamProcess.running = true
+            }
+        }
     }
 }
