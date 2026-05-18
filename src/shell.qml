@@ -13,7 +13,7 @@ import "state"
 ShellRoot {
     WallpaperWindow {}
     Ring {}
+    TrayMenuOverlay {}
     AppLauncherOverlay {}
     KamaShellIpc {}
 }
-

@@ -65,6 +65,7 @@ Item {
     StatusNotch {
         id: statusNotch
 
+        screen: root.screen
         x: root.statusNotchLeft
         y: ShellGeometry.frameInset
         width: Math.max(0, root.statusNotchRight - root.statusNotchLeft)

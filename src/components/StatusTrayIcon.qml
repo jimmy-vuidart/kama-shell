@@ -8,6 +8,7 @@ Item {
     id: root
 
     required property var trayItem
+    required property var screen
     readonly property string iconSource: root.trayItem ? String(root.trayItem.icon || "").trim() : ""
 
     width: ShellGeometry.statusNotchIconSize
@@ -47,36 +48,6 @@ Item {
         visible: root.iconSource.length === 0 || iconImage.status !== Image.Ready
     }
 
-    QsMenuAnchor {
-        id: trayMenu
-
-        menu: root.trayItem ? root.trayItem.menu : null
-        anchor.window: root.QsWindow.window
-        anchor.adjustment: PopupAdjustment.Flip
-
-        anchor.onAnchoring: {
-            const win = root.QsWindow.window
-            if (!win) return
-            const rect = win.contentItem.mapFromItem(
-                root, 0, root.height, root.width, root.height
-            )
-            trayMenu.anchor.rect = rect
-            console.log(
-                "status-notch tray anchoring",
-                "id=" + String(root.trayItem ? root.trayItem.id : "<null>"),
-                "rect=(" + Math.round(rect.x) + "," + Math.round(rect.y) + "," + Math.round(rect.width) + "," + Math.round(rect.height) + ")",
-                "window=" + String(win)
-            )
-        }
-
-        onMenuChanged: console.log(
-            "status-notch tray menu-ref changed",
-            "id=" + String(root.trayItem ? root.trayItem.id : "<null>"),
-            "menu=" + String(menu),
-            "menu-is-null=" + String(menu === null)
-        )
-    }
-
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
@@ -99,8 +70,7 @@ Item {
                 "hasItem=" + String(!!root.trayItem),
                 "hasMenu=" + String(root.trayItem ? root.trayItem.hasMenu : "<null>"),
                 "onlyMenu=" + String(root.trayItem ? root.trayItem.onlyMenu : "<null>"),
-                "menu=" + String(root.trayItem ? root.trayItem.menu : "<null>"),
-                "trayMenu.menu=" + String(trayMenu.menu)
+                "menu=" + String(root.trayItem ? root.trayItem.menu : "<null>")
             )
 
             if (!root.trayItem) {
@@ -131,22 +101,27 @@ Item {
             "relativeY=" + Math.round(relativeY),
             "hasItem=" + hasItem,
             "hasMenu=" + hasMenu,
-            "menu=" + String(menuObj),
-            "trayMenu.menu=" + String(trayMenu.menu),
-            "anchor.item=" + String(trayMenu.anchor.item)
+            "menu=" + String(menuObj)
         )
 
         if (hasItem && hasMenu) {
+            const win = root.QsWindow.window
+            if (!win || !win.contentItem) {
+                return
+            }
+
+            const rect = win.contentItem.mapFromItem(
+                root, 0, root.height, root.width, root.height
+            )
+            const screenName = root.screen ? root.screen.name : ""
+
             console.log(
-                "status-notch tray open-menu",
+                "status-notch tray open-qml-menu",
                 "id=" + String(root.trayItem.id),
-                "calling trayMenu.open()"
+                "screen=" + screenName,
+                "rect=(" + Math.round(rect.x) + "," + Math.round(rect.y) + "," + Math.round(rect.width) + "," + Math.round(rect.height) + ")"
             )
-            trayMenu.open()
-            console.log(
-                "status-notch tray open-menu done",
-                "id=" + String(root.trayItem.id)
-            )
+            TrayMenuState.open(menuObj, screenName, rect)
         }
     }
 

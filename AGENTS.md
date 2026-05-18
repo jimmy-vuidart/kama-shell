@@ -62,6 +62,7 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/components/RingBlurRegion.qml`: génération exacte du `BackgroundEffect.blurRegion` du ring via `RingPath.buildInnerSegments(g)` et un scan-line pixel-spans CPU; ne pas remplacer par des rectangles approximatifs
 - `src/components/DateTimeNotch.qml`: encoche haute centrale affichant la date et l'heure
 - `src/components/StatusNotch.qml`, `StatusTrayIcon.qml`: encoche haute droite fixe affichant les items `SystemTray` déclarés par les apps et les indicateurs système volume/réseau/batterie
+- `src/state/TrayMenuState.qml`, `src/components/TrayMenuOverlay.qml`, `TrayMenuPanel.qml`: état et rendu QML du menu contextuel `SystemTray`; évite les menus natifs Qt (`QMenu`) qui deviennent des `xdg-toplevel` problématiques sous niri/layer-shell
 - `src/components/HomePanel.qml`: contenu visuel du panel maison, intégré dans le `PanelWindow` du ring
 - `src/components/HomeRoomRow.qml`, `HomeDeviceControl.qml`, `HouseIcon.qml`: primitives visuelles du panel maison
 - `src/components/AppDock.qml`: layout visuel du dock
@@ -106,7 +107,7 @@ Pour l'intégration niri:
 
 - consommer l'état compositeur via `CompositorState`; ne jamais lire `XDG_CURRENT_DESKTOP` ou `NIRI_SOCKET` ailleurs
 - toute requête à `niri` doit passer par le singleton `NiriIpc` (`niri msg --json`), pas par un `Process` ad hoc
-- déclarer les layer rules dans `~/.config/niri/config.kdl` (voir `config/niri/config.kdl.example`); les binds globaux vivent dans `config/niri/binds.kdl` et sont inclus via niri `include`; namespaces utilisés: `kama-shell-ring`, `kama-shell-launcher`, `kama-shell-wallpaper`
+- déclarer les layer rules dans `~/.config/niri/config.kdl` (voir `config/niri/config.kdl.example`); les binds globaux vivent dans `config/niri/binds.kdl` et sont inclus via niri `include`; namespaces utilisés: `kama-shell-ring`, `kama-shell-launcher`, `kama-shell-wallpaper`, `kama-shell-tray-menu`
 - ne jamais approximer le blur du `kama-shell-ring`: sa courbe visible est complexe; toute évolution géométrique (notch supplémentaire, panneau additionnel, changement de courbe) doit mettre à jour `src/components/RingSlotModel.qml`, le fallback `src/components/RingSilhouettePath.qml`, `src/state/RingPath.qml` (`buildInnerSegments`, consommé par `RingBlurRegion`) et le shader `src/shaders/ring_sdf.frag` puis régénérer son `.qsb`
 
 ## Documentation

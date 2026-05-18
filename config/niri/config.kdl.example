@@ -73,9 +73,9 @@ window-rule {
     clip-to-geometry true
 }
 
-// Menus SystemTray (QsMenuAnchor avec UseQApplication).
-// Qt cree ces popups comme des xdg-toplevel; sans cette regle niri les tile
-// en plein ecran. Open-floating les laisse a leur taille naturelle.
+// Compatibilite avec d'eventuels menus natifs Qt ouverts par Quickshell.
+// Le SystemTray de Kama Shell rend ses menus en QML via TrayMenuOverlay, mais
+// cette regle garde les autres popups quickshell hors du tiling.
 window-rule {
     match app-id="^quickshell$"
     open-floating true
@@ -88,6 +88,7 @@ window-rule {
 //   - components/Ring.qml          -> kama-shell-ring
 //   - components/AppLauncherOverlay.qml -> kama-shell-launcher
 //   - components/WallpaperWindow.qml    -> kama-shell-wallpaper
+//   - components/TrayMenuOverlay.qml    -> kama-shell-tray-menu
 //
 // Kama Shell demande le blur Liquid Glass lui-meme via `BackgroundEffect.blurRegion`
 // sur des regions bornees et exactes. `xray false` demande a niri de flouter les
@@ -113,6 +114,11 @@ layer-rule {
     background-effect {
         xray false
     }
+}
+
+layer-rule {
+    match namespace="^kama-shell-tray-menu$"
+    block-out-from "screencast"
 }
 
 // ---------------------------------------------------------------------------

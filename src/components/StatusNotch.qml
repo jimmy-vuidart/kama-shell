@@ -6,6 +6,8 @@ import "../state"
 Item {
     id: root
 
+    required property var screen
+
     readonly property int iconSize: ShellGeometry.statusNotchIconSize
     readonly property int itemGap: ShellGeometry.statusNotchItemGap
 
@@ -15,7 +17,6 @@ Item {
 
     Row {
         id: row
-
         anchors {
             centerIn: parent
             horizontalCenterOffset: 0
@@ -31,6 +32,7 @@ Item {
                 required property var modelData
 
                 trayItem: modelData
+                screen: root.screen
             }
         }
 
