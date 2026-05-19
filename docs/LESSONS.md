@@ -78,6 +78,18 @@
 
 - `StdioCollector` accumule le texte entre les runs successifs d'un même objet `Process` réutilisé. Si on parse `text` dans `onStreamFinished` après plusieurs runs, on obtient l'accumulation de toutes les sorties passées, pas seulement la dernière. Deux solutions : utiliser `SplitParser` avec `onRead` (fire ligne par ligne, pas d'accumulation entre runs — pattern de `NiriIpc.eventStreamProcess`) ou créer un nouvel objet `Process` dynamiquement et appeler `destroy()` après usage (pattern de `DockIconResolver`).
 
+## Pipewire / UPower
+
+- `UPowerDevice.percentage` expose une valeur `double` dans la plage **0..1** (pas 0..100). Multiplier par 100 avant de comparer à des seuils en pourcentage. Confirmé par les usages dans Caelestia (`percentage * 100`).
+- `PwNode.audio` est déclaré `isPropertyConstant` dans les qmltypes Quickshell : la valeur du pointeur ne change jamais après construction. Si le node n'est pas encore `ready` au premier passage, `audio` peut être `null` et le binding QML ne verra jamais la mise à jour (aucun signal `audioChanged` ne sera émis). Inclure `audioSink.ready` dans la condition `hasAudio` pour forcer une réévaluation dès que le node est prêt.
+- Typer `audioSink` comme `PwNode` (au lieu de `var`) permet à QML d'établir correctement les connexions de signaux sur les propriétés imbriquées (`audio.muted` → `mutedChanged`, `audio.volume` → `volumesChanged`). Avec `var`, QML utilise la résolution dynamique et peut manquer certains signaux.
+- `PwNodeAudio.volume` est un float linéaire brut, plage `0..∞` (1.0 = 100 %, la suramplification dépasse 1.0). Les seuils d'icône doivent être définis sur cette échelle, pas en pourcentage.
+
+## Assets et URLs dans Quickshell
+
+- Quickshell charge les composants QML via le scheme `qs:@` (visible dans les logs d'intercepteur). Sous ce scheme, une **string relative concaténée** (`"../assets/" + name`) passée à `Image.source` échoue silencieusement (status `Null`, jamais `Error`) — le fallback rectangle s'affiche sans aucun message d'erreur. Toujours envelopper dans `Qt.resolvedUrl()` pour produire une URL absolue résolue contre la base du fichier QML hôte. Voir `RingSdfSurface.qml:34` comme exemple de référence dans ce dépôt.
+- Ce piège ne touche que les assets embarqués dans le source tree (SVG, shaders, etc.). Les chemins absolus (`file://…`) et les URLs fournies par des services Quickshell (`Quickshell.iconPath`, `SystemTray.item.icon`) ne sont pas affectés.
+
 ## Débogage
 
 - `make check` avec `qmllint -I src ...` attrape bien les erreurs de syntaxe, mais pas les problèmes d'initialisation runtime liés à Wayland, `DesktopEntries` ou aux timings de chargement.

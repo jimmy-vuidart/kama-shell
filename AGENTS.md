@@ -120,7 +120,8 @@ Pour l'intégration niri:
 - Maintenir la documentation au fil de l'eau dans le même changement que le code: structure actuelle, clés de configuration, exemples et comportements rechargeables doivent rester alignés.
 - Quand une clé de `~/.config/kama-shell/kama.conf` est ajoutée, renommée, supprimée ou change de comportement, mettre à jour `config/kama.conf.example` dans le même patch.
 - Quand un fichier QML, singleton, composant ou script devient un point d'extension durable, mettre à jour la section "Structure actuelle" sans attendre une passe de documentation séparée.
-- Mettre à jour `PLAN.md` ou `LESSONS.md` uniquement si le changement invalide un plan, confirme une leçon durable, ou documente un écart important; éviter d'y recopier les détails déjà présents dans `AGENTS.md`.
+- Mettre à jour `PLAN.md` uniquement si le changement invalide un plan existant ou documente un écart architectural important.
+- Quand une feature est validée (comportement confirmé en session réelle), enregistrer dans `docs/LESSONS.md` les leçons apprises pendant son développement: comportements surprenants d'API, contraintes non documentées, patterns qui ont fonctionné ou échoué, pièges à éviter. Ne pas y recopier ce qui est déjà dans `AGENTS.md`; se concentrer sur le "pourquoi ça a coincé" et "comment l'éviter la prochaine fois". Organiser par thème (ex. "Niri / Compositeur", "Processus / IO"), pas par feature.
 
 ## Vérification
 

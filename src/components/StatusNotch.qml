@@ -14,7 +14,7 @@ Item {
     implicitHeight: ShellGeometry.statusNotchHeight
     clip: true
 
-    Row {
+Row {
         id: row
         anchors {
             centerIn: parent
@@ -67,8 +67,8 @@ Item {
         property string kind: ""
         property string iconName: ""
         property string fallbackText: "?"
-        readonly property string iconSource: iconName.length > 0
-            ? "../assets/icons/status/" + iconName
+        readonly property url iconSource: iconName.length > 0
+            ? Qt.resolvedUrl("../assets/icons/status/" + iconName)
             : ""
 
         width: root.iconSize
@@ -216,94 +216,13 @@ Item {
             styleColor: ShellTheme.textShadow
         }
 
-        Item {
+        StatusIndicatorIcon {
             anchors {
                 right: parent.right
                 verticalCenter: parent.verticalCenter
             }
-            width: root.iconSize
-            height: root.iconSize
-
-            Rectangle {
-                x: 4
-                y: 4
-                width: 8
-                height: 8
-                radius: 2
-                color: "transparent"
-                border.color: ShellTheme.glyphColor
-                border.width: 1
-            }
-
-            Rectangle {
-                x: 6
-                y: 6
-                width: 4
-                height: 4
-                radius: 1
-                color: ShellTheme.glyphColor
-                opacity: 0.76
-            }
-
-            Repeater {
-                model: [3, 7, 11]
-
-                Rectangle {
-                    required property int modelData
-
-                    x: modelData
-                    y: 1
-                    width: 1
-                    height: 3
-                    radius: 1
-                    color: ShellTheme.glyphColor
-                }
-            }
-
-            Repeater {
-                model: [3, 7, 11]
-
-                Rectangle {
-                    required property int modelData
-
-                    x: modelData
-                    y: 12
-                    width: 1
-                    height: 3
-                    radius: 1
-                    color: ShellTheme.glyphColor
-                }
-            }
-
-            Repeater {
-                model: [3, 7, 11]
-
-                Rectangle {
-                    required property int modelData
-
-                    x: 1
-                    y: modelData
-                    width: 3
-                    height: 1
-                    radius: 1
-                    color: ShellTheme.glyphColor
-                }
-            }
-
-            Repeater {
-                model: [3, 7, 11]
-
-                Rectangle {
-                    required property int modelData
-
-                    x: 12
-                    y: modelData
-                    width: 3
-                    height: 1
-                    radius: 1
-                    color: ShellTheme.glyphColor
-                }
-            }
+            iconName: "fluent-desktop-pulse-24-regular.svg"
+            fallbackText: "C"
         }
     }
 

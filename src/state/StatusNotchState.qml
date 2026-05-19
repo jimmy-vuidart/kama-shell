@@ -14,13 +14,13 @@ Singleton {
     readonly property var trayItems: SystemTray.items.values || []
     readonly property bool hasTraySection: root.trayItems.length > 0
 
-    readonly property var audioSink: Pipewire.defaultAudioSink
-    readonly property bool hasAudio: !!audioSink && !!audioSink.audio
+    readonly property PwNode audioSink: Pipewire.defaultAudioSink
+    readonly property bool hasAudio: !!audioSink && audioSink.ready && !!audioSink.audio
     readonly property bool audioMuted: hasAudio ? audioSink.audio.muted : false
     readonly property real audioVolume: hasAudio ? audioSink.audio.volume : 0
     readonly property string audioIndicatorIconName: !hasAudio
         ? "fluent-speaker-mute-24-regular.svg"
-        : audioMuted || audioVolume <= 0.01
+        : audioMuted || audioVolume <= 0
             ? "fluent-speaker-mute-24-regular.svg"
             : audioVolume < 0.34
                 ? "fluent-speaker-0-24-regular.svg"
@@ -43,7 +43,7 @@ Singleton {
         && batteryDevice.ready
         && batteryDevice.isLaptopBattery
         && batteryDevice.isPresent
-    readonly property real batteryPercentage: batteryVisible ? batteryDevice.percentage : 0
+    readonly property real batteryPercentage: batteryVisible ? batteryDevice.percentage * 100 : 0
     readonly property string batteryIndicatorIconName: root.batteryIndicatorIconFor(batteryPercentage)
 
     property real previousCpuTotal: -1
