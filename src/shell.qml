@@ -15,5 +15,6 @@ ShellRoot {
     Ring {}
     TrayMenuOverlay {}
     AppLauncherOverlay {}
+    OsdOverlay {}
     KamaShellIpc {}
 }

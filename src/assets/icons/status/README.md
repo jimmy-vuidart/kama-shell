@@ -4,5 +4,5 @@ Source: https://github.com/microsoft/fluentui-system-icons
 License: MIT
 
 The SVG files in this directory are used only for Kama Shell's internal
-volume, network, and battery indicators. Application-provided tray icons still
-come from Quickshell's SystemTray items.
+volume, brightness, network, and battery indicators. Application-provided tray
+icons still come from Quickshell's SystemTray items.

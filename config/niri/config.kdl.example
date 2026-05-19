@@ -88,10 +88,11 @@ window-rule {
 // Layer rules
 //
 // Les namespaces sont definis dans:
-//   - components/Ring.qml          -> kama-shell-ring
+//   - components/Ring.qml              -> kama-shell-ring
 //   - components/AppLauncherOverlay.qml -> kama-shell-launcher
 //   - components/WallpaperWindow.qml    -> kama-shell-wallpaper
 //   - components/TrayMenuOverlay.qml    -> kama-shell-tray-menu
+//   - components/OsdOverlay.qml         -> kama-shell-osd
 //
 // Kama Shell demande le blur Liquid Glass lui-meme via `BackgroundEffect.blurRegion`
 // sur des regions bornees et exactes. `xray false` demande a niri de flouter les
@@ -122,6 +123,14 @@ layer-rule {
 layer-rule {
     match namespace="^kama-shell-tray-menu$"
     block-out-from "screencast"
+
+    background-effect {
+        xray false
+    }
+}
+
+layer-rule {
+    match namespace="^kama-shell-osd$"
 
     background-effect {
         xray false

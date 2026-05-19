@@ -17,4 +17,12 @@ IpcHandler {
     function hideLauncher(): void {
         LauncherState.hide()
     }
+
+    function brightnessUp(): void {
+        OsdState.brightnessUp()
+    }
+
+    function brightnessDown(): void {
+        OsdState.brightnessDown()
+    }
 }

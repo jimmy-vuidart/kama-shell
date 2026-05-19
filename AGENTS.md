@@ -69,7 +69,10 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/components/AppDock.qml`: layout visuel du dock
 - `src/components/ThemedPanelSurface.qml`, `LiquidGlassSurface.qml`: surfaces de panel thémables, avec rendu Liquid Glass; les surfaces simples peuvent utiliser le blur compositeur via `BackgroundEffect.blurRegion` quand leur région est exacte, avec fallback wallpaper local sinon
 - `src/components/AppLauncherOverlay.qml`, `AppLauncher.qml`, `AppLauncherItem.qml`: overlay launcher multi-écran, recherche et lignes de résultat
-- `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher depuis un bind niri ou `qs ipc`
+- `src/state/OsdState.qml` (singleton): état de l'OSD volume/luminosité; observe `StatusNotchState.audioVolume/audioMuted` pour le volume (déclenché automatiquement quand `wpctl` modifie le sink Pipewire) et expose `brightnessUp()`/`brightnessDown()` (appelés via IPC, exécutent `brightnessctl -m set 5%±` et parsent le CSV de sortie); auto-masquage après 2.5 s via `Timer`; propriétés `kind` (0=none, 1=volume, 2=brightness), `level` (0–1), `muted`, `visible`
+- `src/components/OsdOverlay.qml`: `PanelWindow` multi-écran (`Variants { model: Quickshell.screens }`) plein-écran transparent, namespace `kama-shell-osd`, `WlrLayer.Overlay`, passe-clic (`mask: Region {}`); contient `OsdPanel` centré en bas à 56 px du bas avec fade + slide animés; `BackgroundEffect.blurRegion` activé sous theme `liquid-glass` + compositeur compatible
+- `src/components/OsdPanel.qml`: pill `LiquidGlassSurface` (320×56, `radius: height/2`) affichant une icône Fluent UI (volume ou luminosité) et une barre de progression `SmoothedAnimation`
+- `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher et déclencher les commandes de luminosité (`brightnessUp`, `brightnessDown`) depuis un bind niri ou `qs ipc`
 - `src/state/ShellConfig.qml`: configuration utilisateur lue depuis `~/.config/kama-shell/kama.conf`
 - `scripts/update-kama-config.py`: écriture atomique des valeurs de config modifiées par l'interface
 - `src/state/ShellTheme.qml`: thème visuel actif, actuellement `glassmorphism`, `ffxiv` et `liquid-glass`
@@ -85,7 +88,7 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `sessions/kama-shell-niri-debug-session`, `sessions/start-kama-shell-niri-debug-session`, `sessions/kama-shell-niri-debug.desktop`: session niri debug; lance `niri --config config/niri/config.kdl` depuis le tree source et expose `KAMA_DEV=1` + log dans `logs/kama-shell.log`. Installable via `make install-session-niri-debug` uniquement (jamais empaquetee)
 - `config/niri/config.kdl.example`: exemple de configuration niri (lancement de Kama Shell installe, include optionnel de `niri-binds.kdl`, layer rules sur les namespaces `kama-shell-*`, services attendus)
 - `config/niri/config.kdl`: variante dev consommee par la session debug, avec `spawn-at-startup "/usr/bin/quickshell" "-p" "src/shell.qml"` et include de `binds.dev.kdl` (chemins relatifs resolus contre `$APP_DIR/config/niri`)
-- `config/niri/binds.kdl`, `config/niri/binds.dev.kdl`: binds niri separes de la config principale (`Mod+D`, screenshots, quit), version paquet et version source-tree
+- `config/niri/binds.kdl`, `config/niri/binds.dev.kdl`: binds niri separes de la config principale (`Mod+D`, screenshots, quit, touches multimédias et luminosité); les touches `XF86MonBrightnessUp/Down` passent par IPC (`qs ipc call kama-shell brightnessUp/Down`) pour déclencher l'OSD; les touches volume appellent `wpctl` directement, l'OSD est déclenché en observant l'état Pipewire
 - `src/state/ClockState.qml`: état global de l'horloge basé sur `SystemClock`, sans processus externe
 - `src/state/WallpaperState.qml`: source du wallpaper rendu par Kama Shell, lue depuis `appearance.wallpaper`
 - `src/components/WallpaperWindow.qml`: `PanelWindow` multi-écran sur la couche `WlrLayer.Background` qui rend le wallpaper de référence et le fallback local des surfaces Liquid Glass
@@ -108,7 +111,8 @@ Pour l'intégration niri:
 
 - consommer l'état compositeur via `CompositorState`; ne jamais lire `XDG_CURRENT_DESKTOP` ou `NIRI_SOCKET` ailleurs
 - toute requête à `niri` doit passer par le singleton `NiriIpc` (`niri msg --json`), pas par un `Process` ad hoc
-- déclarer les layer rules dans `~/.config/niri/config.kdl` (voir `config/niri/config.kdl.example`); les binds globaux vivent dans `config/niri/binds.kdl` et sont inclus via niri `include`; namespaces utilisés: `kama-shell-ring`, `kama-shell-launcher`, `kama-shell-wallpaper`, `kama-shell-tray-menu`
+- déclarer les layer rules dans `~/.config/niri/config.kdl` (voir `config/niri/config.kdl.example`); les binds globaux vivent dans `config/niri/binds.kdl` et sont inclus via niri `include`; namespaces utilisés: `kama-shell-ring`, `kama-shell-launcher`, `kama-shell-wallpaper`, `kama-shell-tray-menu`, `kama-shell-osd`
+- tout nouveau `PanelWindow` qui utilise `BackgroundEffect.blurRegion` **doit** avoir une `layer-rule` avec `background-effect { xray false }` dans **les deux** configs niri (`config/niri/config.kdl` et `config/niri/config.kdl.example`), dans le même patch que le composant; sans cette règle niri ne composite que le wallpaper comme fond de blur (xray=true par défaut), même si le côté QML est correctement câblé
 - ne jamais approximer le blur du `kama-shell-ring`: sa courbe visible est complexe; toute évolution géométrique (notch supplémentaire, panneau additionnel, changement de courbe) doit mettre à jour `src/components/RingSlotModel.qml`, le fallback `src/components/RingSilhouettePath.qml`, `src/state/RingPath.qml` (`buildInnerSegments`, consommé par `RingBlurRegion`) et le shader `src/shaders/ring_sdf.frag` puis régénérer son `.qsb`
 
 ## Documentation

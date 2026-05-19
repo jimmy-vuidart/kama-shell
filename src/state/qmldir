@@ -13,3 +13,4 @@ singleton ClockState 1.0 ClockState.qml
 singleton WallpaperState 1.0 WallpaperState.qml
 singleton StatusNotchState 1.0 StatusNotchState.qml
 singleton TrayMenuState 1.0 TrayMenuState.qml
+singleton OsdState 1.0 OsdState.qml

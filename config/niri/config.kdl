@@ -90,6 +90,14 @@ layer-rule {
     }
 }
 
+layer-rule {
+    match namespace="^kama-shell-osd$"
+
+    background-effect {
+        xray false
+    }
+}
+
 input {
 	touchpad {
 		natural-scroll
