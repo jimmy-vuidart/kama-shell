@@ -6,22 +6,13 @@ import QtQuick
 Singleton {
     id: root
 
-    readonly property string glassmorphismTheme: ShellConfig.glassmorphismTheme
     readonly property string ffxivTheme: ShellConfig.ffxivTheme
     readonly property string liquidGlassTheme: ShellConfig.liquidGlassTheme
     property string themeName: ShellConfig.visualTheme
-    readonly property bool isGlassmorphism: themeName === glassmorphismTheme
     readonly property bool isFfxiv: themeName === ffxivTheme
     readonly property bool isLiquidGlass: themeName === liquidGlassTheme
 
     readonly property var themeValues: ({
-        glassmorphism: {
-            glassTintAlpha: 0.18,
-            glassTopHighlightAlpha: 0.34,
-            glassBottomShadeAlpha: 0.18,
-            glassBorderAlpha: 0.52,
-            glassInnerHighlightAlpha: 0.46
-        },
         ffxiv: {
             glassTintAlpha: 0.92,
             glassTopHighlightAlpha: 0.18,
@@ -169,8 +160,8 @@ Singleton {
     }
 
     function themeValue(sourceThemeName, key) {
-        const currentValues = root.themeValues[sourceThemeName] || root.themeValues[root.glassmorphismTheme]
-        const fallbackValues = root.themeValues[root.glassmorphismTheme]
+        const currentValues = root.themeValues[sourceThemeName] || root.themeValues[root.liquidGlassTheme]
+        const fallbackValues = root.themeValues[root.liquidGlassTheme]
 
         if (currentValues && Object.prototype.hasOwnProperty.call(currentValues, key)) {
             return currentValues[key]

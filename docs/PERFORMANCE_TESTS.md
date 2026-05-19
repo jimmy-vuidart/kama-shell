@@ -7,7 +7,7 @@ GPU et frametime de Kama Shell dans une session niri.
 
 - Mesurer le coût au repos de `quickshell` et `niri`.
 - Mesurer le coût des overlays interactifs, notamment le launcher.
-- Vérifier si les thèmes avec blur, en particulier `liquid-glass`, ajoutent une
+- Vérifier si le thème avec blur, `liquid-glass`, ajoute une
   charge GPU susceptible d'affecter les jeux.
 - Comparer les frametimes d'un jeu avec et sans Kama Shell actif.
 
@@ -130,7 +130,7 @@ Critères à relever:
 
 ## Test 3: thème actif
 
-Comparer les thèmes `glassmorphism`, `ffxiv` et `liquid-glass`.
+Comparer les thèmes `ffxiv` et `liquid-glass`.
 
 Pour chaque thème:
 
@@ -148,7 +148,7 @@ theme = liquid-glass
 
 Points d'attention:
 
-- `glassmorphism` et `ffxiv` doivent rester légers au repos.
+- `ffxiv` doit rester léger au repos.
 - `liquid-glass` peut activer `BackgroundEffect.blurRegion` sur niri.
 - si le blur compositeur est indisponible, les surfaces Liquid Glass peuvent
   utiliser un fallback local plus coûteux (`ShaderEffectSource` + `MultiEffect`).
@@ -207,7 +207,7 @@ Un problème de performance est probable si:
   `quickshell` ou au compositeur alors que rien ne bouge.
 - les pics de frametime apparaissent quand le launcher ou le blur est visible.
 - le thème `liquid-glass` dégrade nettement les mesures alors que
-  `glassmorphism` ou `ffxiv` ne le font pas.
+  `ffxiv` ne le fait pas.
 
 ## Rapport de résultat
 

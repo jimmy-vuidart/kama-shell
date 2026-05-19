@@ -92,7 +92,7 @@ Ne jamais approximer le blur du `kama-shell-ring`: toute évolution géométriqu
 
 - `src/state/OsdState.qml` (singleton): état de l'OSD volume/luminosité; observe `StatusNotchState.audioVolume/audioMuted` pour le volume (déclenché automatiquement quand `wpctl` modifie le sink Pipewire) et expose `brightnessUp()`/`brightnessDown()` (appelés via IPC, exécutent `brightnessctl -m set 5%±` et parsent le CSV de sortie); auto-masquage après 2.5 s via `Timer`; propriétés `kind` (0=none, 1=volume, 2=brightness), `level` (0–1), `muted`, `visible`
 - `src/state/ShellConfig.qml`: configuration utilisateur lue depuis `~/.config/kama-shell/kama.conf`
-- `src/state/ShellTheme.qml`: thème visuel actif, actuellement `glassmorphism`, `ffxiv` et `liquid-glass`
+- `src/state/ShellTheme.qml`: thème visuel actif, actuellement `ffxiv` et `liquid-glass`
 - `src/state/CompositorState.qml`: détection du backend (`niri` / `generic-wlr` / `unknown`) et capacités (`hasNativeToplevels`, `hasNiriIpc`, `hasLayerRules`, `supportsBackgroundEffect`); priorité à `KAMA_COMPOSITOR` puis aux heuristiques d'environnement
 - `src/state/NiriIpc.qml`: helper d'IPC vers niri qui wrappe `niri msg --json`, parse la sortie et ignore les champs inconnus
 - `src/state/NiriWorkspaceState.qml`: état normalisé des outputs, workspaces et fenêtre focus exposé via `NiriIpc`; expose aussi des actions (`focusWorkspaceUp`, `toggleOverview`, etc.)

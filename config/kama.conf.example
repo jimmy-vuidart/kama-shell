@@ -4,8 +4,9 @@
 #   ~/.config/kama-shell/kama.conf
 
 [appearance]
-# Supported themes: glassmorphism, ffxiv, liquid-glass. Saving this file updates the theme live.
-theme = glassmorphism
+# Supported themes: ffxiv, liquid-glass. Saving this file updates the theme live.
+# Unknown or legacy values fall back to liquid-glass.
+theme = liquid-glass
 # Path to the wallpaper image rendered by Kama Shell on the Wayland background layer.
 # Leave empty to fall back to a solid color. Supports a leading "~/" for the home directory.
 # Disable the desktop environment wallpaper to avoid double rendering.
