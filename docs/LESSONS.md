@@ -68,6 +68,15 @@
 - Si un lookup asynchrone de chemin est utilisé, ne garder qu'un seul résultat exploitable. Concaténer plusieurs chemins dans une seule `Image.source` produit une URL invalide et donc aucune icône.
 - `Image` standard est plus adapté qu'`IconImage` pour afficher des chemins `file://...` explicites.
 
+## Niri / Compositeur
+
+- Tout `PanelWindow` qui utilise `BackgroundEffect.blurRegion` doit avoir une `layer-rule` niri avec `background-effect { xray false }` dans **les deux** configs (`config/niri/config.kdl` et `config/niri/config.kdl.example`), dans le même patch que le composant. Sans cette règle, niri applique `xray true` par défaut et ne composite que le wallpaper comme source de blur — les fenêtres derrière ne sont pas visibles à travers la surface, même si le côté QML est correctement câblé.
+- Le namespace de chaque nouvelle surface doit aussi être ajouté dans le commentaire de la section layer-rules de `config.kdl.example`.
+
+## Processus / IO
+
+- `StdioCollector` accumule le texte entre les runs successifs d'un même objet `Process` réutilisé. Si on parse `text` dans `onStreamFinished` après plusieurs runs, on obtient l'accumulation de toutes les sorties passées, pas seulement la dernière. Deux solutions : utiliser `SplitParser` avec `onRead` (fire ligne par ligne, pas d'accumulation entre runs — pattern de `NiriIpc.eventStreamProcess`) ou créer un nouvel objet `Process` dynamiquement et appeler `destroy()` après usage (pattern de `DockIconResolver`).
+
 ## Débogage
 
 - `make check` avec `qmllint -I src ...` attrape bien les erreurs de syntaxe, mais pas les problèmes d'initialisation runtime liés à Wayland, `DesktopEntries` ou aux timings de chargement.
