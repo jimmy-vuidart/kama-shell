@@ -4,6 +4,7 @@ pkgbase = kama-shell
 	pkgrel = 1
 	arch = any
 	license = custom
+	depends = layer-shell-qt
 	depends = niri
 	depends = quickshell-git
 	depends = xwayland-satellite

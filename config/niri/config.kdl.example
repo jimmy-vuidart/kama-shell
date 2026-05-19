@@ -7,6 +7,8 @@
 //   - XDG_CURRENT_DESKTOP=KamaShell:niri
 //   - KAMA_SESSION=1
 //   - KAMA_COMPOSITOR=niri
+//   - QT_QPA_PLATFORM=wayland
+//   - QT_WAYLAND_SHELL_INTEGRATION=layer-shell
 //
 // Ces variables permettent a Kama Shell de se reperer dans son
 // `CompositorState` singleton sans dependre des heuristiques d'environnement.
@@ -164,6 +166,7 @@ layer-rule {
 // Pre-requis recommandes:
 //   - niri                  (compositeur Wayland)
 //   - quickshell-git        (binaire `quickshell` / `qs`)
+//   - layer-shell-qt        (plugin Qt `layer-shell` pour PanelWindow)
 //   - xwayland-satellite    (apps X11)
 //   - xdg-desktop-portal-gnome ou -wlr (portails)
 //   - polkit-gnome ou polkit-kde-agent (auth)

@@ -1,4 +1,3 @@
-//@ pragma UseQApplication
 //@ pragma IconTheme Yaru-red-dark
 
 import Quickshell

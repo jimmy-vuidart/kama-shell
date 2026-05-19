@@ -70,6 +70,7 @@
 
 ## Niri / Compositeur
 
+- Si `qs log` affiche `No shell integration named "layer-shell" found`, Quickshell tombe en `QT_QPA_PLATFORM=xcb` et niri voit le shell comme des `xdg-toplevel`. Installer `layer-shell-qt` et verifier que la session exporte `QT_QPA_PLATFORM=wayland` + `QT_WAYLAND_SHELL_INTEGRATION=layer-shell`.
 - Tout `PanelWindow` qui utilise `BackgroundEffect.blurRegion` doit avoir une `layer-rule` niri avec `background-effect { xray false }` dans **les deux** configs (`config/niri/config.kdl` et `config/niri/config.kdl.example`), dans le même patch que le composant. Sans cette règle, niri applique `xray true` par défaut et ne composite que le wallpaper comme source de blur — les fenêtres derrière ne sont pas visibles à travers la surface, même si le côté QML est correctement câblé.
 - Le namespace de chaque nouvelle surface doit aussi être ajouté dans le commentaire de la section layer-rules de `config.kdl.example`.
 

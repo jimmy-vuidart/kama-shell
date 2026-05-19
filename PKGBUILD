@@ -6,6 +6,7 @@ arch=('any')
 url=""
 license=('custom')
 depends=(
+    'layer-shell-qt'
     'niri'
     'quickshell-git'
     'xwayland-satellite'

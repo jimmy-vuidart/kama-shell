@@ -43,6 +43,11 @@ run_quickshell() {
     local verbose_count=0
     local i
 
+    if [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
+        export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-wayland}"
+        export QT_WAYLAND_SHELL_INTEGRATION="${QT_WAYLAND_SHELL_INTEGRATION:-layer-shell}"
+    fi
+
     if [[ "${KAMA_QS_LOG_TIMES:-0}" == "1" ]]; then
         quickshell_args+=(--log-times)
     fi

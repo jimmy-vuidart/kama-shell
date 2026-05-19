@@ -50,6 +50,7 @@ export XDG_SESSION_DESKTOP="${XDG_SESSION_DESKTOP:-kama-shell-niri-debug}"
 export DESKTOP_SESSION="${DESKTOP_SESSION:-kama-shell-niri-debug}"
 export KAMA_SESSION=1
 export KAMA_COMPOSITOR=niri
+export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-wayland}"
 export QT_WAYLAND_SHELL_INTEGRATION="${QT_WAYLAND_SHELL_INTEGRATION:-layer-shell}"
 export KAMA_DEV="${KAMA_DEV:-1}"
 export KAMA_QS_LOG_TIMES="${KAMA_QS_LOG_TIMES:-1}"
