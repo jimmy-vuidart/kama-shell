@@ -125,10 +125,7 @@ Item {
             width: ShellGeometry.dockItemSize
             height: ShellGeometry.dockItemSize
             label: "⊞"
-            iconSource: {
-                const path = Quickshell.iconPath("view-app-grid", true)
-                return path || ""
-            }
+            iconSource: Qt.resolvedUrl("../assets/icons/fluent/fluent-apps-24-regular.svg").toString()
             onClicked: LauncherState.toggle(root.screen ? root.screen.name : "")
         }
 
