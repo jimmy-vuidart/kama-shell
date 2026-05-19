@@ -11,7 +11,7 @@ Rectangle {
     property int shutterLevel: modelData.shutters
     property real thermostat: modelData.temperature
 
-    height: 106
+    height: 102
     radius: ShellTheme.isFfxiv ? 8 : 18
     antialiasing: true
     color: ShellTheme.isFfxiv
@@ -46,8 +46,10 @@ Rectangle {
             Text {
                 id: statusText
 
+                width: Math.min(implicitWidth, parent.width * 0.42)
                 text: root.modelData.status
                 color: ShellTheme.textSecondary
+                elide: Text.ElideRight
                 font.pixelSize: 11
                 verticalAlignment: Text.AlignVCenter
                 style: ShellTheme.controlTextStyle
@@ -58,10 +60,13 @@ Rectangle {
         Row {
             width: parent.width
             height: 54
-            spacing: 8
+            spacing: 6
+            readonly property real controlsWidth: width - (spacing * 2)
 
             HomeDeviceControl {
-                width: 92
+                id: lightControl
+
+                width: Math.floor(parent.controlsWidth * 0.30)
                 label: "Lumières"
                 value: root.lightsOn ? root.modelData.lightCount + " ON" : "OFF"
                 active: root.lightsOn
@@ -70,7 +75,9 @@ Rectangle {
             }
 
             HomeDeviceControl {
-                width: 108
+                id: shutterControl
+
+                width: Math.floor(parent.controlsWidth * 0.34)
                 label: "Volets"
                 value: root.shutterLevel + "%"
                 active: root.shutterLevel > 0
@@ -80,7 +87,7 @@ Rectangle {
             }
 
             HomeDeviceControl {
-                width: parent.width - 92 - 108 - (parent.spacing * 2)
+                width: parent.controlsWidth - lightControl.width - shutterControl.width
                 label: "Thermostat"
                 value: root.thermostat.toFixed(1) + " °C"
                 active: true

@@ -39,6 +39,7 @@ Shape {
         homePanelShapeTop: panels.homePanelShapeTop
         homePanelShapeBottom: panels.homePanelShapeBottom
         homePanelShapeRadius: panels.homePanelShapeRadius
+        homePanelCurveRun: panels.homePanelCurveRun
         inset: 1
         strokeColor: outlineColor
         strokeWidth: outlineWidth
@@ -72,6 +73,7 @@ Shape {
         homePanelShapeTop: root.panels.homePanelShapeTop
         homePanelShapeBottom: root.panels.homePanelShapeBottom
         homePanelShapeRadius: root.panels.homePanelShapeRadius
+        homePanelCurveRun: root.panels.homePanelCurveRun
         withOuterRectangle: true
         outerWidth: root.width
         outerHeight: root.height

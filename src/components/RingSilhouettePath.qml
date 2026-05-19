@@ -52,6 +52,7 @@ ShapePath {
     property real homePanelShapeTop: 0
     property real homePanelShapeBottom: 0
     property real homePanelShapeRadius: 0
+    property real homePanelCurveRun: 0
 
     property real inset: 0
 
@@ -80,11 +81,12 @@ ShapePath {
     readonly property real effHomeRight: homePanelShapeRight - inset
     readonly property real effHomeTop: homePanelShapeTop + inset
     readonly property real effHomeBottom: homePanelShapeBottom - inset
+    readonly property real effHomeCurveRun: Math.max(1, homePanelCurveRun - inset)
 
     // Bézier control offsets (≈ quart de cercle)
     readonly property real notchControlOffset: clockNotchRadius * 0.55
     readonly property real statusControlOffset: statusNotchRadius * 0.55
-    readonly property real homeControlOffset: homePanelShapeRadius * 0.45
+    readonly property real homeControlOffset: effHomeCurveRun * 0.45
 
     // Point de départ du contour intérieur (juste après l'arc supérieur gauche).
     readonly property real silStartX: effLeft + cornerRadius
@@ -145,21 +147,19 @@ ShapePath {
         direction: PathArc.Clockwise
     }
 
-    // Right edge → home panel évidement
+    // Right edge → bosse du panel maison
     PathLine { x: root.effHomeRight; y: root.effHomeTop }
-    PathLine { x: root.effHomeLeft + root.homePanelShapeRadius; y: root.effHomeTop }
     PathCubic {
-        x: root.effHomeLeft; y: root.effHomeTop + root.homePanelShapeRadius
-        control1X: root.effHomeLeft + root.homeControlOffset; control1Y: root.effHomeTop
-        control2X: root.effHomeLeft; control2Y: root.effHomeTop + root.homeControlOffset
+        x: root.effHomeLeft; y: root.effHomeTop + root.effHomeCurveRun
+        control1X: root.effHomeRight; control1Y: root.effHomeTop + root.homeControlOffset
+        control2X: root.effHomeLeft; control2Y: root.effHomeTop + root.effHomeCurveRun - root.homeControlOffset
     }
-    PathLine { x: root.effHomeLeft; y: root.effHomeBottom - root.homePanelShapeRadius }
+    PathLine { x: root.effHomeLeft; y: root.effHomeBottom - root.effHomeCurveRun }
     PathCubic {
-        x: root.effHomeLeft + root.homePanelShapeRadius; y: root.effHomeBottom
-        control1X: root.effHomeLeft; control1Y: root.effHomeBottom - root.homeControlOffset
-        control2X: root.effHomeLeft + root.homeControlOffset; control2Y: root.effHomeBottom
+        x: root.effHomeRight; y: root.effHomeBottom
+        control1X: root.effHomeLeft; control1Y: root.effHomeBottom - root.effHomeCurveRun + root.homeControlOffset
+        control2X: root.effHomeRight; control2Y: root.effHomeBottom - root.homeControlOffset
     }
-    PathLine { x: root.effHomeRight; y: root.effHomeBottom }
 
     // Right edge → lower-right arc
     PathLine { x: root.effRight; y: root.effBottom - root.cornerRadius }

@@ -49,10 +49,15 @@ Singleton {
     readonly property int homePanelExpandedHeight: 472
     readonly property int homePanelBumpDepth: 24
     readonly property int homePanelBumpHeight: dockRestWidth
+    readonly property int homePanelBumpCurveRun: 24
     readonly property int homePanelShapeRadius: 28
     readonly property int homePanelHandleWidth: frameInset + homePanelBumpDepth + 12
     readonly property int homePanelHandleHeight: homePanelBumpHeight
     readonly property int homePanelHandleIconSize: dockRestIconSize
+    readonly property int homePanelContentLeftMargin: 18
+    readonly property int homePanelContentRightMargin: 18
+    readonly property int homePanelContentTopMargin: 42
+    readonly property int homePanelContentBottomMargin: 38
     readonly property int homePanelAnimationDuration: 220
     readonly property int homePanelRoomGap: 10
 

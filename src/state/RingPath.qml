@@ -17,7 +17,7 @@ Singleton {
     // Utilisé pour les coins concaves de la notch d'horloge.
     readonly property real cubicNotchFactor: 0.55
 
-    // Variante plus serrée pour les coins du HomePanel.
+    // Courbes de bosse côté HomePanel, cohérentes avec le dock.
     readonly property real cubicHomeFactor: 0.45
 
     function line(x1, y1, x2, y2) {
@@ -52,10 +52,11 @@ Singleton {
     //   dockTopFlatLeft, dockTopFlatRight, dockPeakY, dockCurveRun
     //   homePanelShapeLeft, homePanelShapeRight,
     //   homePanelShapeTop, homePanelShapeBottom, homePanelShapeRadius
+    //   homePanelCurveRun
     //
     // Le tracé démarre au coin supérieur gauche (juste après l'arc) et se
     // referme à ce même point après avoir parcouru: top edge, clock notch,
-    // status notch, upper-right arc, right edge, home panel évidement, lower-right arc,
+    // status notch, upper-right arc, right edge, home panel bump, lower-right arc,
     // bottom edge avec dock, lower-left arc, left edge, upper-left arc.
     function buildInnerSegments(g) {
         const left = g.innerLeft
@@ -65,7 +66,8 @@ Singleton {
         const r = g.cornerRadius
         const notchK = g.clockNotchRadius * cubicNotchFactor
         const statusK = g.statusNotchRadius * cubicNotchFactor
-        const homeK = g.homePanelShapeRadius * cubicHomeFactor
+        const homeRun = Math.max(1, g.homePanelCurveRun || g.homePanelShapeRadius)
+        const homeK = homeRun * cubicHomeFactor
 
         return [
             // Top edge: upper-left arc end → clock notch entry
@@ -117,29 +119,21 @@ Singleton {
             // Right edge: down to home panel top
             line(right, top + r, g.homePanelShapeRight, g.homePanelShapeTop),
 
-            // Home panel évidement (rectangle arrondi creusé depuis la droite)
-            line(
+            // Bosse du panel maison: même famille visuelle que le dock, tournée à droite.
+            cubic(
                 g.homePanelShapeRight, g.homePanelShapeTop,
-                g.homePanelShapeLeft + g.homePanelShapeRadius, g.homePanelShapeTop
-            ),
-            cubic(
-                g.homePanelShapeLeft + g.homePanelShapeRadius, g.homePanelShapeTop,
-                g.homePanelShapeLeft + homeK, g.homePanelShapeTop,
-                g.homePanelShapeLeft, g.homePanelShapeTop + homeK,
-                g.homePanelShapeLeft, g.homePanelShapeTop + g.homePanelShapeRadius
+                g.homePanelShapeRight, g.homePanelShapeTop + homeK,
+                g.homePanelShapeLeft, g.homePanelShapeTop + homeRun - homeK,
+                g.homePanelShapeLeft, g.homePanelShapeTop + homeRun
             ),
             line(
-                g.homePanelShapeLeft, g.homePanelShapeTop + g.homePanelShapeRadius,
-                g.homePanelShapeLeft, g.homePanelShapeBottom - g.homePanelShapeRadius
+                g.homePanelShapeLeft, g.homePanelShapeTop + homeRun,
+                g.homePanelShapeLeft, g.homePanelShapeBottom - homeRun
             ),
             cubic(
-                g.homePanelShapeLeft, g.homePanelShapeBottom - g.homePanelShapeRadius,
-                g.homePanelShapeLeft, g.homePanelShapeBottom - homeK,
-                g.homePanelShapeLeft + homeK, g.homePanelShapeBottom,
-                g.homePanelShapeLeft + g.homePanelShapeRadius, g.homePanelShapeBottom
-            ),
-            line(
-                g.homePanelShapeLeft + g.homePanelShapeRadius, g.homePanelShapeBottom,
+                g.homePanelShapeLeft, g.homePanelShapeBottom - homeRun,
+                g.homePanelShapeLeft, g.homePanelShapeBottom - homeRun + homeK,
+                g.homePanelShapeRight, g.homePanelShapeBottom - homeK,
                 g.homePanelShapeRight, g.homePanelShapeBottom
             ),
 

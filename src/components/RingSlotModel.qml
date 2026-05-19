@@ -81,6 +81,10 @@ QtObject {
         homePanelShapeDepth,
         homeCurrentHeight / 2
     )
+    readonly property real homePanelCurveRun: Math.min(
+        homeCurrentHeight / 2,
+        Math.max(ShellGeometry.homePanelBumpCurveRun, homePanelShapeRadius + (homeRevealProgress * 14))
+    )
 
     readonly property real morphingIntensity: Math.min(1, Math.max(
         Math.abs(dockRevealVelocity),

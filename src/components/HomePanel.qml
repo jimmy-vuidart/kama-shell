@@ -42,7 +42,10 @@ Item {
 
         anchors {
             fill: parent
-            margins: ShellTheme.panelPadding
+            leftMargin: ShellGeometry.homePanelContentLeftMargin
+            rightMargin: ShellGeometry.homePanelContentRightMargin
+            topMargin: ShellGeometry.homePanelContentTopMargin
+            bottomMargin: ShellGeometry.homePanelContentBottomMargin
         }
         spacing: 12
         opacity: Math.max(0, (root.revealProgress - 0.28) / 0.72)
@@ -63,8 +66,8 @@ Item {
             spacing: 12
 
             Rectangle {
-                width: 46
-                height: 46
+                width: 40
+                height: 40
                 radius: ShellTheme.controlRadius
                 antialiasing: true
                 color: ShellTheme.controlFillTopActive
@@ -73,13 +76,13 @@ Item {
 
                 HouseIcon {
                     anchors.centerIn: parent
-                    width: 24
-                    height: 24
+                    width: 22
+                    height: 22
                 }
             }
 
             Column {
-                width: parent.width - 46 - parent.spacing
+                width: parent.width - 40 - parent.spacing
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 2
 

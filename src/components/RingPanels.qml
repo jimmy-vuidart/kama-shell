@@ -33,6 +33,7 @@ Item {
     readonly property alias homePanelShapeTop: slotModel.homePanelShapeTop
     readonly property alias homePanelShapeBottom: slotModel.homePanelShapeBottom
     readonly property alias homePanelShapeRadius: slotModel.homePanelShapeRadius
+    readonly property alias homePanelCurveRun: slotModel.homePanelCurveRun
     readonly property alias morphingIntensity: slotModel.morphingIntensity
     readonly property alias dockContentItem: dockSlot.contentItem
     readonly property alias dockHoverItem: dockSlot.hoverItem

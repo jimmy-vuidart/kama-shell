@@ -38,6 +38,7 @@ Region {
     property real homePanelShapeTop: 0
     property real homePanelShapeBottom: 0
     property real homePanelShapeRadius: 0
+    property real homePanelCurveRun: 0
 
     readonly property var geometryValues: [
         active,
@@ -66,7 +67,8 @@ Region {
         homePanelShapeRight,
         homePanelShapeTop,
         homePanelShapeBottom,
-        homePanelShapeRadius
+        homePanelShapeRadius,
+        homePanelCurveRun
     ]
 
     property var spanPool: []
@@ -269,7 +271,8 @@ Region {
             homePanelShapeRight: root.homePanelShapeRight,
             homePanelShapeTop: root.homePanelShapeTop,
             homePanelShapeBottom: root.homePanelShapeBottom,
-            homePanelShapeRadius: root.homePanelShapeRadius
+            homePanelShapeRadius: root.homePanelShapeRadius,
+            homePanelCurveRun: root.homePanelCurveRun
         })
     }
 

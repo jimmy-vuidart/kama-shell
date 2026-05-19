@@ -75,6 +75,7 @@ Variants {
                     homePanelShapeTop: ringPanels.homePanelShapeTop
                     homePanelShapeBottom: ringPanels.homePanelShapeBottom
                     homePanelShapeRadius: ringPanels.homePanelShapeRadius
+                    homePanelCurveRun: ringPanels.homePanelCurveRun
                 }
 
                 RingSurfaceRenderer {

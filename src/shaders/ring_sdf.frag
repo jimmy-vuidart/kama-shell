@@ -16,6 +16,7 @@ layout(std140, binding = 0) uniform buf {
     float clockRadius;
     float statusRadius;
     float homeRadius;
+    float homeCurveRun;
     float dockCurveRun;
     float supportWidth;
     float borderWidth;
@@ -43,6 +44,20 @@ float smax(float a, float b, float k) {
     return -smin(-a, -b, k);
 }
 
+float sdRightBump(vec2 p, vec4 rect, float curveRun) {
+    float left = rect.x;
+    float top = rect.y;
+    float right = rect.z;
+    float bottom = rect.w;
+    float run = max(1.0, min(curveRun, (bottom - top) * 0.5));
+    float upper = smoothstep(0.0, 1.0, clamp((p.y - top) / run, 0.0, 1.0));
+    float lower = smoothstep(0.0, 1.0, clamp((bottom - p.y) / run, 0.0, 1.0));
+    float side = min(upper, lower);
+    float shapedLeft = mix(right, left, side);
+
+    return max(max(shapedLeft - p.x, p.x - right), max(top - p.y, p.y - bottom));
+}
+
 vec4 fillAt(float y) {
     float t = clamp(y / max(surfaceSize.y, 1.0), 0.0, 1.0);
     vec4 upper = mix(fillTop, fillUpper, smoothstep(0.0, 0.16, t));
@@ -64,9 +79,7 @@ void main() {
     vec2 statusHalf = (statusRect.zw - statusRect.xy) * 0.5;
     float status = sdRoundedBox(p - statusCenter, statusHalf, statusRadius);
 
-    vec2 homeCenter = (homeRect.xy + homeRect.zw) * 0.5;
-    vec2 homeHalf = (homeRect.zw - homeRect.xy) * 0.5;
-    float home = sdRoundedBox(p - homeCenter, homeHalf, homeRadius);
+    float home = sdRightBump(p, homeRect, homeCurveRun);
 
     vec2 dockCenter = (dockRect.xy + dockRect.zw) * 0.5;
     vec2 dockHalf = max((dockRect.zw - dockRect.xy) * 0.5, vec2(1.0));

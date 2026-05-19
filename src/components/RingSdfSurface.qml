@@ -17,6 +17,7 @@ ShaderEffect {
     property real clockRadius: panels.clockNotchRadius
     property real statusRadius: panels.statusNotchRadius
     property real homeRadius: panels.homePanelShapeRadius
+    property real homeCurveRun: panels.homePanelCurveRun
     property real dockCurveRun: panels.dockCurveRun
     property real supportWidth: ShellTheme.panelBorderSupportWidth + (panels.morphingIntensity * 0.8)
     property real borderWidth: ShellTheme.panelBorderWidth + (panels.morphingIntensity * 1.4)

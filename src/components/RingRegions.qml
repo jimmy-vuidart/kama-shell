@@ -73,6 +73,7 @@ Region {
                 homePanelShapeTop: panels.homePanelShapeTop
                 homePanelShapeBottom: panels.homePanelShapeBottom
                 homePanelShapeRadius: panels.homePanelShapeRadius
+                homePanelCurveRun: panels.homePanelCurveRun
                 fillColor: "white"
                 strokeColor: "transparent"
                 strokeWidth: 0
