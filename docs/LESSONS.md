@@ -88,7 +88,7 @@
 
 ## Assets et URLs dans Quickshell
 
-- Quickshell charge les composants QML via le scheme `qs:@` (visible dans les logs d'intercepteur). Sous ce scheme, une **string relative concaténée** (`"../assets/" + name`) passée à `Image.source` échoue silencieusement (status `Null`, jamais `Error`) — le fallback rectangle s'affiche sans aucun message d'erreur. Toujours envelopper dans `Qt.resolvedUrl()` pour produire une URL absolue résolue contre la base du fichier QML hôte. Voir `RingSdfSurface.qml:34` comme exemple de référence dans ce dépôt.
+- Quickshell charge les composants QML via le scheme `qs:@` (visible dans les logs d'intercepteur). Sous ce scheme, une **string relative concaténée** (`"../assets/" + name`) passée à `Image.source` échoue silencieusement (status `Null`, jamais `Error`) — le fallback rectangle s'affiche sans aucun message d'erreur. Toujours envelopper dans `Qt.resolvedUrl()` pour produire une URL absolue résolue contre la base du fichier QML hôte. Voir `OsdPanel.qml` et `StatusNotch.qml` comme exemples de référence dans ce dépôt.
 - Ce piège ne touche que les assets embarqués dans le source tree (SVG, shaders, etc.). Les chemins absolus (`file://…`) et les URLs fournies par des services Quickshell (`Quickshell.iconPath`, `SystemTray.item.icon`) ne sont pas affectés.
 
 ## Débogage

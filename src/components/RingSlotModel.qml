@@ -90,4 +90,44 @@ QtObject {
         Math.abs(dockRevealVelocity),
         Math.abs(homeRevealVelocity)
     ))
+
+    readonly property var ringGeometry: ({
+        frame: {
+            left: innerLeft,
+            top: innerTop,
+            right: innerRight,
+            bottom: innerBottom,
+            cornerRadius: ShellGeometry.cornerRadius
+        },
+        slots: {
+            clock: {
+                left: clockNotchLeft,
+                right: clockNotchRight,
+                bottom: clockNotchBottom,
+                radius: clockNotchRadius
+            },
+            status: {
+                left: statusNotchLeft,
+                right: statusNotchRight,
+                bottom: statusNotchBottom,
+                radius: statusNotchRadius
+            },
+            dock: {
+                slopeStartLeft: dockSlopeStartLeft,
+                slopeStartRight: dockSlopeStartRight,
+                topFlatLeft: dockTopFlatLeft,
+                topFlatRight: dockTopFlatRight,
+                peakY: dockPeakY,
+                curveRun: dockCurveRun
+            },
+            home: {
+                left: homePanelShapeLeft,
+                right: homePanelShapeRight,
+                top: homePanelShapeTop,
+                bottom: homePanelShapeBottom,
+                radius: homePanelShapeRadius,
+                curveRun: homePanelCurveRun
+            }
+        }
+    })
 }

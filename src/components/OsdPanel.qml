@@ -20,8 +20,8 @@ ThemedPanelSurface {
             width: 22
             height: 22
             source: OsdState.kind === OsdState.kindVolume
-                ? "../assets/icons/status/" + StatusNotchState.audioIndicatorIconName
-                : "../assets/icons/status/fluent-brightness-high-24-regular.svg"
+                ? Qt.resolvedUrl("../assets/icons/status/" + StatusNotchState.audioIndicatorIconName)
+                : Qt.resolvedUrl("../assets/icons/status/fluent-brightness-high-24-regular.svg")
             fillMode: Image.PreserveAspectFit
             smooth: true
         }

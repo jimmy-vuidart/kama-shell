@@ -2,6 +2,12 @@
 
 Comparaison du décor de Kama Shell (`src/components/Ring.qml`) avec le système de drawers de [CaelestiaShell](https://github.com/caelestia-dots/shell), ciblée sur la **gestion du contenu embarqué dans le ring** (clock notch, home panel, dock) et la manière dont la silhouette s'adapte à ce contenu.
 
+Note de maintenance: cette analyse a ete ecrite avant la passe P0 qui a
+introduit `RingSlotModel.ringGeometry`, `RingPath.buildSvgPath` et le retrait
+du prototype `RingSdfSurface`. Les constats sur la duplication historique
+restent utiles pour comprendre la dette initiale; l'etat courant est decrit
+dans `AGENTS.md`, `docs/DEBT.md` et `docs/PERFORMANCE.md`.
+
 Sources consultées :
 - `CaelestiaShell/modules/drawers/ContentWindow.qml`
 - `CaelestiaShell/modules/drawers/Drawers.qml`, `Panels.qml`, `Regions.qml`, `Exclusions.qml`, `Interactions.qml`

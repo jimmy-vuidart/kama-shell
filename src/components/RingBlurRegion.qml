@@ -9,66 +9,13 @@ Region {
     property bool active: false
     property int surfaceWidth: 0
     property int surfaceHeight: 0
-
-    property real innerLeft: 0
-    property real innerTop: 0
-    property real innerRight: 0
-    property real innerBottom: 0
-    property real cornerRadius: 0
-
-    property real clockNotchLeft: 0
-    property real clockNotchRight: 0
-    property real clockNotchBottom: 0
-    property real clockNotchRadius: 0
-
-    property real statusNotchLeft: 0
-    property real statusNotchRight: 0
-    property real statusNotchBottom: 0
-    property real statusNotchRadius: 0
-
-    property real dockSlopeStartLeft: 0
-    property real dockSlopeStartRight: 0
-    property real dockTopFlatLeft: 0
-    property real dockTopFlatRight: 0
-    property real dockPeakY: 0
-    property real dockCurveRun: 0
-
-    property real homePanelShapeLeft: 0
-    property real homePanelShapeRight: 0
-    property real homePanelShapeTop: 0
-    property real homePanelShapeBottom: 0
-    property real homePanelShapeRadius: 0
-    property real homePanelCurveRun: 0
+    property var geometry: ({})
 
     readonly property var geometryValues: [
         active,
         surfaceWidth,
         surfaceHeight,
-        innerLeft,
-        innerTop,
-        innerRight,
-        innerBottom,
-        cornerRadius,
-        clockNotchLeft,
-        clockNotchRight,
-        clockNotchBottom,
-        clockNotchRadius,
-        statusNotchLeft,
-        statusNotchRight,
-        statusNotchBottom,
-        statusNotchRadius,
-        dockSlopeStartLeft,
-        dockSlopeStartRight,
-        dockTopFlatLeft,
-        dockTopFlatRight,
-        dockPeakY,
-        dockCurveRun,
-        homePanelShapeLeft,
-        homePanelShapeRight,
-        homePanelShapeTop,
-        homePanelShapeBottom,
-        homePanelShapeRadius,
-        homePanelCurveRun
+        RingPath.geometrySignature(geometry)
     ]
 
     property var spanPool: []
@@ -243,37 +190,8 @@ Region {
         return unique
     }
 
-    // Délègue la production des segments à `RingPath` (singleton). Toute
-    // évolution géométrique du ring se fait dans RingPath et le composant
-    // QML jumeau `RingSilhouettePath`, jamais en dupliquant ici.
     function innerCutoutSegments() {
-        return RingPath.buildInnerSegments({
-            innerLeft: root.innerLeft,
-            innerTop: root.innerTop,
-            innerRight: root.innerRight,
-            innerBottom: root.innerBottom,
-            cornerRadius: root.cornerRadius,
-            clockNotchLeft: root.clockNotchLeft,
-            clockNotchRight: root.clockNotchRight,
-            clockNotchBottom: root.clockNotchBottom,
-            clockNotchRadius: root.clockNotchRadius,
-            statusNotchLeft: root.statusNotchLeft,
-            statusNotchRight: root.statusNotchRight,
-            statusNotchBottom: root.statusNotchBottom,
-            statusNotchRadius: root.statusNotchRadius,
-            dockSlopeStartLeft: root.dockSlopeStartLeft,
-            dockSlopeStartRight: root.dockSlopeStartRight,
-            dockTopFlatLeft: root.dockTopFlatLeft,
-            dockTopFlatRight: root.dockTopFlatRight,
-            dockPeakY: root.dockPeakY,
-            dockCurveRun: root.dockCurveRun,
-            homePanelShapeLeft: root.homePanelShapeLeft,
-            homePanelShapeRight: root.homePanelShapeRight,
-            homePanelShapeTop: root.homePanelShapeTop,
-            homePanelShapeBottom: root.homePanelShapeBottom,
-            homePanelShapeRadius: root.homePanelShapeRadius,
-            homePanelCurveRun: root.homePanelCurveRun
-        })
+        return RingPath.buildInnerSegments(root.geometry)
     }
 
     function addLineIntersection(xs, segment, scanY) {

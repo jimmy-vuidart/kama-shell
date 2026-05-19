@@ -8,6 +8,7 @@ Item {
     required property var screen
 
     readonly property alias slotModel: slotModel
+    readonly property alias ringGeometry: slotModel.ringGeometry
     readonly property alias innerLeft: slotModel.innerLeft
     readonly property alias innerTop: slotModel.innerTop
     readonly property alias innerRight: slotModel.innerRight

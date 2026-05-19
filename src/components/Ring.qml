@@ -51,37 +51,12 @@ Variants {
                     active: window.backgroundBlurEnabled
                     surfaceWidth: Math.ceil(window.width)
                     surfaceHeight: Math.ceil(window.height)
-                    innerLeft: ringPanels.innerLeft
-                    innerTop: ringPanels.innerTop
-                    innerRight: ringPanels.innerRight
-                    innerBottom: ringPanels.innerBottom
-                    cornerRadius: ShellGeometry.cornerRadius
-                    clockNotchLeft: ringPanels.clockNotchLeft
-                    clockNotchRight: ringPanels.clockNotchRight
-                    clockNotchBottom: ringPanels.clockNotchBottom
-                    clockNotchRadius: ringPanels.clockNotchRadius
-                    statusNotchLeft: ringPanels.statusNotchLeft
-                    statusNotchRight: ringPanels.statusNotchRight
-                    statusNotchBottom: ringPanels.statusNotchBottom
-                    statusNotchRadius: ringPanels.statusNotchRadius
-                    dockSlopeStartLeft: ringPanels.dockSlopeStartLeft
-                    dockSlopeStartRight: ringPanels.dockSlopeStartRight
-                    dockTopFlatLeft: ringPanels.dockTopFlatLeft
-                    dockTopFlatRight: ringPanels.dockTopFlatRight
-                    dockPeakY: ringPanels.dockPeakY
-                    dockCurveRun: ringPanels.dockCurveRun
-                    homePanelShapeLeft: ringPanels.homePanelShapeLeft
-                    homePanelShapeRight: ringPanels.homePanelShapeRight
-                    homePanelShapeTop: ringPanels.homePanelShapeTop
-                    homePanelShapeBottom: ringPanels.homePanelShapeBottom
-                    homePanelShapeRadius: ringPanels.homePanelShapeRadius
-                    homePanelCurveRun: ringPanels.homePanelCurveRun
+                    geometry: ringPanels.ringGeometry
                 }
 
                 RingSurfaceRenderer {
                     anchors.fill: parent
                     panels: ringPanels
-                    backend: "shape"
                     z: 0
                 }
             }

@@ -7,8 +7,9 @@ surveiller.
 
 ## Synthese
 
-- La dette principale est la geometrie du ring: plusieurs representations
-  doivent rester synchronisees pour le rendu, le mask, le blur et le shader SDF.
+- La dette principale du ring a ete reduite: rendu, mask et blur consomment
+  desormais le meme modele geometrique. Le risque restant est la validation
+  visuelle et la couverture de tests autour de ce modele.
 - La dette performance est liee au cout du ring anime, surtout
   `RingBlurRegion` et les `ShapePath` complexes pendant les ouvertures du dock
   et du panel maison.
@@ -22,7 +23,7 @@ surveiller.
 
 ## P0 - Risques eleves
 
-### Geometrie du ring a sources multiples
+### Geometrie du ring unifiee, validation encore faible
 
 Fichiers principaux:
 
@@ -33,39 +34,34 @@ Fichiers principaux:
 - `src/components/RingSilhouettePath.qml`
 - `src/components/RingBlurRegion.qml`
 - `src/state/RingPath.qml`
-- `src/components/RingSdfSurface.qml`
-- `src/shaders/ring_sdf.frag`
 
 Constat:
 
-- La silhouette visible est decrite en `ShapePath` dans
-  `RingSilhouettePath.qml`.
-- La region de blur est reconstruite cote CPU via `RingPath.buildInnerSegments`.
-- Le mask du `PanelWindow` reutilise un `Shape` interne via `RingRegions`.
-- Le shader SDF existe mais n'est pas le backend par defaut et ne reproduit pas
-  encore exactement la silhouette visible.
-- `Ring.qml` et `RingPanels.qml` transportent beaucoup de scalaires
-  geometriques vers les differents consommateurs.
+- `RingSlotModel` expose un modele `ringGeometry`.
+- `RingPath` normalise ce modele et genere a la fois les segments CPU et le
+  chemin SVG.
+- `RingSilhouettePath`, `RingRegions` et `RingBlurRegion` consomment cette
+  source commune.
+- L'ancien prototype SDF a ete retire, car il ajoutait une cible approximative
+  a synchroniser.
 
 Risque:
 
-- Toute evolution visible du ring peut diverger entre rendu, hit-test, blur et
-  SDF.
+- Toute evolution visible du ring peut encore diverger si elle contourne
+  `ringGeometry` ou ajoute un consommateur qui ne passe pas par `RingPath`.
 - Les regressions sont difficiles a detecter par `qmllint`; elles apparaissent
   surtout visuellement ou en session Wayland reelle.
-- Ajouter une notch, un panel lateral ou une deformation impose de toucher trop
-  de fichiers.
+- Ajouter une notch, un panel lateral ou une deformation impose encore de
+  verifier les sorties SVG, CPU et mask ensemble.
 
 Remboursement recommande:
 
-- Introduire un modele declaratif de slots du ring qui devient la source de
-  verite geometrique.
-- Faire generer les segments CPU et les chemins QML depuis ce modele, ou a
-  defaut reduire le nombre de proprietes passees manuellement.
-- Garder `RingShapeSurface` comme reference visuelle tant que le SDF n'est pas
-  strictement equivalent.
-- Ajouter une verification dediee qui compare, au moins sur un jeu de tailles
-  d'ecran, les segments `RingPath` avec les attentes de la silhouette.
+- Etendre `tests/RingPathSelfTest.qml` avec plusieurs tailles et etats de
+  reveal.
+- Ajouter une validation visuelle manuelle documentee apres chaque changement
+  de silhouette.
+- Garder `RingShapeSurface` comme reference visuelle si un renderer alternatif
+  est reintroduit.
 
 ### Cout CPU du blur et des animations du ring
 
@@ -85,8 +81,8 @@ Constat:
 - Le pool de spans grandit a la demande mais ne retrecit pas.
 - `docs/PERFORMANCE.md` documente deja un ralentissement des animations quand le
   CPU est charge.
-- Le plan performance propose `Shape.CurveRenderer` et `asynchronous: true`, mais
-  ces options ne sont pas encore appliquees aux `Shape` du ring et du mask.
+- `Shape.CurveRenderer` et `asynchronous: true` sont appliques aux `Shape` du
+  ring et du mask; leur gain reste a mesurer en session reelle.
 
 Risque:
 
@@ -97,15 +93,16 @@ Risque:
 
 Remboursement recommande:
 
-- Appliquer et mesurer la passe v1 de `docs/PERFORMANCE.md`:
+- Mesurer la passe v1 de `docs/PERFORMANCE.md`:
   `Shape.CurveRenderer`, `asynchronous: true`, animations courtes et trace
   `KAMA_TRACE_PERF`.
 - Mesurer `RingBlurRegion` avec `KAMA_TRACE_PERF=1` avant/apres modification.
 - Eviter tout retour a une region de blur approximative; la dette performance ne
   doit pas casser l'invariant geometrique.
-- Si la v1 ne suffit pas, prioriser un renderer SDF exact ou un item QSG dedie.
+- Si la v1 ne suffit pas, prioriser un renderer SDF exact base sur
+  `ringGeometry` ou un item QSG dedie.
 
-### Chemin d'assets embarques non resolu dans l'OSD
+### Chemins d'assets embarques a surveiller
 
 Fichier principal:
 
@@ -113,21 +110,20 @@ Fichier principal:
 
 Constat:
 
-- `Image.source` construit les icones avec des strings relatives:
-  `"../assets/icons/status/" + ...`.
+- L'OSD utilise maintenant `Qt.resolvedUrl(...)` pour les icones embarquees.
+- `make test` lance `scripts/check-qml-asset-urls.py` pour bloquer les
+  nouvelles concatenations relatives vers `../assets/`.
 - `docs/LESSONS.md` documente que, sous le scheme `qs:@`, les chemins relatifs
   concatenees peuvent echouer silencieusement.
 
 Risque:
 
-- Icônes OSD absentes sans erreur claire dans les logs.
-- Regression discrete lors d'un changement de theme, de chemin de lancement ou
-  de packaging.
+- Le risque principal devient une regression future non couverte par le check
+  statique si elle passe par une autre forme de chemin relatif.
 
 Remboursement recommande:
 
-- Remplacer les sources d'icones embarquees par `Qt.resolvedUrl(...)`.
-- Ajouter une recherche de garde dans les reviews: toute URL source-tree QML doit
+- Garder la recherche de garde dans les reviews: toute URL source-tree QML doit
   passer par `Qt.resolvedUrl`.
 
 ## P1 - Architecture a stabiliser
@@ -381,7 +377,7 @@ Manques importants:
 - Tests purs de matching dock: pinned, running, fallback labels, app ids et
   desktop ids avec/sans suffixe `.desktop`.
 - Tests ou snapshots geometriques du ring pour eviter la divergence entre
-  `RingSilhouettePath`, `RingPath`, `RingBlurRegion` et le shader.
+  `RingSilhouettePath`, `RingPath` et `RingBlurRegion`.
 - Tests de normalisation des evenements `NiriIpc`/`NiriWindowBackend`.
 - Verification automatisee que les assets embarques utilisent `Qt.resolvedUrl`.
 

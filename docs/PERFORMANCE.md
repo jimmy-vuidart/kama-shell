@@ -14,8 +14,12 @@ Etat actuel du code:
 
 - `ExpandableEdgeWidget.qml` et `HomePanel.qml` pilotent `revealProgress`.
 - `RingPanels.qml` transmet ce `revealProgress` a `RingSlotModel.qml`.
-- `RingShapeSurface.qml` dessine la silhouette visible via `ShapePath`.
-- `RingRegions.qml` reconstruit un mask avec un `Shape` interne.
+- `RingSlotModel.qml` expose un modele `ringGeometry` consomme par le rendu,
+  le mask et le blur.
+- `RingShapeSurface.qml` dessine la silhouette visible via `ShapePath` genere
+  par `RingPath.buildSvgPath`.
+- `RingRegions.qml` reconstruit un mask avec un `Shape` interne base sur le
+  meme chemin.
 - `RingBlurRegion.qml` reconstruit la region de blur en CPU via
   `RingPath.buildInnerSegments`.
 
@@ -23,8 +27,8 @@ Les tentatives a ne pas reproduire:
 
 - Ne pas snapper une geometrie separee du reveal visible. Cela ameliore le CPU
   mais le ring ne suit plus correctement les notches et les panneaux.
-- Ne pas rebasculer le renderer par defaut sur `RingSdfSurface`: le shader SDF
-  actuel ne matche pas encore exactement la silhouette visible.
+- Ne pas reintroduire un renderer SDF approximatif: l'ancien prototype ne
+  matchait pas exactement la silhouette visible et a ete retire.
 
 Patch partiellement en cours au moment de l'ecriture:
 
@@ -49,10 +53,10 @@ Ce point tranche la decision:
 
 - Port direct de `Caelestia.Blobs`: non retenu pour v1. Le ring de Kama n'est
   pas seulement une union de rectangles arrondis; il a une silhouette exacte
-  maintenue par `RingSilhouettePath.qml` et `RingPath.qml`.
-- `RingSdfSurface` actuel: non retenu pour defaut. Il ne reproduit pas encore
-  correctement les notches.
-- Meilleure piste immediate: garder `ShapePath`, mais demander a Qt d'utiliser
+  produite par `RingPath.qml`.
+- L'ancien `RingSdfSurface` a ete retire: il ne reproduisait pas correctement
+  les notches et ajoutait une cible de rendu a maintenir.
+- Piste immediate appliquee: garder `ShapePath`, mais demander a Qt d'utiliser
   `Shape.CurveRenderer`, disponible localement avec Qt 6.11.1.
 
 Documentation Qt utile:
@@ -69,10 +73,11 @@ interactive depuis cette valeur. Kama peut rester plus simple pour l'instant.
 
 Objectif: ameliorer le cout du rendu anime sans casser la forme exacte.
 
-1. Garder le renderer visible en mode `shape`.
+1. Garder le renderer visible en mode Shape.
 
-   - `RingSurfaceRenderer.qml` doit rester avec `backend: "shape"`.
-   - `Ring.qml` ne doit pas forcer `backend: "sdf"`.
+   - `RingSurfaceRenderer.qml` reste un wrapper simple vers
+     `RingShapeSurface.qml`.
+   - Le backend SDF n'existe plus dans le tree.
 
 2. Activer `CurveRenderer` sur la silhouette visible.
 
@@ -83,8 +88,7 @@ Objectif: ameliorer le cout du rendu anime sans casser la forme exacte.
    asynchronous: true
    ```
 
-   Garder tous les `RingSilhouettePath` existants. Ne pas modifier les courbes
-   ni les dimensions.
+   Garder `RingSilhouettePath` branche sur `RingPath.buildSvgPath`.
 
 3. Activer `CurveRenderer` sur le mask du ring.
 
@@ -213,10 +217,11 @@ options suivantes sont les seules directions correctes.
 
 Option A: renderer ring SDF exact.
 
-- Refaire `RingSdfSurface` pour consommer exactement les memes parametres que
-  `RingPath.buildInnerSegments`.
+- Reintroduire un `RingSdfSurface` uniquement s'il consomme le meme modele
+  `ringGeometry` que `RingPath.buildInnerSegments`.
 - Aligner visuellement avec `RingSilhouettePath` avant d'en faire le defaut.
-- Regenerer `src/shaders/ring_sdf.frag.qsb` apres modification du `.frag`.
+- Ajouter une etape de build explicite pour le shader compile si cette option
+  revient.
 - Garder `RingShapeSurface` comme fallback de reference.
 
 Option B: plugin QSG dedie au ring, inspire de Caelestia mais pas copie tel quel.
@@ -229,5 +234,4 @@ Option B: plugin QSG dedie au ring, inspire de Caelestia mais pas copie tel quel
 
 Dans les deux cas, respecter l'invariant du depot: toute evolution de la
 geometrie visible doit garder alignes `RingSlotModel`, `RingSilhouettePath`,
-`RingPath`, le shader et le `.qsb`.
-
+`RingPath` et `RingBlurRegion`.

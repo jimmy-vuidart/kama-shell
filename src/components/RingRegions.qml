@@ -47,33 +47,11 @@ Region {
 
         Shape {
             anchors.fill: parent
+            preferredRendererType: Shape.CurveRenderer
+            asynchronous: true
 
             RingSilhouettePath {
-                innerLeft: panels.innerLeft
-                innerTop: panels.innerTop
-                innerRight: panels.innerRight
-                innerBottom: panels.innerBottom
-                cornerRadius: ShellGeometry.cornerRadius
-                clockNotchLeft: panels.clockNotchLeft
-                clockNotchRight: panels.clockNotchRight
-                clockNotchBottom: panels.clockNotchBottom
-                clockNotchRadius: panels.clockNotchRadius
-                statusNotchLeft: panels.statusNotchLeft
-                statusNotchRight: panels.statusNotchRight
-                statusNotchBottom: panels.statusNotchBottom
-                statusNotchRadius: panels.statusNotchRadius
-                dockSlopeStartLeft: panels.dockSlopeStartLeft
-                dockSlopeStartRight: panels.dockSlopeStartRight
-                dockTopFlatLeft: panels.dockTopFlatLeft
-                dockTopFlatRight: panels.dockTopFlatRight
-                dockPeakY: panels.dockPeakY
-                dockCurveRun: panels.dockCurveRun
-                homePanelShapeLeft: panels.homePanelShapeLeft
-                homePanelShapeRight: panels.homePanelShapeRight
-                homePanelShapeTop: panels.homePanelShapeTop
-                homePanelShapeBottom: panels.homePanelShapeBottom
-                homePanelShapeRadius: panels.homePanelShapeRadius
-                homePanelCurveRun: panels.homePanelCurveRun
+                geometry: panels.ringGeometry
                 fillColor: "white"
                 strokeColor: "transparent"
                 strokeWidth: 0

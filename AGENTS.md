@@ -68,14 +68,13 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/components/RingPanels.qml`: composition des slots internes fixes du ring (`DateTimeNotch`, `StatusNotch`, `HomePanel`, handle maison, `ExpandableEdgeWidget` + `AppDock`) et exposition des items interactifs au mask
 - `src/components/RingSlotModel.qml`: modèle géométrique interne des slots du ring; consomme les dimensions de fenêtre et états de reveal des panels pour produire les métriques utilisées par le rendu, le mask et le blur
 - `src/components/RingRegions.qml`: `mask: Region` du ring, construit depuis `RingSlotModel`/`RingPanels`; soustrait la silhouette intérieure et ajoute les zones interactives du dock et du panel maison
-- `src/components/RingSurfaceRenderer.qml`, `RingSdfSurface.qml`, `RingShapeSurface.qml`: rendu du ring depuis les métriques des slots; `RingSdfSurface` utilise `src/shaders/ring_sdf.frag.qsb`, `RingShapeSurface` conserve le fallback `ShapePath`
-- `src/shaders/ring_sdf.frag`, `src/shaders/ring_sdf.frag.qsb`: shader SDF du ring et version Qt Shader Baker précompilée; régénérer avec `/usr/lib/qt6/bin/qsb --qt6 -o src/shaders/ring_sdf.frag.qsb src/shaders/ring_sdf.frag` après modification du `.frag`
-- `src/components/RingSilhouettePath.qml`: `ShapePath` réutilisable qui dessine la silhouette intérieure complète du ring (top edge, clock notch, upper-right arc, right edge, home panel évidement, lower-right arc, dock bump, lower-left arc, left edge, upper-left arc). Mode `withOuterRectangle` pour le fill OddEvenFill; propriété `inset` pour les variantes outline. Fallback de rendu et source utilisée par `RingRegions`
-- `src/state/RingPath.qml` (singleton): producteur JS des segments de la silhouette intérieure. Helpers `line/cubic/arc` + `buildInnerSegments(g)` qui retourne le tableau ordonné. **Source de vérité côté CPU**, consommée par `RingBlurRegion`
+- `src/components/RingSurfaceRenderer.qml`, `RingShapeSurface.qml`: rendu Shape du ring depuis le modèle géométrique des slots; `RingShapeSurface` utilise `Shape.CurveRenderer` et reste la référence visuelle
+- `src/components/RingSilhouettePath.qml`: `ShapePath` réutilisable généré via `PathSvg` depuis `RingPath.buildSvgPath`; dessine la silhouette intérieure complète du ring, avec mode `withOuterRectangle` pour le fill OddEvenFill et propriété `inset` pour les variantes outline. Source utilisée par `RingShapeSurface` et `RingRegions`
+- `src/state/RingPath.qml` (singleton): producteur JS de la silhouette intérieure. Normalise le modèle géométrique, génère les segments CPU (`buildInnerSegments`) et le chemin SVG (`buildSvgPath`). **Source de vérité des contours**, consommée par `RingSilhouettePath` et `RingBlurRegion`
 - `src/components/RingBlurRegion.qml`: génération exacte du `BackgroundEffect.blurRegion` du ring via `RingPath.buildInnerSegments(g)`; ne pas remplacer par des rectangles approximatifs
 - `src/state/ShellGeometry.qml`: constantes de forme partagées entre ring, dock et panel maison
 
-Ne jamais approximer le blur du `kama-shell-ring`: toute évolution géométrique visible (notch supplémentaire, panneau additionnel, changement de courbe) doit garder alignés `RingSlotModel`, `RingSilhouettePath`, `RingPath`, `RingBlurRegion`, le shader `ring_sdf.frag` et le `.qsb` régénéré.
+Ne jamais approximer le blur du `kama-shell-ring`: toute évolution géométrique visible (notch supplémentaire, panneau additionnel, changement de courbe) doit garder alignés `RingSlotModel`, `RingSilhouettePath`, `RingPath` et `RingBlurRegion`.
 
 ### Widgets et surfaces
 
