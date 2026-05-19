@@ -1,25 +1,24 @@
 # AGENTS.md
 
-Ce dépôt contient une configuration Quickshell minimale, actuellement centrée sur [`src/shell.qml`](src/shell.qml). Kama Shell est un shell Quickshell autonome lancé dans une session [niri](https://niri-wm.github.io/niri/). niri est la seule cible de session supportée; les intégrations KWin/KRunner ont été retirées. Les changements doivent rester compatibles avec Quickshell et avec un usage Wayland via `PanelWindow` + `WlrLayershell`.
+Ce dépôt contient Kama Shell, un shell Quickshell autonome lancé dans une session [niri](https://niri-wm.github.io/niri/). niri est la seule cible de session supportée; les intégrations KWin/KRunner ont été retirées. Les changements doivent rester compatibles avec Quickshell, Wayland, `PanelWindow` et `WlrLayershell`.
 
 ## Objectif
 
 - Garder une configuration Quickshell simple, lisible et facilement rechargeable.
-- Éviter les patterns QML qui cassent le hot reload, le LSP, ou la réutilisabilité.
+- Éviter les patterns QML qui cassent le hot reload, le LSP ou la réutilisabilité.
 - Préparer le dépôt à évoluer vers plusieurs composants sans recréer inutilement logique et processus par fenêtre.
+- Avant toute modification, lire `docs/LESSONS.md` pour vérifier les pièges déjà identifiés; ne pas réintroduire un pattern explicitement documenté comme problématique.
 
-## Règles Quickshell
+## Règles Quickshell et QML
 
 - Utiliser `PanelWindow` pour les barres, overlays et widgets attachés à un écran; réserver `FloatingWindow` aux fenêtres de bureau classiques.
 - Ne pas utiliser d'imports `root:/...`; la documentation Quickshell indique que cela casse le LSP et les singletons.
 - Si la config doit apparaître sur plusieurs écrans, préférer `Variants { model: Quickshell.screens }` au lieu de sélectionner un écran unique manuellement.
-- Quand plusieurs fenêtres partagent le même état ou la même logique, sortir cet état dans un `Singleton` ou un `Scope` au lieu de dupliquer `Process`, `Timer` ou services dans chaque `PanelWindow`.
+- Préférer `required property` pour les données injectées par `Variants`.
+- Quand plusieurs fenêtres partagent le même état ou la même logique, sortir cet état dans un `Singleton` ou un `Scope` au lieu de dupliquer `Process`, `Timer` ou services.
 - Si un état global doit être accessible partout, préférer `pragma Singleton` + `Singleton { ... }`.
-- Pour l'heure, les dates, ou d'autres sources système déjà exposées par Quickshell, préférer les services natifs comme `SystemClock` plutôt que lancer des commandes externes.
+- Pour l'heure, les dates ou d'autres sources système déjà exposées par Quickshell, préférer les services natifs comme `SystemClock` plutôt que lancer des commandes externes.
 - Laisser `Quickshell.watchFiles` à son comportement par défaut sauf besoin explicite; le rechargement automatique fait partie du workflow normal.
-
-## Règles QML pour ce dépôt
-
 - Favoriser des composants petits et nommés clairement si `shell.qml` grossit.
 - Si la configuration dépasse une seule fenêtre, extraire en priorité:
   - les composants visuels dans des fichiers dédiés `*.qml`
@@ -27,15 +26,18 @@ Ce dépôt contient une configuration Quickshell minimale, actuellement centrée
   - les constantes de layout dans des propriétés readonly clairement nommées
 - Garder les bindings réactifs; éviter la logique impérative quand une propriété calculée suffit.
 - Éviter de référencer depuis un objet partagé des `id` déclarés à l'intérieur d'un composant `Variants` ou d'une fenêtre répliquée; la doc Quickshell montre que ce pattern casse dès qu'on sort la logique hors du composant local.
-- Préférer `required property` pour les données injectées par `Variants`.
 
-## Fenêtres et Wayland
+## Wayland, niri et fenêtres
 
 - `anchors` de `PanelWindow` doivent être définis explicitement; sans ancrage, une mauvaise configuration peut bloquer l'écran ou produire un placement ambigu.
 - Si deux côtés opposés sont ancrés, Quickshell force la dimension correspondante à la taille de l'écran. Utiliser `margins` pour créer un retrait visuel sans perdre l'ancrage.
 - `exclusiveZone` ne fonctionne que si 1 ou 3 ancres sont actives. Ne pas l'ajouter sans vérifier cette contrainte.
 - Laisser `focusable: false` sauf besoin clavier explicite; c'est la valeur par défaut et le comportement attendu pour une barre ou un overlay passif.
 - Toute personnalisation directe de `WlrLayershell.layer` ou `WlrLayershell.namespace` doit être motivée par le comportement Wayland recherché.
+- Consommer l'état compositeur via `CompositorState`; ne jamais lire `XDG_CURRENT_DESKTOP` ou `NIRI_SOCKET` ailleurs.
+- Toute requête à `niri` doit passer par le singleton `NiriIpc` (`niri msg --json`), pas par un `Process` ad hoc.
+- Les binds globaux vivent dans `config/niri/binds.kdl` et sont inclus via niri `include`; Kama Shell n'enregistre plus de raccourci global lui-même.
+- Tout nouveau `PanelWindow` qui utilise `BackgroundEffect.blurRegion` doit avoir une `layer-rule` avec `background-effect { xray false }` dans `config/niri/config.kdl` et `config/niri/config.kdl.example`, dans le même patch que le composant.
 
 ## Structure recommandée
 
@@ -50,8 +52,19 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 
 ## Structure actuelle
 
+### Entrée et fenêtres principales
+
 - `src/shell.qml`: point d'entrée Quickshell
-- `src/components/Ring.qml`: `PanelWindow` multi-écran et composition haut niveau du ring; délègue les métriques/contenus à `RingPanels`, le mask à `RingRegions`, et le dessin à `RingSurfaceRenderer`
+- `src/components/WallpaperWindow.qml`: `PanelWindow` multi-écran sur la couche `WlrLayer.Background`; rend le wallpaper de référence et le fallback local des surfaces Liquid Glass
+- `src/components/Ring.qml`: `PanelWindow` multi-écran et composition haut niveau du ring; délègue les métriques/contenus à `RingPanels`, le mask à `RingRegions` et le dessin à `RingSurfaceRenderer`
+- `src/components/TrayMenuOverlay.qml`, `TrayMenuPanel.qml`, `src/state/TrayMenuState.qml`: état et rendu QML du menu contextuel `SystemTray`
+- `src/components/AppLauncherOverlay.qml`, `AppLauncher.qml`, `AppLauncherItem.qml`: overlay launcher multi-écran, recherche et lignes de résultat
+- `src/components/OsdOverlay.qml`: `PanelWindow` multi-écran (`Variants { model: Quickshell.screens }`) plein-écran transparent, namespace `kama-shell-osd`, `WlrLayer.Overlay`, passe-clic (`mask: Region {}`); contient `OsdPanel` centré en bas à 56 px du bas avec fade + slide animés; `BackgroundEffect.blurRegion` activé sous thème `liquid-glass` + compositeur compatible
+- `src/components/OsdPanel.qml`: pill `LiquidGlassSurface` (320×56, `radius: height/2`) affichant une icône Fluent UI (volume ou luminosité) et une barre de progression `SmoothedAnimation`
+- `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher et déclencher les commandes de luminosité (`brightnessUp`, `brightnessDown`) depuis un bind niri ou `qs ipc`
+
+### Ring et géométrie
+
 - `src/components/RingPanels.qml`: composition des slots internes fixes du ring (`DateTimeNotch`, `StatusNotch`, `HomePanel`, handle maison, `ExpandableEdgeWidget` + `AppDock`) et exposition des items interactifs au mask
 - `src/components/RingSlotModel.qml`: modèle géométrique interne des slots du ring; consomme les dimensions de fenêtre et états de reveal des panels pour produire les métriques utilisées par le rendu, le mask et le blur
 - `src/components/RingRegions.qml`: `mask: Region` du ring, construit depuis `RingSlotModel`/`RingPanels`; soustrait la silhouette intérieure et ajoute les zones interactives du dock et du panel maison
@@ -59,24 +72,27 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/shaders/ring_sdf.frag`, `src/shaders/ring_sdf.frag.qsb`: shader SDF du ring et version Qt Shader Baker précompilée; régénérer avec `/usr/lib/qt6/bin/qsb --qt6 -o src/shaders/ring_sdf.frag.qsb src/shaders/ring_sdf.frag` après modification du `.frag`
 - `src/components/RingSilhouettePath.qml`: `ShapePath` réutilisable qui dessine la silhouette intérieure complète du ring (top edge, clock notch, upper-right arc, right edge, home panel évidement, lower-right arc, dock bump, lower-left arc, left edge, upper-left arc). Mode `withOuterRectangle` pour le fill OddEvenFill; propriété `inset` pour les variantes outline. Fallback de rendu et source utilisée par `RingRegions`
 - `src/state/RingPath.qml` (singleton): producteur JS des segments de la silhouette intérieure. Helpers `line/cubic/arc` + `buildInnerSegments(g)` qui retourne le tableau ordonné. **Source de vérité côté CPU**, consommée par `RingBlurRegion`
-- `src/components/RingBlurRegion.qml`: génération exacte du `BackgroundEffect.blurRegion` du ring via `RingPath.buildInnerSegments(g)` et un scan-line pixel-spans CPU; ne pas remplacer par des rectangles approximatifs
+- `src/components/RingBlurRegion.qml`: génération exacte du `BackgroundEffect.blurRegion` du ring via `RingPath.buildInnerSegments(g)`; ne pas remplacer par des rectangles approximatifs
+- `src/state/ShellGeometry.qml`: constantes de forme partagées entre ring, dock et panel maison
+
+Ne jamais approximer le blur du `kama-shell-ring`: toute évolution géométrique visible (notch supplémentaire, panneau additionnel, changement de courbe) doit garder alignés `RingSlotModel`, `RingSilhouettePath`, `RingPath`, `RingBlurRegion`, le shader `ring_sdf.frag` et le `.qsb` régénéré.
+
+### Widgets et surfaces
+
 - `src/components/DateTimeNotch.qml`: encoche haute centrale affichant la date et l'heure
 - `src/components/StatusNotch.qml`, `StatusTrayIcon.qml`: encoche haute droite fixe affichant les items `SystemTray` déclarés par les apps et les indicateurs système volume/réseau/CPU/batterie
 - `src/assets/icons/status/`: icônes Fluent UI System embarquées pour les indicateurs système internes du `StatusNotch`; les icônes tray applicatives restent fournies par `SystemTray`. Toute nouvelle icône système interne doit être récupérée de la même façon (SVG Fluent UI System via Iconify/API ou source upstream, licence MIT documentée dans le README local) puis embarquée ici avec un fill blanc explicite.
-- `src/state/TrayMenuState.qml`, `src/components/TrayMenuOverlay.qml`, `TrayMenuPanel.qml`: état et rendu QML du menu contextuel `SystemTray`; évite les menus natifs Qt (`QMenu`) qui deviennent des `xdg-toplevel` problématiques sous niri/layer-shell
 - `src/components/HomePanel.qml`: contenu visuel du panel maison, intégré dans le `PanelWindow` du ring
 - `src/components/HomeRoomRow.qml`, `HomeDeviceControl.qml`, `HouseIcon.qml`: primitives visuelles du panel maison
-- `src/components/AppDock.qml`: layout visuel du dock
-- `src/components/ThemedPanelSurface.qml`, `LiquidGlassSurface.qml`: surfaces de panel thémables, avec rendu Liquid Glass; les surfaces simples peuvent utiliser le blur compositeur via `BackgroundEffect.blurRegion` quand leur région est exacte, avec fallback wallpaper local sinon
-- `src/components/AppLauncherOverlay.qml`, `AppLauncher.qml`, `AppLauncherItem.qml`: overlay launcher multi-écran, recherche et lignes de résultat
+- `src/components/AppDock.qml`, `AppDockItem.qml`, `DockSeparator.qml`: layout visuel du dock
+- `src/components/ExpandableEdgeWidget.qml`: primitive de widget rétractable intégrée au ring
+- `src/components/ThemedPanelSurface.qml`, `LiquidGlassSurface.qml`: surfaces de panel thémables, avec rendu Liquid Glass; les surfaces simples peuvent utiliser le blur compositeur via `BackgroundEffect.blurRegion` quand leur région est exacte
+
+### État global
+
 - `src/state/OsdState.qml` (singleton): état de l'OSD volume/luminosité; observe `StatusNotchState.audioVolume/audioMuted` pour le volume (déclenché automatiquement quand `wpctl` modifie le sink Pipewire) et expose `brightnessUp()`/`brightnessDown()` (appelés via IPC, exécutent `brightnessctl -m set 5%±` et parsent le CSV de sortie); auto-masquage après 2.5 s via `Timer`; propriétés `kind` (0=none, 1=volume, 2=brightness), `level` (0–1), `muted`, `visible`
-- `src/components/OsdOverlay.qml`: `PanelWindow` multi-écran (`Variants { model: Quickshell.screens }`) plein-écran transparent, namespace `kama-shell-osd`, `WlrLayer.Overlay`, passe-clic (`mask: Region {}`); contient `OsdPanel` centré en bas à 56 px du bas avec fade + slide animés; `BackgroundEffect.blurRegion` activé sous theme `liquid-glass` + compositeur compatible
-- `src/components/OsdPanel.qml`: pill `LiquidGlassSurface` (320×56, `radius: height/2`) affichant une icône Fluent UI (volume ou luminosité) et une barre de progression `SmoothedAnimation`
-- `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher et déclencher les commandes de luminosité (`brightnessUp`, `brightnessDown`) depuis un bind niri ou `qs ipc`
 - `src/state/ShellConfig.qml`: configuration utilisateur lue depuis `~/.config/kama-shell/kama.conf`
-- `scripts/update-kama-config.py`: écriture atomique des valeurs de config modifiées par l'interface
 - `src/state/ShellTheme.qml`: thème visuel actif, actuellement `glassmorphism`, `ffxiv` et `liquid-glass`
-- `src/state/ShellGeometry.qml`: constantes de forme partagées entre ring, dock et panel maison
 - `src/state/CompositorState.qml`: détection du backend (`niri` / `generic-wlr` / `unknown`) et capacités (`hasNativeToplevels`, `hasNiriIpc`, `hasLayerRules`, `supportsBackgroundEffect`); priorité à `KAMA_COMPOSITOR` puis aux heuristiques d'environnement
 - `src/state/NiriIpc.qml`: helper d'IPC vers niri qui wrappe `niri msg --json`, parse la sortie et ignore les champs inconnus
 - `src/state/NiriWorkspaceState.qml`: état normalisé des outputs, workspaces et fenêtre focus exposé via `NiriIpc`; expose aussi des actions (`focusWorkspaceUp`, `toggleOverview`, etc.)
@@ -84,40 +100,38 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/state/DockIconResolver.qml`: résolution et cache asynchrones des icônes du dock
 - `src/state/LauncherState.qml`: état global du launcher, filtrage de `DesktopEntries.applications`, sélection et lancement
 - `src/state/StatusNotchState.qml`: état global de l'encoche haut-droite; agrège `SystemTray.items`, `Pipewire.defaultAudioSink`, `Networking.devices`, `/proc/stat` et `UPower.displayDevice`
-- `sessions/kama-shell-niri-session`, `sessions/start-kama-shell-niri-session`, `sessions/kama-shell-niri.desktop`: session niri installable via Makefile/PKGBUILD; exporte `KAMA_COMPOSITOR=niri`, `XDG_CURRENT_DESKTOP=KamaShell:niri`
-- `sessions/kama-shell-niri-debug-session`, `sessions/start-kama-shell-niri-debug-session`, `sessions/kama-shell-niri-debug.desktop`: session niri debug; lance `niri --config config/niri/config.kdl` depuis le tree source et expose `KAMA_DEV=1` + log dans `logs/kama-shell.log`. Installable via `make install-session-niri-debug` uniquement (jamais empaquetee)
-- `config/niri/config.kdl.example`: exemple de configuration niri (lancement de Kama Shell installe, include optionnel de `niri-binds.kdl`, layer rules sur les namespaces `kama-shell-*`, services attendus)
-- `config/niri/config.kdl`: variante dev consommee par la session debug, avec `spawn-at-startup "/usr/bin/quickshell" "-p" "src/shell.qml"` et include de `binds.dev.kdl` (chemins relatifs resolus contre `$APP_DIR/config/niri`)
-- `config/niri/binds.kdl`, `config/niri/binds.dev.kdl`: binds niri separes de la config principale (`Mod+D`, screenshots, quit, touches multimédias et luminosité); les touches `XF86MonBrightnessUp/Down` passent par IPC (`qs ipc call kama-shell brightnessUp/Down`) pour déclencher l'OSD; les touches volume appellent `wpctl` directement, l'OSD est déclenché en observant l'état Pipewire
 - `src/state/ClockState.qml`: état global de l'horloge basé sur `SystemClock`, sans processus externe
 - `src/state/WallpaperState.qml`: source du wallpaper rendu par Kama Shell, lue depuis `appearance.wallpaper`
-- `src/components/WallpaperWindow.qml`: `PanelWindow` multi-écran sur la couche `WlrLayer.Background` qui rend le wallpaper de référence et le fallback local des surfaces Liquid Glass
 
-Pour le dock applicatif:
+### Configuration, scripts et sessions
 
-- garder la séparation nette entre état (`DockState`) et rendu (`AppDock`, `AppDockItem`)
-- préférer `DesktopEntries` pour les métadonnées applicatives
-- utiliser `ToplevelManager` comme source unique des fenêtres ouvertes; n'introduire un `NiriWindowBackend` basé sur `niri msg --json windows` que si `ToplevelManager` ne fournit pas un champ utile
-- éviter d'introduire de nouveaux fallbacks spécifiques à une application si un fallback générique de résolution d'icônes suffit
+- `scripts/update-kama-config.py`: écriture atomique des valeurs de config modifiées par l'interface
+- `sessions/kama-shell-niri-session`, `sessions/start-kama-shell-niri-session`, `sessions/kama-shell-niri.desktop`: session niri installable via Makefile/PKGBUILD; exporte `KAMA_COMPOSITOR=niri`, `XDG_CURRENT_DESKTOP=KamaShell:niri`
+- `sessions/kama-shell-niri-debug-session`, `sessions/start-kama-shell-niri-debug-session`, `sessions/kama-shell-niri-debug.desktop`: session niri debug; lance `niri --config config/niri/config.kdl` depuis le tree source et expose `KAMA_DEV=1` + log dans `logs/kama-shell.log`. Installable via `make install-session-niri-debug` uniquement (jamais empaquetée)
+- `config/niri/config.kdl.example`: exemple de configuration niri (lancement de Kama Shell installé, include optionnel de `niri-binds.kdl`, layer rules sur les namespaces `kama-shell-*`, services attendus)
+- `config/niri/config.kdl`: variante dev consommée par la session debug, avec `spawn-at-startup "/usr/bin/quickshell" "-p" "src/shell.qml"` et include de `binds.dev.kdl` (chemins relatifs résolus contre `$APP_DIR/config/niri`)
+- `config/niri/binds.kdl`, `config/niri/binds.dev.kdl`: binds niri séparés de la config principale (`Mod+D`, screenshots, quit, touches multimédias et luminosité); les touches `XF86MonBrightnessUp/Down` passent par IPC (`qs ipc call kama-shell brightnessUp/Down`) pour déclencher l'OSD; les touches volume appellent `wpctl` directement, l'OSD est déclenché en observant l'état Pipewire
 
-Pour le launcher applicatif:
+## Dock et launcher
 
-- garder la séparation nette entre état (`LauncherState`) et rendu (`AppLauncher`, `AppLauncherItem`)
-- utiliser `DesktopEntries.applications` comme source native des applications affichées
-- déclencher l'ouverture globale via `IpcHandler` cible `kama-shell`; le raccourci global est fourni par `config/niri/binds.kdl` ou par la config niri utilisateur — Kama Shell n'enregistre plus de raccourci global lui-même
+- Garder la séparation nette entre état (`DockState`, `LauncherState`) et rendu (`AppDock`, `AppDockItem`, `AppLauncher`, `AppLauncherItem`).
+- Préférer `DesktopEntries` pour les métadonnées applicatives et `DesktopEntries.applications` pour le launcher.
+- Utiliser `ToplevelManager` comme source unique des fenêtres ouvertes; n'introduire un `NiriWindowBackend` basé sur `niri msg --json windows` que si `ToplevelManager` ne fournit pas un champ utile.
+- Éviter d'introduire de nouveaux fallbacks spécifiques à une application si un fallback générique de résolution d'icônes suffit.
+- Déclencher l'ouverture globale du launcher via `IpcHandler` cible `kama-shell`; le raccourci global est fourni par `config/niri/binds.kdl` ou par la config niri utilisateur.
 - `launcher.shortcut` dans `~/.config/kama-shell/kama.conf` est purement documentaire: garder la clé en sync avec `config/niri/binds.kdl` ou le bind niri utilisateur si elle change, mettre à jour `config/kama.conf.example`
 
-Pour l'intégration niri:
+## Intégration niri
 
-- consommer l'état compositeur via `CompositorState`; ne jamais lire `XDG_CURRENT_DESKTOP` ou `NIRI_SOCKET` ailleurs
-- toute requête à `niri` doit passer par le singleton `NiriIpc` (`niri msg --json`), pas par un `Process` ad hoc
-- déclarer les layer rules dans `~/.config/niri/config.kdl` (voir `config/niri/config.kdl.example`); les binds globaux vivent dans `config/niri/binds.kdl` et sont inclus via niri `include`; namespaces utilisés: `kama-shell-ring`, `kama-shell-launcher`, `kama-shell-wallpaper`, `kama-shell-tray-menu`, `kama-shell-osd`
-- tout nouveau `PanelWindow` qui utilise `BackgroundEffect.blurRegion` **doit** avoir une `layer-rule` avec `background-effect { xray false }` dans **les deux** configs niri (`config/niri/config.kdl` et `config/niri/config.kdl.example`), dans le même patch que le composant; sans cette règle niri ne composite que le wallpaper comme fond de blur (xray=true par défaut), même si le côté QML est correctement câblé
-- ne jamais approximer le blur du `kama-shell-ring`: sa courbe visible est complexe; toute évolution géométrique (notch supplémentaire, panneau additionnel, changement de courbe) doit mettre à jour `src/components/RingSlotModel.qml`, le fallback `src/components/RingSilhouettePath.qml`, `src/state/RingPath.qml` (`buildInnerSegments`, consommé par `RingBlurRegion`) et le shader `src/shaders/ring_sdf.frag` puis régénérer son `.qsb`
+- Déclarer les layer rules dans `~/.config/niri/config.kdl` (voir `config/niri/config.kdl.example`).
+- Namespaces utilisés: `kama-shell-ring`, `kama-shell-launcher`, `kama-shell-wallpaper`, `kama-shell-tray-menu`, `kama-shell-osd`.
+- Ajouter `background-effect { xray false }` pour toute surface qui utilise `BackgroundEffect.blurRegion`.
+- Ne pas ajouter `blur true` côté niri pour le ring: le ring fournit sa région exacte via `RingBlurRegion`.
 
 ## Documentation
 
 - Maintenir la documentation au fil de l'eau dans le même changement que le code: structure actuelle, clés de configuration, exemples et comportements rechargeables doivent rester alignés.
+- Lire `docs/LESSONS.md` avant de modifier du QML, du niri/layer-shell, du dock, du launcher, du ring, des icônes, des services Pipewire/UPower ou des processus; appliquer les leçons existantes avant d'ajouter du code.
 - Quand une clé de `~/.config/kama-shell/kama.conf` est ajoutée, renommée, supprimée ou change de comportement, mettre à jour `config/kama.conf.example` dans le même patch.
 - Quand un fichier QML, singleton, composant ou script devient un point d'extension durable, mettre à jour la section "Structure actuelle" sans attendre une passe de documentation séparée.
 - Mettre à jour `PLAN.md` uniquement si le changement invalide un plan existant ou documente un écart architectural important.
