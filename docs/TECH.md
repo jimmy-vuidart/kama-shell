@@ -322,7 +322,29 @@ Tous les singletons sont déclarés avec `pragma Singleton` (`RingPath`,
   `entryName`, `entryInitial`, `iconSourceFor`. `launchEntry(entry)` enregistre
   l'app dans `DockState.launchingApps`, exécute `entry.execute()`, masque.
 
-### 5.5 Status notch et OSD
+### 5.5 Home Assistant
+
+- `HomeAssistantState` — singleton de données domotiques. Consomme `ShellConfig.homeAssistantUrl`
+  et `ShellConfig.homeAssistantToken`. Requêtes HTTP via `XMLHttpRequest` natif QML (pas de
+  `Process` / curl).
+  - **`refresh()`** — envoie un `POST /api/template` avec un template Jinja2 qui retourne un tableau
+    JSON de pièces (areas HA filtrées à celles qui ont au moins une entité `light.*`, `cover.*`
+    ou `climate.*`). Utilise `state_attr()` et le test `is_state` (plus fiables que `map('states')`).
+  - **`toggleLights(areaId, currentlyOn)`** — `POST /api/services/light/turn_on|turn_off`
+    avec `{ area_id }`. Mise à jour optimiste locale + refresh différé 1.5 s.
+  - **`toggleCover(areaId, entityId, currentPosition)`** — `open_cover` / `close_cover` selon
+    position courante. Mise à jour optimiste + refresh différé.
+  - **`adjustTargetTemperature(areaId, entityId, delta)`** — `POST /api/services/climate/set_temperature`
+    avec `{ entity_id, temperature }`. Incrément ±0.5°C, borné [10–30], arrondi à 0.5°. Mise à
+    jour optimiste + refresh différé.
+  - Auto-refresh toutes les 30 s via `Timer`. Refresh immédiat si `ShellConfig.homeAssistantUrl`
+    ou `homeAssistantToken` change.
+  - Propriétés exposées: `rooms` (JS Array), `loading`, `error`, `connected`, `isConfigured`.
+  - Le champ `rooms[i]` contient: `id`, `name`, `lightIds[]`, `lightsOnCount`, `lightsTotal`,
+    `lightsOn`, `coverIds[]`, `coverPosition` (0–100 ou -1), `climateIds[]`, `temperature`,
+    `targetTemperature`.
+
+### 5.6 Status notch et OSD
 
 - `StatusNotchState` — agrégateur multi-services:
   - `SystemTray.items.values` (tray items applicatifs)
@@ -588,8 +610,9 @@ Ce qui est conçu pour grandir:
 Ce qui doit rester simple/local:
 
 - `HomePanel` et ses children (`HomeRoomRow`, `HomeDeviceControl`,
-  `HouseIcon`) — démo de domotique avec données en dur. À remplacer par un
-  vrai service quand il existera.
+  `HouseIcon`) — UI du panel domotique. La logique réseau est dans
+  `HomeAssistantState`; les composants d'affichage ne font que lire l'état
+  et appeler les actions.
 - `SessionActionButton` — bouton session du dock uniquement; ouvre
   `SessionActionsOverlay` au lieu d'exécuter directement une action système.
 

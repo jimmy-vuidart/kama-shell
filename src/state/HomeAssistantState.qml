@@ -15,7 +15,8 @@ Singleton {
     property bool connected: false
     property bool _refreshing: false
 
-    // Jinja2 template: builds rooms with entity data, skipping empty areas
+    // Jinja2 template: builds rooms with entity data, skipping areas without smart entities.
+    // Uses state_attr() and is_state test (more reliable than map('states') in HA templates).
     readonly property string _haTemplate:
         "{% set r=namespace(rooms=[]) %}" +
         "{% for a in areas() %}" +
@@ -26,16 +27,15 @@ Singleton {
         "{% elif e.startswith('climate.') %}{% set dn.cl=dn.cl+[e] %}" +
         "{% endif %}{% endfor %}" +
         "{% if dn.l|count>0 or dn.c|count>0 or dn.cl|count>0 %}" +
-        "{% set lon=dn.l|map('states')|list|selectattr('state','eq','on')|list|count %}" +
-        "{% set cs=states(dn.c[0]) if dn.c else none %}" +
-        "{% set cll=states(dn.cl[0]) if dn.cl else none %}" +
+        "{% set lon=dn.l|select('is_state','on')|list|count %}" +
+        "{% set cp=state_attr(dn.c[0],'current_position')|default(-1) if dn.c else -1 %}" +
+        "{% set ct=state_attr(dn.cl[0],'current_temperature')|default(-1) if dn.cl else -1 %}" +
+        "{% set tt=state_attr(dn.cl[0],'temperature')|default(-1) if dn.cl else -1 %}" +
         "{% set r.rooms=r.rooms+[{" +
         "'id':a,'name':area_name(a)," +
         "'lightIds':dn.l,'lightsOnCount':lon,'lightsTotal':dn.l|count,'lightsOn':lon>0," +
-        "'coverIds':dn.c,'coverPosition':cs.attributes.current_position|default(-1) if cs else -1," +
-        "'climateIds':dn.cl," +
-        "'temperature':cll.attributes.current_temperature|default(-1) if cll else -1," +
-        "'targetTemperature':cll.attributes.temperature|default(-1) if cll else -1" +
+        "'coverIds':dn.c,'coverPosition':cp," +
+        "'climateIds':dn.cl,'temperature':ct,'targetTemperature':tt" +
         "}] %}" +
         "{% endif %}{% endfor %}" +
         "{{r.rooms|tojson}}"

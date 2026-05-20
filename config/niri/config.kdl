@@ -121,4 +121,8 @@ input {
 		natural-scroll
 		tap
 	}
+
+	mouse {
+		accel-profile flat
+	}
 }

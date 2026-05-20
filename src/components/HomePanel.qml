@@ -31,8 +31,8 @@ Item {
         id: panelHover
     }
 
-    Column {
-        id: contentColumn
+    Item {
+        id: contentItem
 
         anchors {
             fill: parent
@@ -41,7 +41,6 @@ Item {
             topMargin: ShellGeometry.homePanelContentTopMargin
             bottomMargin: ShellGeometry.homePanelContentBottomMargin
         }
-        spacing: 12
         opacity: Math.max(0, (root.revealProgress - 0.28) / 0.72)
         visible: opacity > 0
 
@@ -52,16 +51,22 @@ Item {
             }
         }
 
+        // Header: house icon + title
         Row {
             id: header
 
-            width: parent.width
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+            }
             height: 58
             spacing: 12
 
             Rectangle {
                 width: 40
                 height: 40
+                anchors.verticalCenter: parent.verticalCenter
                 radius: ShellTheme.controlRadius
                 antialiasing: true
                 color: ShellTheme.controlFillTopActive
@@ -98,7 +103,7 @@ Item {
                             return "Non configuré"
                         if (HomeAssistantState.loading && HomeAssistantState.rooms.length === 0)
                             return "Chargement…"
-                        if (HomeAssistantState.error.length > 0)
+                        if (HomeAssistantState.error.length > 0 && HomeAssistantState.rooms.length === 0)
                             return HomeAssistantState.error
                         const n = HomeAssistantState.rooms.length
                         return n + " pièce" + (n > 1 ? "s" : "") + " connectée" + (n > 1 ? "s" : "")
@@ -112,17 +117,22 @@ Item {
             }
         }
 
-        // Status message when not configured or in error
+        // Body area — below header
         Item {
-            width: parent.width
-            height: parent.height - header.height - parent.spacing
-            visible: !HomeAssistantState.isConfigured
-                || (HomeAssistantState.rooms.length === 0 && HomeAssistantState.error.length > 0)
-                || (HomeAssistantState.rooms.length === 0 && HomeAssistantState.loading)
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: header.bottom
+                bottom: parent.bottom
+                topMargin: 12
+            }
 
+            // Status message — when no rooms to display
             Column {
                 anchors.centerIn: parent
                 spacing: 8
+                visible: !HomeAssistantState.isConfigured
+                    || HomeAssistantState.rooms.length === 0
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -131,7 +141,9 @@ Item {
                             return "⚙"
                         if (HomeAssistantState.loading)
                             return "⟳"
-                        return "⚠"
+                        if (HomeAssistantState.error.length > 0)
+                            return "⚠"
+                        return "✓"
                     }
                     color: ShellTheme.textSecondary
                     font.pixelSize: 28
@@ -141,7 +153,7 @@ Item {
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    width: parent.parent.width
+                    width: contentItem.width
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
                     text: {
@@ -149,7 +161,9 @@ Item {
                             return "Configurez Home Assistant\ndans les paramètres"
                         if (HomeAssistantState.loading)
                             return "Connexion à Home Assistant…"
-                        return HomeAssistantState.error
+                        if (HomeAssistantState.error.length > 0)
+                            return HomeAssistantState.error
+                        return "Aucune pièce connectée"
                     }
                     color: ShellTheme.textSecondary
                     font.pixelSize: 12
@@ -157,40 +171,51 @@ Item {
                     styleColor: ShellTheme.textShadow
                 }
             }
-        }
 
-        Text {
-            width: parent.width
-            height: 16
-            text: "Pièces"
-            color: ShellTheme.textSecondary
-            font.pixelSize: 11
-            font.weight: Font.DemiBold
-            style: ShellTheme.controlTextStyle
-            styleColor: ShellTheme.textShadow
-            visible: HomeAssistantState.isConfigured && HomeAssistantState.rooms.length > 0
-        }
+            // Rooms content — when rooms are available
+            Item {
+                anchors.fill: parent
+                visible: HomeAssistantState.isConfigured && HomeAssistantState.rooms.length > 0
 
-        Flickable {
-            width: parent.width
-            height: parent.height - header.height - 16 - (parent.spacing * 2)
-            contentWidth: width
-            contentHeight: roomList.implicitHeight
-            clip: true
-            boundsBehavior: Flickable.StopAtBounds
-            visible: HomeAssistantState.isConfigured && HomeAssistantState.rooms.length > 0
+                Text {
+                    id: sectionLabel
 
-            Column {
-                id: roomList
+                    anchors { left: parent.left; right: parent.right; top: parent.top }
+                    height: 16
+                    text: "Pièces"
+                    color: ShellTheme.textSecondary
+                    font.pixelSize: 11
+                    font.weight: Font.DemiBold
+                    style: ShellTheme.controlTextStyle
+                    styleColor: ShellTheme.textShadow
+                }
 
-                width: parent.width
-                spacing: ShellGeometry.homePanelRoomGap
+                Flickable {
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: sectionLabel.bottom
+                        bottom: parent.bottom
+                        topMargin: 12
+                    }
+                    contentWidth: width
+                    contentHeight: roomList.implicitHeight
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
 
-                Repeater {
-                    model: HomeAssistantState.rooms
+                    Column {
+                        id: roomList
 
-                    delegate: HomeRoomRow {
-                        width: roomList.width
+                        width: parent.width
+                        spacing: ShellGeometry.homePanelRoomGap
+
+                        Repeater {
+                            model: HomeAssistantState.rooms
+
+                            delegate: HomeRoomRow {
+                                width: roomList.width
+                            }
+                        }
                     }
                 }
             }

@@ -97,8 +97,8 @@ Ne jamais approximer le blur du `kama-shell-ring`: toute évolution géométriqu
 - `src/assets/icons/status/`: icônes Fluent UI System embarquées pour les indicateurs système internes du `StatusNotch`; les icônes tray applicatives restent fournies par `SystemTray`. Toute nouvelle icône système interne doit être récupérée de la même façon (SVG Fluent UI System via Iconify/API ou source upstream, licence MIT documentée dans le README local) puis embarquée ici avec un fill blanc explicite.
 - `src/assets/icons/fluent/`: icônes SVG Fluent UI System embarquées pour les actions du dock (`fluent-apps-24-regular.svg` pour le launcher, `fluent-settings-24-regular.svg` pour le bouton paramètres, `fluent-sign-out-24-regular.svg` pour le bouton session) et le menu paramètres (`fluent-color-24-regular.svg`, `fluent-home-24-regular.svg`); le popup session ajoute `fluent-arrow-clockwise-24-regular.svg` et `fluent-power-24-regular.svg`. Fill blanc explicite, taille 24 px, même convention que les icônes status.
 - `src/assets/previews/`: images PNG (560×360) utilisées comme aperçus de thème dans le panel paramètres (`theme-liquid-glass.png`, `theme-ffxiv.png`). Ces fichiers sont des placeholders à remplacer par de vrais screenshots; le composant `ThemePreviewCard` gère un fallback visuel si l'image est manquante.
-- `src/components/HomePanel.qml`: contenu visuel du panel maison, intégré dans le `PanelWindow` du ring
-- `src/components/HomeRoomRow.qml`, `HomeDeviceControl.qml`, `HouseIcon.qml`: primitives visuelles du panel maison
+- `src/components/HomePanel.qml`: contenu visuel du panel maison, intégré dans le `PanelWindow` du ring; consomme `HomeAssistantState`; gère les états loading/error/non-configuré
+- `src/components/HomeRoomRow.qml`, `HomeDeviceControl.qml`, `HouseIcon.qml`: primitives visuelles du panel maison; `HomeRoomRow` lit `modelData` issu de `HomeAssistantState.rooms` et déclenche les actions sur le singleton; `HomeDeviceControl` supporte le mode `adjustable` (boutons +/−) pour le thermostat
 - `src/components/AppDock.qml`, `AppDockItem.qml`, `DockSeparator.qml`: layout visuel du dock
 - `src/components/ExpandableEdgeWidget.qml`: primitive de widget rétractable intégrée au ring
 - `src/components/ThemedPanelSurface.qml`, `LiquidGlassSurface.qml`: surfaces de panel thémables, avec rendu Liquid Glass; les surfaces simples peuvent utiliser le blur compositeur via `BackgroundEffect.blurRegion` quand leur région est exacte
@@ -118,6 +118,7 @@ Ne jamais approximer le blur du `kama-shell-ring`: toute évolution géométriqu
 - `src/state/StatusNotchState.qml`: état global de l'encoche haut-droite; agrège `SystemTray.items`, `Pipewire.defaultAudioSink`, `Networking.devices`, `/proc/stat`, la charge GPU via provider disponible et `UPower.displayDevice`
 - `src/state/ClockState.qml`: état global de l'horloge basé sur `SystemClock`, sans processus externe
 - `src/state/WallpaperState.qml`: source du wallpaper rendu par Kama Shell, lue depuis `appearance.wallpaper`
+- `src/state/HomeAssistantState.qml`: état domotique Home Assistant; requêtes `XMLHttpRequest` vers `POST /api/template` (Jinja2 room data) et `POST /api/services/{domain}/{service}` (actions); auto-refresh 30 s; mise à jour optimiste + refresh différé 1.5 s après action; expose `rooms[]`, `loading`, `error`, `connected`, `isConfigured`
 
 ### Configuration, scripts et sessions
 
