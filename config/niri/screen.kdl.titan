@@ -1,0 +1,17 @@
+// -------------------
+// Screen configuration pour le PC Kama-Titan
+// jimmy  ~/.config/kama-shell ln -s /mnt/d/Projets/kama-shell/config/niri/screen.kdl.titan screen.kdl
+// "DP-1" = moniteur central
+// "HDMI-A-1" = moniteur droite
+// "DP-2" = moniteur gauche
+// -------------------
+
+output "DP-1" {
+  mode "3440x1440@120.000"
+}
+
+output "HDMI-A-1" {
+  mode "1920x1080@60.000"
+  position x=3440 y=0
+}
+

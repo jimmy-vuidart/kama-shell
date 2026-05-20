@@ -13,6 +13,9 @@ binds {
     Mod+ScrollDown cooldown-ms=150 { focus-column-left; }
     Mod+ScrollUp   cooldown-ms=150 { focus-column-right; }
 
+    Mod+Ctrl+WheelScrollDown cooldown-ms=150 { focus-window-down; }
+    Mod+Ctrl+WheelScrollUp   cooldown-ms=150 { focus-window-up; }
+
     Mod+Equal      { set-column-width "+10%"; }
     Mod+ParenRight { set-column-width "-10%"; }
 

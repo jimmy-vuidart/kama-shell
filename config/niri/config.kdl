@@ -21,14 +21,41 @@ include "binds.dev.kdl"
 // ---------------------------------------------------------------------------
 prefer-no-csd
 
+hotkey-overlay {
+   skip-at-startup
+}
+
+environment {
+    ELECTRON_OZONE_PLATFORM_HINT "auto"
+    QT_QPA_PLATFORM "wayland"
+    XDG_SESSION_TYPE "wayland"
+    XDG_CURRENT_DESKTOP "niri"
+    QT_QPA_PLATFORMTHEME "gtk3"
+}
+
+input {
+    keyboard {
+        xkb {
+            layout "fr"
+        }
+
+        numlock
+    }
+	touchpad {
+		natural-scroll
+		tap
+	}
+
+	mouse {
+		accel-profile "flat"
+	}
+}
+
+
 layout {
     focus-ring {
         on
-    }
-
-    border {
-        on
-        width 1
+        width 2
         active-color "#9bbcff"
         inactive-color "#3f4560"
         urgent-color "#ff5f6d"
@@ -39,6 +66,13 @@ layout {
         right 28
         top 28
         bottom 28
+    }
+
+    shadow {
+        on
+        softness 30
+        spread 5
+        color "#000000"
     }
 }
 
@@ -59,6 +93,11 @@ window-rule {
 // Output
 // ---------------------------------------------------------------------------
 include optional=true "~/.config/kama-shell/screen.kdl"
+
+// ---------------------------------------------------------------------------
+// Workspaces
+// ---------------------------------------------------------------------------
+include "workspace.kdl"
 
 // ---------------------------------------------------------------------------
 // Layer rules pour les namespaces Kama Shell.
@@ -119,15 +158,4 @@ layer-rule {
     background-effect {
         xray false
     }
-}
-
-input {
-	touchpad {
-		natural-scroll
-		tap
-	}
-
-	mouse {
-		accel-profile "flat"
-	}
 }
