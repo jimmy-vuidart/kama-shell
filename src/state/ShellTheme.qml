@@ -76,10 +76,11 @@ Singleton {
     readonly property color panelInsetLine: isFfxiv
         ? Qt.rgba(77 / 255, 59 / 255, 31 / 255, 0.95)
         : Qt.rgba(1, 1, 1, glassInnerHighlightAlpha)
-    readonly property color ringInnerNeonGlowOuter: Qt.rgba(64 / 255, 255 / 255, 132 / 255, isFfxiv ? 0.2 : 0.24)
-    readonly property color ringInnerNeonGlowMiddle: Qt.rgba(70 / 255, 255 / 255, 150 / 255, isFfxiv ? 0.34 : 0.38)
-    readonly property color ringInnerNeonCore: Qt.rgba(102 / 255, 255 / 255, 178 / 255, isFfxiv ? 0.72 : 0.82)
-    readonly property color ringInnerNeonShine: Qt.rgba(224 / 255, 1, 236 / 255, isFfxiv ? 0.88 : 0.94)
+    readonly property color ringInnerNeonBase: ShellConfig.ringGlowColor
+    readonly property color ringInnerNeonGlowOuter: colorWithAlpha(ringInnerNeonBase, isFfxiv ? 0.2 : 0.24)
+    readonly property color ringInnerNeonGlowMiddle: colorWithAlpha(ringInnerNeonBase, isFfxiv ? 0.34 : 0.38)
+    readonly property color ringInnerNeonCore: colorWithAlpha(ringInnerNeonBase, isFfxiv ? 0.72 : 0.82)
+    readonly property color ringInnerNeonShine: mixColor(ringInnerNeonBase, Qt.rgba(1, 1, 1, 1), 0.72, isFfxiv ? 0.88 : 0.94)
     readonly property real ringInnerNeonOuterWidth: isFfxiv ? 7.2 : 8.4
     readonly property real ringInnerNeonMiddleWidth: isFfxiv ? 4.2 : 4.8
     readonly property real ringInnerNeonCoreWidth: isFfxiv ? 1.8 : 2.1
@@ -176,6 +177,20 @@ Singleton {
         }
 
         return fallbackValues[key]
+    }
+
+    function colorWithAlpha(sourceColor, alpha) {
+        return Qt.rgba(sourceColor.r, sourceColor.g, sourceColor.b, alpha)
+    }
+
+    function mixColor(sourceColor, targetColor, amount, alpha) {
+        const clamped = Math.max(0, Math.min(1, amount))
+        return Qt.rgba(
+            sourceColor.r + ((targetColor.r - sourceColor.r) * clamped),
+            sourceColor.g + ((targetColor.g - sourceColor.g) * clamped),
+            sourceColor.b + ((targetColor.b - sourceColor.b) * clamped),
+            alpha
+        )
     }
 
     Component.onCompleted: root.applyTheme(ShellConfig.visualTheme)

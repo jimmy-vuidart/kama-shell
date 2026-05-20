@@ -5,12 +5,6 @@ import "../state"
 Item {
     id: root
 
-    readonly property var rooms: [
-        { name: "Salon", status: "Ambiance soir", lightCount: 3, lightsOn: true, shutters: 72, temperature: 21.5 },
-        { name: "Cuisine", status: "Préparation", lightCount: 2, lightsOn: true, shutters: 48, temperature: 20.0 },
-        { name: "Chambre", status: "Nuit calme", lightCount: 1, lightsOn: false, shutters: 18, temperature: 18.5 },
-        { name: "Bureau", status: "Concentration", lightCount: 2, lightsOn: true, shutters: 62, temperature: 20.5 }
-    ]
     readonly property real revealTarget: panelHover.hovered ? 1 : 0
     property int animationDuration: 150
     property real revealProgress: 0
@@ -99,9 +93,65 @@ Item {
 
                 Text {
                     width: parent.width
-                    text: root.rooms.length + " pièces connectées"
+                    text: {
+                        if (!HomeAssistantState.isConfigured)
+                            return "Non configuré"
+                        if (HomeAssistantState.loading && HomeAssistantState.rooms.length === 0)
+                            return "Chargement…"
+                        if (HomeAssistantState.error.length > 0)
+                            return HomeAssistantState.error
+                        const n = HomeAssistantState.rooms.length
+                        return n + " pièce" + (n > 1 ? "s" : "") + " connectée" + (n > 1 ? "s" : "")
+                    }
                     color: ShellTheme.textSecondary
                     elide: Text.ElideRight
+                    font.pixelSize: 12
+                    style: ShellTheme.controlTextStyle
+                    styleColor: ShellTheme.textShadow
+                }
+            }
+        }
+
+        // Status message when not configured or in error
+        Item {
+            width: parent.width
+            height: parent.height - header.height - parent.spacing
+            visible: !HomeAssistantState.isConfigured
+                || (HomeAssistantState.rooms.length === 0 && HomeAssistantState.error.length > 0)
+                || (HomeAssistantState.rooms.length === 0 && HomeAssistantState.loading)
+
+            Column {
+                anchors.centerIn: parent
+                spacing: 8
+
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: {
+                        if (!HomeAssistantState.isConfigured)
+                            return "⚙"
+                        if (HomeAssistantState.loading)
+                            return "⟳"
+                        return "⚠"
+                    }
+                    color: ShellTheme.textSecondary
+                    font.pixelSize: 28
+                    style: ShellTheme.controlTextStyle
+                    styleColor: ShellTheme.textShadow
+                }
+
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: parent.parent.width
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    text: {
+                        if (!HomeAssistantState.isConfigured)
+                            return "Configurez Home Assistant\ndans les paramètres"
+                        if (HomeAssistantState.loading)
+                            return "Connexion à Home Assistant…"
+                        return HomeAssistantState.error
+                    }
+                    color: ShellTheme.textSecondary
                     font.pixelSize: 12
                     style: ShellTheme.controlTextStyle
                     styleColor: ShellTheme.textShadow
@@ -118,6 +168,7 @@ Item {
             font.weight: Font.DemiBold
             style: ShellTheme.controlTextStyle
             styleColor: ShellTheme.textShadow
+            visible: HomeAssistantState.isConfigured && HomeAssistantState.rooms.length > 0
         }
 
         Flickable {
@@ -127,6 +178,7 @@ Item {
             contentHeight: roomList.implicitHeight
             clip: true
             boundsBehavior: Flickable.StopAtBounds
+            visible: HomeAssistantState.isConfigured && HomeAssistantState.rooms.length > 0
 
             Column {
                 id: roomList
@@ -135,7 +187,7 @@ Item {
                 spacing: ShellGeometry.homePanelRoomGap
 
                 Repeater {
-                    model: root.rooms
+                    model: HomeAssistantState.rooms
 
                     delegate: HomeRoomRow {
                         width: roomList.width

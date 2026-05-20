@@ -14,6 +14,7 @@ Singleton {
     readonly property string ffxivTheme: "ffxiv"
     readonly property string liquidGlassTheme: "liquid-glass"
     readonly property string defaultLauncherShortcut: "Meta"
+    readonly property string defaultRingGlowColor: "#46ff96"
     readonly property var supportedVisualThemes: [ffxivTheme, liquidGlassTheme]
     readonly property var defaultDockPinnedApps: [
         { desktopId: "zen.desktop", fallbackLabel: "Z" },
@@ -25,6 +26,7 @@ Singleton {
     property string visualTheme: liquidGlassTheme
     property string launcherShortcut: defaultLauncherShortcut
     property string wallpaperPath: ""
+    property string ringGlowColor: defaultRingGlowColor
     property string homeAssistantUrl: ""
     property string homeAssistantToken: ""
     property var dockPinnedApps: clonePinnedApps(defaultDockPinnedApps)
@@ -54,6 +56,7 @@ Singleton {
         root.visualTheme = nextVisualTheme
         root.launcherShortcut = root.effectiveLauncherShortcutFor(nextValues)
         root.wallpaperPath = root.effectiveWallpaperPathFor(nextValues)
+        root.ringGlowColor = root.effectiveRingGlowColorFor(nextValues)
         root.homeAssistantUrl = root.effectiveHomeAssistantUrlFor(nextValues)
         root.homeAssistantToken = root.effectiveHomeAssistantTokenFor(nextValues)
         root.dockPinnedApps = root.effectiveDockPinnedAppsFor(nextValues)
@@ -109,6 +112,17 @@ Singleton {
         )
     }
 
+    function effectiveRingGlowColor() {
+        return root.effectiveRingGlowColorFor(root.values)
+    }
+
+    function effectiveRingGlowColorFor(sourceValues) {
+        return root.normalizedColorHex(
+            root.valueFrom(sourceValues, "appearance.ringGlowColor", root.defaultRingGlowColor),
+            root.defaultRingGlowColor
+        )
+    }
+
     function effectiveHomeAssistantUrl() {
         return root.effectiveHomeAssistantUrlFor(root.values)
     }
@@ -147,6 +161,28 @@ Singleton {
         }
 
         return raw
+    }
+
+    function normalizedColorHex(value, fallbackValue) {
+        const raw = String(value || "").trim()
+
+        if (/^#[0-9a-fA-F]{6}$/.test(raw)) {
+            return raw.toLowerCase()
+        }
+
+        if (/^[0-9a-fA-F]{6}$/.test(raw)) {
+            return "#" + raw.toLowerCase()
+        }
+
+        if (/^#[0-9a-fA-F]{3}$/.test(raw)) {
+            return "#" + raw[1] + raw[1] + raw[2] + raw[2] + raw[3] + raw[3]
+        }
+
+        if (/^[0-9a-fA-F]{3}$/.test(raw)) {
+            return "#" + raw[0] + raw[0] + raw[1] + raw[1] + raw[2] + raw[2]
+        }
+
+        return fallbackValue
     }
 
     function parse(text) {
@@ -590,6 +626,22 @@ Singleton {
         const proc = configSetKeyComponent.createObject(root, {
             configPath: root.configPath,
             sectionDotKey: "appearance.theme",
+            keyValue: normalized
+        })
+        proc.running = true
+        proc.exited.connect(function() { proc.destroy() })
+    }
+
+    function saveRingGlowColor(colorValue) {
+        if (!root.configPath.length) {
+            return
+        }
+
+        const normalized = root.normalizedColorHex(colorValue, root.defaultRingGlowColor)
+        root.ringGlowColor = normalized
+        const proc = configSetKeyComponent.createObject(root, {
+            configPath: root.configPath,
+            sectionDotKey: "appearance.ringGlowColor",
             keyValue: normalized
         })
         proc.running = true

@@ -239,22 +239,23 @@ Tous les singletons sont déclarés avec `pragma Singleton` (`RingPath`,
 
 - `SettingsState` — visibilité, section sélectionnée et écran cible du panel paramètres. Propriétés : `visible`, `selectedSection` (défaut `"appearance"`), `targetScreenName`. Méthodes : `show(screenName)`, `hide()`, `toggle(screenName)`. Helpers multi-écran identiques à `LauncherState` : `effectiveScreenName`, `firstScreenName`, `screenNameFor`, `hasScreenName`, `shouldShowOnScreen(screen)`.
 - `SettingsContent` charge les sections dédiées depuis `src/components/settings/`:
-  `AppearanceSection` pour le thème et `HomeSection` pour les réglages Home
-  Assistant.
+  `AppearanceSection` pour le thème et la couleur du glow intérieur du ring,
+  et `HomeSection` pour les réglages Home Assistant.
 
 ### 5.2 Config et thème
 
 - `ShellConfig` — charge `~/.config/kama-shell/kama.conf` via `FileView`
   (`watchChanges: true`), parser INI maison avec sections (`[appearance]`,
   `[launcher]`, `[homeAssistant]`, `[dock]`). Expose `visualTheme`,
-  `launcherShortcut`, `wallpaperPath`, `homeAssistantUrl`,
+  `launcherShortcut`, `wallpaperPath`, `ringGlowColor`, `homeAssistantUrl`,
   `homeAssistantToken`, `dockPinnedApps`. Persistance des pinned apps via
   `savePinnedApps()` et du thème via `saveTheme(name)` → lance
   `python3 scripts/update-kama-config.py` avec sous-commandes `pinned-apps`
-  ou `set-key`; `saveHomeAssistantConfig(url, token)` utilise `set-keys` pour
-  écrire les deux clés Home Assistant dans la même opération atomique
-  (`os.replace` + fsync directory). Thèmes supportés: `ffxiv`, `liquid-glass`
-  (défaut).
+  ou `set-key`; `saveRingGlowColor(color)` persiste
+  `appearance.ringGlowColor` après normalisation hex; `saveHomeAssistantConfig(url, token)`
+  utilise `set-keys` pour écrire les deux clés Home Assistant dans la même
+  opération atomique (`os.replace` + fsync directory). Thèmes supportés:
+  `ffxiv`, `liquid-glass` (défaut).
 - `ShellTheme` — design tokens (couleurs, opacités, rayons, polices). Bascule
   réactive entre `ffxiv` et `liquid-glass` sur changement de `ShellConfig.visualTheme`.
   Propriétés Liquid Glass spécifiques: `liquidBlurAmount/Max`, `liquidSaturation`,
@@ -411,6 +412,7 @@ cet exemple, dans la même PR.
 | Clé | Type | Valeur défaut | Effet |
 |---|---|---|---|
 | `appearance.theme` | string | `liquid-glass` | Thème visuel. `ffxiv` ou `liquid-glass`. Synonymes acceptés: `liquid`, `current`, `default`. |
+| `appearance.ringGlowColor` | hex color | `#46ff96` | Couleur du glow intérieur de la bordure du ring. Formats acceptés: `#rrggbb`, `rrggbb`, `#rgb`, `rgb`. |
 | `appearance.wallpaper` | string | vide | Chemin du wallpaper rendu par Kama Shell. `~/...` accepté. Désactiver le wallpaper du DE pour éviter le double rendu. |
 | `launcher.shortcut` | string | `Meta` (alias `Mod+D` documentaire) | Purement informatif. Kama Shell n'enregistre pas de raccourci global; aligner avec `config/niri/binds.kdl` ou le bind utilisateur. |
 | `homeAssistant.url` | string | vide | URL de l'instance Home Assistant utilisée par le panel Maison. Normalisée en supprimant les `/` finaux. |

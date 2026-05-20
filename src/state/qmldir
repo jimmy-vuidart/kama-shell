@@ -16,3 +16,4 @@ singleton WallpaperState 1.0 WallpaperState.qml
 singleton StatusNotchState 1.0 StatusNotchState.qml
 singleton TrayMenuState 1.0 TrayMenuState.qml
 singleton OsdState 1.0 OsdState.qml
+singleton HomeAssistantState 1.0 HomeAssistantState.qml

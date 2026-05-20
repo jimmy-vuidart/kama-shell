@@ -103,6 +103,55 @@ Item {
     }
 
     Item {
+        anchors.fill: parent
+
+        Rectangle {
+            x: -4
+            y: -4
+            width: parent.width + 8
+            height: parent.height + 8
+            radius: root.radius + 4
+            antialiasing: true
+            color: "transparent"
+            border.width: 8
+            border.color: ShellTheme.ringInnerNeonGlowOuter
+        }
+
+        Rectangle {
+            x: -2
+            y: -2
+            width: parent.width + 4
+            height: parent.height + 4
+            radius: root.radius + 2
+            antialiasing: true
+            color: "transparent"
+            border.width: 4
+            border.color: ShellTheme.ringInnerNeonGlowMiddle
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            radius: root.radius
+            antialiasing: true
+            color: "transparent"
+            border.width: 2
+            border.color: ShellTheme.ringInnerNeonCore
+        }
+
+        Rectangle {
+            anchors {
+                fill: parent
+                margins: 1
+            }
+            radius: Math.max(0, root.radius - 1)
+            antialiasing: true
+            color: "transparent"
+            border.width: 1
+            border.color: ShellTheme.ringInnerNeonShine
+        }
+    }
+
+    Item {
         id: contentLayer
 
         anchors {
