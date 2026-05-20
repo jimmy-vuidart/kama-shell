@@ -24,8 +24,6 @@ binds {
     Mod+F { maximize-column; }
     Mod+Shift+F { fullscreen-window; }
 
-    Mod+Shift+E { quit; }
-
     Print           { screenshot; }
     Mod+Print       { screenshot-screen; }
     Mod+Shift+Print { screenshot-window; }
