@@ -255,7 +255,7 @@ Singleton {
     }
 
     function firstScreenName() {
-        const screens = Quickshell.screens || []
+        const screens = root.screenValues()
 
         if (screens.length <= 0) {
             return ""
@@ -264,13 +264,41 @@ Singleton {
         return root.screenNameFor(screens[0])
     }
 
+    function screenValues() {
+        const screens = Quickshell.screens
+
+        if (!screens) {
+            return []
+        }
+
+        if (screens.values && screens.values.length !== undefined) {
+            return root.listValues(screens.values)
+        }
+
+        if (screens.length !== undefined) {
+            return root.listValues(screens)
+        }
+
+        if (screens.count !== undefined && screens.get) {
+            const result = []
+
+            for (let i = 0; i < screens.count; i++) {
+                result.push(screens.get(i))
+            }
+
+            return result
+        }
+
+        return []
+    }
+
     function screenNameFor(screen) {
         return String(screen && screen.name ? screen.name : "").trim()
     }
 
     function hasScreenName(screenName) {
         const requested = String(screenName || "").trim()
-        const screens = Quickshell.screens || []
+        const screens = root.screenValues()
 
         if (!requested.length) {
             return false
@@ -293,10 +321,12 @@ Singleton {
         const requested = String(root.targetScreenName || "").trim()
         const screenName = root.screenNameFor(screen)
 
-        if (requested.length && root.hasScreenName(requested)) {
+        if (requested.length) {
             return screenName === requested
         }
 
-        return screenName === root.firstScreenName()
+        const firstScreenName = root.firstScreenName()
+
+        return firstScreenName.length ? screenName === firstScreenName : true
     }
 }

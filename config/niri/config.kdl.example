@@ -8,10 +8,16 @@
 //   - KAMA_SESSION=1
 //   - KAMA_COMPOSITOR=niri
 //   - QT_QPA_PLATFORM=wayland
-//   - QT_WAYLAND_SHELL_INTEGRATION=layer-shell
 //
 // Ces variables permettent a Kama Shell de se reperer dans son
 // `CompositorState` singleton sans dependre des heuristiques d'environnement.
+//
+// Ne pas exporter `QT_WAYLAND_SHELL_INTEGRATION=layer-shell`: Quickshell
+// embarque sa propre implementation wlr-layer-shell (cf. quickshell
+// `src/wayland/wlr_layershell/`) et n'en a pas besoin. Exporter cette
+// variable forcerait toutes les apps Qt (KeePassXC, Dolphin, ...) a creer
+// leur fenetre principale comme surface layer-shell au lieu d'xdg-toplevel,
+// ce qui les rend invisibles ou hors-tiling.
 
 // ---------------------------------------------------------------------------
 // Lancement automatique
@@ -94,7 +100,9 @@ window-rule {
 //   - components/AppLauncherOverlay.qml -> kama-shell-launcher
 //   - components/WallpaperWindow.qml    -> kama-shell-wallpaper
 //   - components/TrayMenuOverlay.qml    -> kama-shell-tray-menu
+//   - components/SessionActionsOverlay.qml -> kama-shell-session-actions
 //   - components/OsdOverlay.qml         -> kama-shell-osd
+//   - components/SettingsOverlay.qml    -> kama-shell-settings
 //
 // Kama Shell demande le blur Liquid Glass lui-meme via `BackgroundEffect.blurRegion`
 // sur des regions bornees et exactes. `xray false` demande a niri de flouter les
@@ -104,6 +112,15 @@ window-rule {
 // Le Ring fournit sa propre region exacte via `RingBlurRegion`; ne pas ajouter
 // `blur true` cote niri, sinon niri flouterait la geometrie de surface entiere.
 // ---------------------------------------------------------------------------
+layer-rule {
+    match namespace="^kama-shell-settings$"
+    block-out-from "screencast"
+
+    background-effect {
+        xray false
+    }
+}
+
 layer-rule {
     match namespace="^kama-shell-launcher$"
     block-out-from "screencast"
@@ -124,6 +141,15 @@ layer-rule {
 
 layer-rule {
     match namespace="^kama-shell-tray-menu$"
+    block-out-from "screencast"
+
+    background-effect {
+        xray false
+    }
+}
+
+layer-rule {
+    match namespace="^kama-shell-session-actions$"
     block-out-from "screencast"
 
     background-effect {

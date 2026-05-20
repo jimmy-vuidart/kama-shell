@@ -16,11 +16,13 @@
 # niri, quickshell, qs or helper binaries are installed outside standard paths.
 # KAMA_SESSION_PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin
 #
-# Kama Shell doit rester un client Wayland layer-shell. Ne definir ces valeurs
-# que pour diagnostiquer Qt; les valeurs par defaut sont `wayland` et
-# `layer-shell`.
+# Kama Shell doit rester un client Wayland layer-shell. `QT_QPA_PLATFORM` vaut
+# `wayland` par defaut. Ne PAS exporter `QT_WAYLAND_SHELL_INTEGRATION`:
+# Quickshell embarque sa propre implementation wlr-layer-shell et n'en a pas
+# besoin; exporter cette variable globalement casse toutes les autres apps Qt
+# (KeePassXC, Dolphin, ...) en les forcant a creer leur fenetre principale
+# comme surface layer-shell au lieu d'xdg-toplevel.
 # QT_QPA_PLATFORM=wayland
-# QT_WAYLAND_SHELL_INTEGRATION=layer-shell
 #
 # Keyboard layout examples:
 #   KAMA_XKB_LAYOUT=fr

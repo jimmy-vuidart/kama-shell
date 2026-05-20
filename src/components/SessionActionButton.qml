@@ -6,11 +6,12 @@ Rectangle {
     id: root
 
     required property string label
+    property string iconSource: ""
     property bool critical: false
     property bool busy: false
     signal clicked
 
-    width: 68
+    width: 48
     height: 48
     radius: ShellTheme.controlRadius
     antialiasing: true
@@ -59,6 +60,21 @@ Rectangle {
         color: ShellTheme.controlBottomShadow
     }
 
+    Image {
+        id: iconImage
+
+        anchors.centerIn: parent
+        width: 24
+        height: 24
+        source: root.iconSource
+        sourceSize.width: 24
+        sourceSize.height: 24
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        asynchronous: true
+        visible: !root.busy && root.iconSource.length > 0 && status === Image.Ready
+    }
+
     Text {
         anchors.centerIn: parent
         text: root.busy ? "..." : root.label
@@ -67,6 +83,7 @@ Rectangle {
         font.weight: ShellTheme.controlTextWeight
         style: ShellTheme.controlTextStyle
         styleColor: ShellTheme.textShadow
+        visible: root.busy || root.iconSource.length === 0 || iconImage.status !== Image.Ready
     }
 
     MouseArea {

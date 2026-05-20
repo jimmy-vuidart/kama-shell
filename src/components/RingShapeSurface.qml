@@ -16,9 +16,10 @@ Shape {
         required property Item panels
         property color outlineColor: "transparent"
         property real outlineWidth: 1
+        property real outlineInset: 1
 
         geometry: panels.ringGeometry
-        inset: 1
+        inset: outlineInset
         strokeColor: outlineColor
         strokeWidth: outlineWidth
         fillColor: "transparent"
@@ -46,6 +47,20 @@ Shape {
 
     RingOutlinePath {
         panels: root.panels
+        outlineInset: 1.2
+        outlineColor: ShellTheme.ringInnerNeonGlowOuter
+        outlineWidth: ShellTheme.ringInnerNeonOuterWidth + (root.panels.morphingIntensity * 1.8)
+    }
+
+    RingOutlinePath {
+        panels: root.panels
+        outlineInset: 1
+        outlineColor: ShellTheme.ringInnerNeonGlowMiddle
+        outlineWidth: ShellTheme.ringInnerNeonMiddleWidth + (root.panels.morphingIntensity * 1.2)
+    }
+
+    RingOutlinePath {
+        panels: root.panels
         outlineColor: ShellTheme.panelBorderSupport
         outlineWidth: ShellTheme.panelBorderSupportWidth + (root.panels.morphingIntensity * 0.8)
     }
@@ -64,5 +79,19 @@ Shape {
         fillColor: "transparent"
         capStyle: ShapePath.RoundCap
         joinStyle: ShapePath.RoundJoin
+    }
+
+    RingOutlinePath {
+        panels: root.panels
+        outlineInset: 0.35
+        outlineColor: ShellTheme.ringInnerNeonCore
+        outlineWidth: ShellTheme.ringInnerNeonCoreWidth + (root.panels.morphingIntensity * 0.55)
+    }
+
+    RingOutlinePath {
+        panels: root.panels
+        outlineInset: -0.15
+        outlineColor: ShellTheme.ringInnerNeonShine
+        outlineWidth: ShellTheme.ringInnerNeonShineWidth
     }
 }

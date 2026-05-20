@@ -25,6 +25,8 @@ Singleton {
     property string visualTheme: liquidGlassTheme
     property string launcherShortcut: defaultLauncherShortcut
     property string wallpaperPath: ""
+    property string homeAssistantUrl: ""
+    property string homeAssistantToken: ""
     property var dockPinnedApps: clonePinnedApps(defaultDockPinnedApps)
     property var values: ({})
     property var parseErrors: []
@@ -52,6 +54,8 @@ Singleton {
         root.visualTheme = nextVisualTheme
         root.launcherShortcut = root.effectiveLauncherShortcutFor(nextValues)
         root.wallpaperPath = root.effectiveWallpaperPathFor(nextValues)
+        root.homeAssistantUrl = root.effectiveHomeAssistantUrlFor(nextValues)
+        root.homeAssistantToken = root.effectiveHomeAssistantTokenFor(nextValues)
         root.dockPinnedApps = root.effectiveDockPinnedAppsFor(nextValues)
     }
 
@@ -103,6 +107,28 @@ Singleton {
         return root.normalizedWallpaperPath(
             root.valueFrom(sourceValues, "appearance.wallpaper", "")
         )
+    }
+
+    function effectiveHomeAssistantUrl() {
+        return root.effectiveHomeAssistantUrlFor(root.values)
+    }
+
+    function effectiveHomeAssistantUrlFor(sourceValues) {
+        return root.normalizedUrl(
+            root.valueFrom(sourceValues, "homeAssistant.url", "")
+        )
+    }
+
+    function effectiveHomeAssistantToken() {
+        return root.effectiveHomeAssistantTokenFor(root.values)
+    }
+
+    function effectiveHomeAssistantTokenFor(sourceValues) {
+        return String(root.valueFrom(sourceValues, "homeAssistant.token", "") || "").trim()
+    }
+
+    function normalizedUrl(value) {
+        return String(value || "").trim().replace(/\/+$/, "")
     }
 
     function normalizedWallpaperPath(value) {
@@ -547,7 +573,7 @@ Singleton {
         }
 
         const value = root.pinnedAppsToConfigValue(apps)
-        const proc = configSaveComponent.createObject(root, {
+        const proc = configSavePinnedComponent.createObject(root, {
             configPath: root.configPath,
             pinnedAppsValue: value
         })
@@ -555,21 +581,100 @@ Singleton {
         proc.exited.connect(function() { proc.destroy() })
     }
 
-    component ConfigSaveProcess: Process {
+    function saveTheme(themeName) {
+        if (!root.configPath.length) {
+            return
+        }
+
+        const normalized = root.normalizedVisualTheme(themeName)
+        const proc = configSetKeyComponent.createObject(root, {
+            configPath: root.configPath,
+            sectionDotKey: "appearance.theme",
+            keyValue: normalized
+        })
+        proc.running = true
+        proc.exited.connect(function() { proc.destroy() })
+    }
+
+    function saveHomeAssistantConfig(url, token) {
+        if (!root.configPath.length) {
+            return
+        }
+
+        root.homeAssistantUrl = root.normalizedUrl(url)
+        root.homeAssistantToken = String(token || "").trim()
+
+        const proc = configSetKeyPairComponent.createObject(root, {
+            configPath: root.configPath,
+            firstSectionDotKey: "homeAssistant.url",
+            firstKeyValue: root.homeAssistantUrl,
+            secondSectionDotKey: "homeAssistant.token",
+            secondKeyValue: root.homeAssistantToken
+        })
+        proc.running = true
+        proc.exited.connect(function() { proc.destroy() })
+    }
+
+    component ConfigSavePinnedProcess: Process {
         required property string configPath
         required property string pinnedAppsValue
 
         command: [
             "python3",
             Quickshell.shellDir + "/../scripts/update-kama-config.py",
+            "pinned-apps",
             configPath,
             pinnedAppsValue
         ]
     }
 
+    component ConfigSetKeyProcess: Process {
+        required property string configPath
+        required property string sectionDotKey
+        required property string keyValue
+
+        command: [
+            "python3",
+            Quickshell.shellDir + "/../scripts/update-kama-config.py",
+            "set-key",
+            configPath,
+            sectionDotKey,
+            keyValue
+        ]
+    }
+
+    component ConfigSetKeyPairProcess: Process {
+        required property string configPath
+        required property string firstSectionDotKey
+        required property string firstKeyValue
+        required property string secondSectionDotKey
+        required property string secondKeyValue
+
+        command: [
+            "python3",
+            Quickshell.shellDir + "/../scripts/update-kama-config.py",
+            "set-keys",
+            configPath,
+            firstSectionDotKey,
+            firstKeyValue,
+            secondSectionDotKey,
+            secondKeyValue
+        ]
+    }
+
     Component {
-        id: configSaveComponent
-        ConfigSaveProcess {}
+        id: configSavePinnedComponent
+        ConfigSavePinnedProcess {}
+    }
+
+    Component {
+        id: configSetKeyComponent
+        ConfigSetKeyProcess {}
+    }
+
+    Component {
+        id: configSetKeyPairComponent
+        ConfigSetKeyPairProcess {}
     }
 
     Component.onCompleted: {

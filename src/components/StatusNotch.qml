@@ -39,7 +39,20 @@ Row {
             visible: StatusNotchState.hasTraySection
         }
 
-        CpuIndicator {}
+        LoadIndicator {
+            loadText: StatusNotchState.cpuLoadText
+            iconKind: "cpu"
+            iconName: "fluent-desktop-pulse-24-regular.svg"
+            fallbackText: "C"
+        }
+
+        LoadIndicator {
+            loadText: StatusNotchState.gpuLoadText
+            iconKind: "gpu"
+            iconName: "fluent-developer-board-24-regular.svg"
+            fallbackText: "G"
+            iconGap: 2
+        }
 
         SectionSeparator {}
 
@@ -189,26 +202,31 @@ Row {
                 radius: 1
                 color: ShellTheme.glyphColor
             }
+
         }
     }
 
-    component CpuIndicator: Item {
-        readonly property int iconGap: 4
+    component LoadIndicator: Item {
+        property string loadText: "--%"
+        property string iconKind: ""
+        property string iconName: ""
+        property string fallbackText: "?"
+        property int iconGap: 4
 
-        width: ShellGeometry.statusNotchCpuIndicatorWidth
+        width: ShellGeometry.statusNotchLoadIndicatorWidth
         height: root.iconSize
 
         Text {
-            id: cpuLabel
+            id: loadLabel
 
             anchors {
                 left: parent.left
                 verticalCenter: parent.verticalCenter
             }
             width: parent.width - root.iconSize - parent.iconGap
-            text: StatusNotchState.cpuLoadText
+            text: parent.loadText
             color: ShellTheme.textPrimary
-            horizontalAlignment: Text.AlignLeft
+            horizontalAlignment: Text.AlignRight
             verticalAlignment: Text.AlignVCenter
             font.pixelSize: 10
             font.weight: Font.DemiBold
@@ -221,8 +239,9 @@ Row {
                 right: parent.right
                 verticalCenter: parent.verticalCenter
             }
-            iconName: "fluent-desktop-pulse-24-regular.svg"
-            fallbackText: "C"
+            kind: parent.iconKind
+            iconName: parent.iconName
+            fallbackText: parent.fallbackText
         }
     }
 

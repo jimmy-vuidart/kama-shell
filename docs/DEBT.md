@@ -313,30 +313,24 @@ Remboursement recommande:
   documentation niri.
 - Ajouter un log clair si `brightnessctl` echoue, avec degradation sans crash.
 
-### Cible niri-only mais runner historique
+### Runner historique non niri-only
 
-Fichiers principaux:
+Fichier principal:
 
 - `run.sh`
-- `PLAN.md`
 
 Constat:
 
 - `run.sh` contient encore un chemin GNOME -> Hyprland imbrique.
-- `PLAN.md` contient de nombreuses sections historiques KWin/KRunner/KDE, malgre
-  l'avertissement initial.
 
 Risque:
 
-- Confusion pour les nouveaux changements.
 - Reintroduction accidentelle de patterns hors cible niri.
 
 Remboursement recommande:
 
 - Decider si `run.sh` est un helper developpeur generique ou un runner niri-only.
   Si niri-only, supprimer le chemin Hyprland imbrique.
-- Archiver ou condenser `PLAN.md` pour que les sections obsoletes ne servent plus
-  de source de decision.
 
 ### Donnees mockees dans HomePanel
 

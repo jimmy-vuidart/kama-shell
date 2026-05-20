@@ -2,12 +2,22 @@
 
 Ce dépôt contient Kama Shell, un shell Quickshell autonome lancé dans une session [niri](https://niri-wm.github.io/niri/). niri est la seule cible de session supportée; les intégrations KWin/KRunner ont été retirées. Les changements doivent rester compatibles avec Quickshell, Wayland, `PanelWindow` et `WlrLayershell`.
 
+## Lecture initiale obligatoire
+
+Avant toute tâche de développement, lire dans cet ordre, sans rescanner tout le projet:
+
+1. `docs/TECH.md` — architecture technique, carte du code, pipeline du ring, singletons, namespaces layer-shell, IPC, conventions. Sert de source de vérité pour la structure. Doit être mis à jour dans la même PR que tout changement qui le contredit (liste des cas dans `docs/TECH.md` §13).
+2. `docs/LESSONS.md` — pièges déjà confirmés en session réelle. Ne pas réintroduire un pattern explicitement documenté comme problématique.
+3. Ce fichier (`AGENTS.md`) — règles non négociables; prévaut sur `TECH.md` en cas de désaccord.
+4. `docs/DEBT.md` et `docs/PERFORMANCE.md` quand le changement touche les zones concernées (ring, blur, animations).
+
+Ne lire le code en exploration qu'après ces fichiers. Si une information manque dans `docs/TECH.md`, l'y ajouter en même temps que le changement.
+
 ## Objectif
 
 - Garder une configuration Quickshell simple, lisible et facilement rechargeable.
 - Éviter les patterns QML qui cassent le hot reload, le LSP ou la réutilisabilité.
 - Préparer le dépôt à évoluer vers plusieurs composants sans recréer inutilement logique et processus par fenêtre.
-- Avant toute modification, lire `docs/LESSONS.md` pour vérifier les pièges déjà identifiés; ne pas réintroduire un pattern explicitement documenté comme problématique.
 
 ## Règles Quickshell et QML
 
@@ -58,10 +68,14 @@ Ne faire cette extraction que lorsque cela réduit réellement la duplication.
 - `src/components/WallpaperWindow.qml`: `PanelWindow` multi-écran sur la couche `WlrLayer.Background`; rend le wallpaper de référence et le fallback local des surfaces Liquid Glass
 - `src/components/Ring.qml`: `PanelWindow` multi-écran et composition haut niveau du ring; délègue les métriques/contenus à `RingPanels`, le mask à `RingRegions` et le dessin à `RingSurfaceRenderer`
 - `src/components/TrayMenuOverlay.qml`, `TrayMenuPanel.qml`, `src/state/TrayMenuState.qml`: état et rendu QML du menu contextuel `SystemTray`
+- `src/components/SessionActionsOverlay.qml`, `SessionActionsPanel.qml`, `src/state/SessionActionsState.qml`: popup d'actions session ouvert depuis le bouton du dock; propose `Déconnexion`, `Redémarrer`, `Éteindre`
 - `src/components/AppLauncherOverlay.qml`, `AppLauncher.qml`, `AppLauncherItem.qml`: overlay launcher multi-écran, recherche et lignes de résultat
+- `src/components/SettingsOverlay.qml`, `SettingsPanel.qml`, `SettingsMenu.qml`, `SettingsContent.qml`: overlay panel paramètres plein écran, multi-écran, focus clavier exclusif (`kama-shell-settings`), scrim + blur; menu sidebar gauche (240 px) + zone contenu droite chargée par `Loader` selon `SettingsState.selectedSection`
+- `src/components/settings/AppearanceSection.qml`, `settings/ThemePreviewCard.qml`: section Apparence du panel paramètres; cartes d'aperçu de thème (image statique 280×180 depuis `src/assets/previews/theme-<id>.png`) qui appellent `ShellConfig.saveTheme()` au clic; les PNG sont des placeholders à remplacer par de vrais screenshots (format cible: 560×360)
+- `src/components/settings/HomeSection.qml`: section Maison du panel paramètres; édite `homeAssistant.url` et `homeAssistant.token` via `ShellConfig.saveHomeAssistantConfig()` pour préparer l'accès à une API Home Assistant
+- `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher, déclencher les commandes de luminosité et ouvrir/fermer le panel paramètres (`toggleSettings`, `showSettings`, `hideSettings`) depuis un bind niri ou `qs ipc`
 - `src/components/OsdOverlay.qml`: `PanelWindow` multi-écran (`Variants { model: Quickshell.screens }`) plein-écran transparent, namespace `kama-shell-osd`, `WlrLayer.Overlay`, passe-clic (`mask: Region {}`); contient `OsdPanel` centré en bas à 56 px du bas avec fade + slide animés; `BackgroundEffect.blurRegion` activé sous thème `liquid-glass` + compositeur compatible
 - `src/components/OsdPanel.qml`: pill `LiquidGlassSurface` (320×56, `radius: height/2`) affichant une icône Fluent UI (volume ou luminosité) et une barre de progression `SmoothedAnimation`
-- `src/ipc/KamaShellIpc.qml`: cible IPC `kama-shell` pour ouvrir/fermer le launcher et déclencher les commandes de luminosité (`brightnessUp`, `brightnessDown`) depuis un bind niri ou `qs ipc`
 
 ### Ring et géométrie
 
@@ -79,8 +93,10 @@ Ne jamais approximer le blur du `kama-shell-ring`: toute évolution géométriqu
 ### Widgets et surfaces
 
 - `src/components/DateTimeNotch.qml`: encoche haute centrale affichant la date et l'heure
-- `src/components/StatusNotch.qml`, `StatusTrayIcon.qml`: encoche haute droite fixe affichant les items `SystemTray` déclarés par les apps et les indicateurs système volume/réseau/CPU/batterie
+- `src/components/StatusNotch.qml`, `StatusTrayIcon.qml`: encoche haute droite fixe affichant les items `SystemTray` déclarés par les apps et les indicateurs système volume/réseau/CPU/GPU/batterie
 - `src/assets/icons/status/`: icônes Fluent UI System embarquées pour les indicateurs système internes du `StatusNotch`; les icônes tray applicatives restent fournies par `SystemTray`. Toute nouvelle icône système interne doit être récupérée de la même façon (SVG Fluent UI System via Iconify/API ou source upstream, licence MIT documentée dans le README local) puis embarquée ici avec un fill blanc explicite.
+- `src/assets/icons/fluent/`: icônes SVG Fluent UI System embarquées pour les actions du dock (`fluent-apps-24-regular.svg` pour le launcher, `fluent-settings-24-regular.svg` pour le bouton paramètres, `fluent-sign-out-24-regular.svg` pour le bouton session) et le menu paramètres (`fluent-color-24-regular.svg`, `fluent-home-24-regular.svg`); le popup session ajoute `fluent-arrow-clockwise-24-regular.svg` et `fluent-power-24-regular.svg`. Fill blanc explicite, taille 24 px, même convention que les icônes status.
+- `src/assets/previews/`: images PNG (560×360) utilisées comme aperçus de thème dans le panel paramètres (`theme-liquid-glass.png`, `theme-ffxiv.png`). Ces fichiers sont des placeholders à remplacer par de vrais screenshots; le composant `ThemePreviewCard` gère un fallback visuel si l'image est manquante.
 - `src/components/HomePanel.qml`: contenu visuel du panel maison, intégré dans le `PanelWindow` du ring
 - `src/components/HomeRoomRow.qml`, `HomeDeviceControl.qml`, `HouseIcon.qml`: primitives visuelles du panel maison
 - `src/components/AppDock.qml`, `AppDockItem.qml`, `DockSeparator.qml`: layout visuel du dock
@@ -98,13 +114,14 @@ Ne jamais approximer le blur du `kama-shell-ring`: toute évolution géométriqu
 - `src/state/DockState.qml`: état global du dock, apps pinned + running via `DesktopEntries` et `ToplevelManager`
 - `src/state/DockIconResolver.qml`: résolution et cache asynchrones des icônes du dock
 - `src/state/LauncherState.qml`: état global du launcher, filtrage de `DesktopEntries.applications`, sélection et lancement
-- `src/state/StatusNotchState.qml`: état global de l'encoche haut-droite; agrège `SystemTray.items`, `Pipewire.defaultAudioSink`, `Networking.devices`, `/proc/stat` et `UPower.displayDevice`
+- `src/state/SettingsState.qml`: état du panel paramètres (`visible`, `selectedSection`, `targetScreenName`); méthodes `show/hide/toggle`; helpers multi-écran identiques à `LauncherState`
+- `src/state/StatusNotchState.qml`: état global de l'encoche haut-droite; agrège `SystemTray.items`, `Pipewire.defaultAudioSink`, `Networking.devices`, `/proc/stat`, la charge GPU via provider disponible et `UPower.displayDevice`
 - `src/state/ClockState.qml`: état global de l'horloge basé sur `SystemClock`, sans processus externe
 - `src/state/WallpaperState.qml`: source du wallpaper rendu par Kama Shell, lue depuis `appearance.wallpaper`
 
 ### Configuration, scripts et sessions
 
-- `scripts/update-kama-config.py`: écriture atomique des valeurs de config modifiées par l'interface
+- `scripts/update-kama-config.py`: écriture atomique des valeurs de config modifiées par l'interface; sous-commandes `pinned-apps CONFIG_PATH VALUE` (apps épinglées du dock), `set-key CONFIG_PATH SECTION.KEY VALUE` (écriture générique d'une clé INI, ex. `appearance.theme`) et `set-keys CONFIG_PATH SECTION.KEY VALUE [...]` (écriture atomique de plusieurs clés, ex. Home Assistant)
 - `sessions/kama-shell-niri-session`, `sessions/start-kama-shell-niri-session`, `sessions/kama-shell-niri.desktop`: session niri installable via Makefile/PKGBUILD; exporte `KAMA_COMPOSITOR=niri`, `XDG_CURRENT_DESKTOP=KamaShell:niri`
 - `sessions/kama-shell-niri-debug-session`, `sessions/start-kama-shell-niri-debug-session`, `sessions/kama-shell-niri-debug.desktop`: session niri debug; lance `niri --config config/niri/config.kdl` depuis le tree source et expose `KAMA_DEV=1` + log dans `logs/kama-shell.log`. Installable via `make install-session-niri-debug` uniquement (jamais empaquetée)
 - `config/niri/config.kdl.example`: exemple de configuration niri (lancement de Kama Shell installé, include optionnel de `niri-binds.kdl`, layer rules sur les namespaces `kama-shell-*`, services attendus)
@@ -123,7 +140,7 @@ Ne jamais approximer le blur du `kama-shell-ring`: toute évolution géométriqu
 ## Intégration niri
 
 - Déclarer les layer rules dans `~/.config/niri/config.kdl` (voir `config/niri/config.kdl.example`).
-- Namespaces utilisés: `kama-shell-ring`, `kama-shell-launcher`, `kama-shell-wallpaper`, `kama-shell-tray-menu`, `kama-shell-osd`.
+- Namespaces utilisés: `kama-shell-ring`, `kama-shell-launcher`, `kama-shell-settings`, `kama-shell-wallpaper`, `kama-shell-tray-menu`, `kama-shell-session-actions`, `kama-shell-osd`.
 - Ajouter `background-effect { xray false }` pour toute surface qui utilise `BackgroundEffect.blurRegion`.
 - Ne pas ajouter `blur true` côté niri pour le ring: le ring fournit sa région exacte via `RingBlurRegion`.
 
@@ -131,9 +148,9 @@ Ne jamais approximer le blur du `kama-shell-ring`: toute évolution géométriqu
 
 - Maintenir la documentation au fil de l'eau dans le même changement que le code: structure actuelle, clés de configuration, exemples et comportements rechargeables doivent rester alignés.
 - Lire `docs/LESSONS.md` avant de modifier du QML, du niri/layer-shell, du dock, du launcher, du ring, des icônes, des services Pipewire/UPower ou des processus; appliquer les leçons existantes avant d'ajouter du code.
+- Mettre à jour `docs/TECH.md` dans la même PR pour tout ce qui touche: ajout/renommage/suppression d'un singleton ou d'une fenêtre, namespace layer-shell, layer-rule niri, méthode IPC `kama-shell`, clé `kama.conf`, pipeline géométrique du ring, ou source d'assets embarqués. Voir `docs/TECH.md` §13 pour la liste complète.
 - Quand une clé de `~/.config/kama-shell/kama.conf` est ajoutée, renommée, supprimée ou change de comportement, mettre à jour `config/kama.conf.example` dans le même patch.
 - Quand un fichier QML, singleton, composant ou script devient un point d'extension durable, mettre à jour la section "Structure actuelle" sans attendre une passe de documentation séparée.
-- Mettre à jour `PLAN.md` uniquement si le changement invalide un plan existant ou documente un écart architectural important.
 - Quand une feature est validée (comportement confirmé en session réelle), enregistrer dans `docs/LESSONS.md` les leçons apprises pendant son développement: comportements surprenants d'API, contraintes non documentées, patterns qui ont fonctionné ou échoué, pièges à éviter. Ne pas y recopier ce qui est déjà dans `AGENTS.md`; se concentrer sur le "pourquoi ça a coincé" et "comment l'éviter la prochaine fois". Organiser par thème (ex. "Niri / Compositeur", "Processus / IO"), pas par feature.
 
 ## Vérification

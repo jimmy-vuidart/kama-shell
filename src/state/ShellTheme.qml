@@ -76,6 +76,14 @@ Singleton {
     readonly property color panelInsetLine: isFfxiv
         ? Qt.rgba(77 / 255, 59 / 255, 31 / 255, 0.95)
         : Qt.rgba(1, 1, 1, glassInnerHighlightAlpha)
+    readonly property color ringInnerNeonGlowOuter: Qt.rgba(64 / 255, 255 / 255, 132 / 255, isFfxiv ? 0.2 : 0.24)
+    readonly property color ringInnerNeonGlowMiddle: Qt.rgba(70 / 255, 255 / 255, 150 / 255, isFfxiv ? 0.34 : 0.38)
+    readonly property color ringInnerNeonCore: Qt.rgba(102 / 255, 255 / 255, 178 / 255, isFfxiv ? 0.72 : 0.82)
+    readonly property color ringInnerNeonShine: Qt.rgba(224 / 255, 1, 236 / 255, isFfxiv ? 0.88 : 0.94)
+    readonly property real ringInnerNeonOuterWidth: isFfxiv ? 7.2 : 8.4
+    readonly property real ringInnerNeonMiddleWidth: isFfxiv ? 4.2 : 4.8
+    readonly property real ringInnerNeonCoreWidth: isFfxiv ? 1.8 : 2.1
+    readonly property real ringInnerNeonShineWidth: isFfxiv ? 0.7 : 0.8
     readonly property color panelTopSheen: isFfxiv
         ? Qt.rgba(1, 1, 1, 0.12)
         : Qt.rgba(1, 1, 1, 0.2)

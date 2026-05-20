@@ -57,8 +57,17 @@ Singleton {
         ? cpuLoadPercentage + "%"
         : "--%"
 
+    property real gpuLoad: 0
+    property bool gpuLoadAvailable: false
+    readonly property int gpuLoadPercentage: gpuLoadAvailable
+        ? Math.max(0, Math.min(100, Math.round(gpuLoad * 100)))
+        : 0
+    readonly property string gpuLoadText: gpuLoadAvailable
+        ? gpuLoadPercentage + "%"
+        : "--%"
+
     readonly property int visibleStatusIconCount: root.trayItems.length
-        + 3
+        + 4
         + (root.batteryVisible ? 1 : 0)
     readonly property int visibleStatusSpacerCount: 1
         + (root.hasTraySection ? 1 : 0)
@@ -67,8 +76,9 @@ Singleton {
         root.visibleStatusIconCount + root.visibleStatusSpacerCount - 1
     )
     readonly property int statusNotchImplicitWidth: (ShellGeometry.statusNotchHorizontalPadding * 2)
-        + ((root.visibleStatusIconCount - 1) * ShellGeometry.statusNotchIconSize)
+        + ((root.visibleStatusIconCount - 2) * ShellGeometry.statusNotchIconSize)
         + ShellGeometry.statusNotchCpuIndicatorWidth
+        + ShellGeometry.statusNotchLoadIndicatorWidth
         + ShellGeometry.statusNotchCpuTrailingGap
         + (root.visibleStatusGapCount * ShellGeometry.statusNotchItemGap)
         + (root.hasTraySection ? ShellGeometry.statusNotchCpuTrailingGap : 0)
@@ -84,6 +94,8 @@ Singleton {
         if (cpuStatFile.waitForJob()) {
             root.updateCpuLoad(cpuStatFile.text())
         }
+
+        root.refreshGpuLoad()
     }
 
     function connectedDevices() {
@@ -179,6 +191,25 @@ Singleton {
         root.previousCpuIdle = idle
     }
 
+    function refreshGpuLoad() {
+        if (!gpuLoadProcess.running) {
+            gpuLoadProcess.running = true
+        }
+    }
+
+    function updateGpuLoad(line) {
+        const raw = String(line || "").trim()
+        const value = parseFloat(raw)
+
+        if (!raw.length || !isFinite(value)) {
+            root.gpuLoadAvailable = false
+            return
+        }
+
+        root.gpuLoad = Math.max(0, Math.min(1, value / 100))
+        root.gpuLoadAvailable = true
+    }
+
     function logTrayItems() {
         console.log(
             "status-notch tray items changed",
@@ -215,11 +246,61 @@ Singleton {
         onLoadFailed: root.cpuLoadAvailable = false
     }
 
+    Process {
+        id: gpuLoadProcess
+
+        command: [
+            "sh",
+            "-c",
+            [
+                "print_percent() {",
+                "    value=\"$1\"",
+                "    case \"$value\" in",
+                "        ''|*[!0-9.]* ) return 1 ;;",
+                "        * ) printf '%s\\n' \"$value\"; return 0 ;;",
+                "    esac",
+                "}",
+                "",
+                "read_drm_sysfs() {",
+                "    for f in /sys/class/drm/card*/device/gpu_busy_percent /sys/class/drm/renderD*/device/gpu_busy_percent; do",
+                "        [ -r \"$f\" ] || continue",
+                "        IFS= read -r value < \"$f\" || continue",
+                "        print_percent \"$value\" && return 0",
+                "    done",
+                "    return 1",
+                "}",
+                "",
+                "read_nvidia_smi() {",
+                "    command -v nvidia-smi >/dev/null 2>&1 || return 1",
+                "    value=$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits 2>/dev/null | sed -n '1p')",
+                "    print_percent \"$value\"",
+                "}",
+                "",
+                "read_intel_gpu_top() {",
+                "    command -v intel_gpu_top >/dev/null 2>&1 || return 1",
+                "    command -v python3 >/dev/null 2>&1 || return 1",
+                "    value=$(timeout 2s intel_gpu_top -J -s 250 -n 2 -o - 2>/dev/null | python3 -c 'import re, sys; values = [float(v) for v in re.findall(r\"\\\"busy\\\"\\s*:\\s*([0-9.]+)\", sys.stdin.read())]; print(max(values) if values else \"\")' 2>/dev/null)",
+                "    print_percent \"$value\"",
+                "}",
+                "",
+                "read_drm_sysfs || read_intel_gpu_top || read_nvidia_smi || printf '\\n'",
+            ].join("\n")
+        ]
+
+        stdout: SplitParser {
+            splitMarker: "\n"
+            onRead: function(line) { root.updateGpuLoad(line) }
+        }
+    }
+
     Timer {
         interval: 2000
         repeat: true
         running: true
 
-        onTriggered: cpuStatFile.reload()
+        onTriggered: {
+            cpuStatFile.reload()
+            root.refreshGpuLoad()
+        }
     }
 }

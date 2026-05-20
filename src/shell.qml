@@ -13,7 +13,9 @@ ShellRoot {
     WallpaperWindow {}
     Ring {}
     TrayMenuOverlay {}
+    SessionActionsOverlay {}
     AppLauncherOverlay {}
+    SettingsOverlay {}
     OsdOverlay {}
     KamaShellIpc {}
 }

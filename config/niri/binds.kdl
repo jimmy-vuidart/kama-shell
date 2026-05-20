@@ -8,6 +8,7 @@ binds {
     // Do not bind Mod+MouseRight here; that would override the resize gesture.
 
     Mod+D repeat=false { spawn "/usr/bin/qs" "ipc" "--path" "/usr/share/kama-shell/src/shell.qml" "--any-display" "call" "kama-shell" "toggleLauncher"; }
+    Mod+Comma repeat=false { spawn "/usr/bin/qs" "ipc" "--path" "/usr/share/kama-shell/src/shell.qml" "--any-display" "call" "kama-shell" "toggleSettings"; }
 
     Mod+WheelScrollDown cooldown-ms=150 { focus-column-left; }
     Mod+WheelScrollUp   cooldown-ms=150 { focus-column-right; }

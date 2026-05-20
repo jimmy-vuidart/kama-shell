@@ -1,5 +1,4 @@
 import Quickshell
-import Quickshell.Io
 import QtQuick
 import QtQuick.Controls
 
@@ -13,7 +12,7 @@ Item {
     property var screen: null
 
     readonly property int itemCount: items.length
-    readonly property int actionCount: logoutAvailable ? 1 : 0
+    readonly property int actionCount: 1
     readonly property int contentWidth: {
         var width = ShellGeometry.dockItemSize + ShellGeometry.dockSeparatorWidth
 
@@ -23,11 +22,14 @@ Item {
                 : ShellGeometry.dockItemSize
         }
 
+        // settings separator + settings item
+        width += ShellGeometry.dockSeparatorWidth + ShellGeometry.dockItemSize
+
         if (actionCount > 0) {
-            width += 68
+            width += ShellGeometry.dockItemSize
         }
 
-        const totalChildren = 2 + itemCount + actionCount
+        const totalChildren = 2 + itemCount + 2 + actionCount
         width += Math.max(0, totalChildren - 1) * ShellGeometry.dockItemGap
         return width
     }
@@ -40,8 +42,6 @@ Item {
         bumpWidth + ShellGeometry.dockShapeExtraWidth
     )
     property var contextItem: null
-    readonly property string sessionId: Quickshell.env("XDG_SESSION_ID") || ""
-    readonly property bool logoutAvailable: sessionId.length > 0
     readonly property bool hovered: dockHoverHandler.hovered
     readonly property bool contextMenuVisible: contextMenu.visible
 
@@ -64,14 +64,6 @@ Item {
     function closeContextMenu() {
         contextMenu.close()
         contextItem = null
-    }
-
-    function requestLogout() {
-        if (!logoutAvailable || logoutProcess.running) {
-            return
-        }
-
-        logoutProcess.running = true
     }
 
     Menu {
@@ -100,13 +92,6 @@ Item {
                 root.closeContextMenu()
             }
         }
-    }
-
-    Process {
-        id: logoutProcess
-
-        command: ["loginctl", "terminate-session", root.sessionId]
-        running: false
     }
 
     HoverHandler {
@@ -177,16 +162,43 @@ Item {
             }
         }
 
+        Item {
+            width: ShellGeometry.dockSeparatorWidth
+            height: ShellGeometry.dockItemSize
+
+            DockSeparator {
+                anchors.centerIn: parent
+            }
+        }
+
+        AppDockItem {
+            width: ShellGeometry.dockItemSize
+            height: ShellGeometry.dockItemSize
+            label: "⚙"
+            iconSource: Qt.resolvedUrl("../assets/icons/fluent/fluent-settings-24-regular.svg").toString()
+            onClicked: SettingsState.toggle(root.screen ? root.screen.name : "")
+        }
+
         SessionActionButton {
-            visible: root.logoutAvailable
-            enabled: root.logoutAvailable
+            id: sessionButton
+
+            enabled: !SessionActionsState.busy
             label: "Quitter"
+            iconSource: Qt.resolvedUrl("../assets/icons/fluent/fluent-sign-out-24-regular.svg").toString()
             critical: true
-            busy: logoutProcess.running
+            busy: SessionActionsState.busy
 
             onClicked: {
                 root.closeContextMenu()
-                root.requestLogout()
+                const win = root.QsWindow.window
+                if (!win || !win.contentItem) {
+                    return
+                }
+
+                const rect = win.contentItem.mapFromItem(
+                    sessionButton, 0, 0, sessionButton.width, sessionButton.height
+                )
+                SessionActionsState.toggle(root.screen ? root.screen.name : "", rect)
             }
         }
     }

@@ -22,6 +22,14 @@ theme = liquid-glass
 # shortcut by itself. Keep it in sync with the binds file or your own config.
 shortcut = Mod+D
 
+[homeAssistant]
+# URL de l'instance Home Assistant utilisée par le panel Maison.
+# Exemple: http://homeassistant.local:8123
+url =
+# Token d'accès longue durée Home Assistant.
+# Générer ce token depuis le profil utilisateur Home Assistant.
+token =
+
 [dock]
 # Comma-separated desktop entries. A fallback label can be provided after "|".
 pinnedApps = zen.desktop|Z, org.gnome.Console.desktop|T, org.gnome.Nautilus.desktop|N, steam.desktop|S

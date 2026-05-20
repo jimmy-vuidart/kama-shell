@@ -9,6 +9,8 @@ singleton NiriWorkspaceState 1.0 NiriWorkspaceState.qml
 singleton DockIconResolver 1.0 DockIconResolver.qml
 singleton DockState 1.0 DockState.qml
 singleton LauncherState 1.0 LauncherState.qml
+singleton SettingsState 1.0 SettingsState.qml
+singleton SessionActionsState 1.0 SessionActionsState.qml
 singleton ClockState 1.0 ClockState.qml
 singleton WallpaperState 1.0 WallpaperState.qml
 singleton StatusNotchState 1.0 StatusNotchState.qml

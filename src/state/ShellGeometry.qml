@@ -38,7 +38,8 @@ Singleton {
     readonly property int statusNotchHeight: dockRestHeight
     readonly property int statusNotchHorizontalPadding: 20
     readonly property int statusNotchItemGap: 8
-    readonly property int statusNotchCpuIndicatorWidth: 40
+    readonly property int statusNotchLoadIndicatorWidth: 40
+    readonly property int statusNotchCpuIndicatorWidth: statusNotchLoadIndicatorWidth
     readonly property int statusNotchCpuTrailingGap: 4
     readonly property int statusNotchRightGap: 18
     readonly property int statusNotchMinClockGap: 16

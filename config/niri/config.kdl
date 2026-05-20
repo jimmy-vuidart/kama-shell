@@ -65,6 +65,15 @@ window-rule {
 // `blur true` cote niri, sinon niri flouterait la geometrie de surface entiere.
 // ---------------------------------------------------------------------------
 layer-rule {
+    match namespace="^kama-shell-settings$"
+    block-out-from "screencast"
+
+    background-effect {
+        xray false
+    }
+}
+
+layer-rule {
     match namespace="^kama-shell-launcher$"
     block-out-from "screencast"
 
@@ -83,6 +92,15 @@ layer-rule {
 
 layer-rule {
     match namespace="^kama-shell-tray-menu$"
+    block-out-from "screencast"
+
+    background-effect {
+        xray false
+    }
+}
+
+layer-rule {
+    match namespace="^kama-shell-session-actions$"
     block-out-from "screencast"
 
     background-effect {

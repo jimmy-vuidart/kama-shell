@@ -6,12 +6,12 @@ import "../state"
 IpcHandler {
     target: "kama-shell"
 
-    function toggleLauncher(screenName: string): void {
-        LauncherState.toggle(screenName)
+    function toggleLauncher(): void {
+        LauncherState.toggle("")
     }
 
-    function showLauncher(screenName: string): void {
-        LauncherState.show(screenName)
+    function showLauncher(): void {
+        LauncherState.show("")
     }
 
     function hideLauncher(): void {
@@ -24,5 +24,17 @@ IpcHandler {
 
     function brightnessDown(): void {
         OsdState.brightnessDown()
+    }
+
+    function toggleSettings(): void {
+        SettingsState.toggle("")
+    }
+
+    function showSettings(): void {
+        SettingsState.show("")
+    }
+
+    function hideSettings(): void {
+        SettingsState.hide()
     }
 }

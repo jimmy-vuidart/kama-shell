@@ -120,7 +120,7 @@ Item {
         hoverBottomMargin: 0
         hoverWidth: Math.max(dock.shapeWidth, ShellGeometry.dockMinWidth + 72)
         hoverHeight: ShellGeometry.frameInset + ShellGeometry.dockHoverZoneHeight
-        keepExpanded: dock.hovered || dock.contextMenuVisible
+        keepExpanded: dock.hovered || dock.contextMenuVisible || SessionActionsState.visible
         compactContent: Component {
             Item {
                 Item {
