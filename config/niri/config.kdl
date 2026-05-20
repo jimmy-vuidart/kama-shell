@@ -28,17 +28,17 @@ layout {
 
     border {
         on
-        width 2
+        width 1
         active-color "#9bbcff"
         inactive-color "#3f4560"
         urgent-color "#ff5f6d"
     }
 
     struts {
-        left 16
-        right 16
-        top 16
-        bottom 16
+        left 28
+        right 28
+        top 28
+        bottom 28
     }
 }
 
@@ -123,6 +123,6 @@ input {
 	}
 
 	mouse {
-		accel-profile flat
+		accel-profile "flat"
 	}
 }
