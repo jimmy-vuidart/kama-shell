@@ -48,7 +48,7 @@ Point d'entrée: `src/shell.qml` (et non `shell.qml` à la racine).
 ```
 ShellRoot {
     WallpaperWindow {}     // PanelWindow Background, multi-écran
-    Ring {}                // PanelWindow Overlay, multi-écran (panneau principal)
+    Ring {}                // PanelWindow Top, multi-écran (panneau principal)
     TrayMenuOverlay {}     // PanelWindow Overlay, menus QML du SystemTray
     SessionActionsOverlay {} // PanelWindow Overlay, actions session depuis le dock
     AppLauncherOverlay {}  // PanelWindow Overlay, focus clavier exclusif
@@ -104,7 +104,7 @@ de quoi niri ne floute que le wallpaper (cf. `docs/LESSONS.md`).
 | Composant QML | Namespace layer-shell | Layer | Ancrage | Focus clavier | Exclusion |
 |---|---|---|---|---|---|
 | `WallpaperWindow` | `kama-shell-wallpaper` | `Background` | 4 côtés | `None` | `Ignore` |
-| `Ring` | `kama-shell-ring` | `Overlay` | 4 côtés | défaut | défaut |
+| `Ring` | `kama-shell-ring` | `Top` | 4 côtés | défaut | défaut |
 | `AppLauncherOverlay` | `kama-shell-launcher` | `Overlay` | 4 côtés | `Exclusive` quand visible | défaut |
 | `SettingsOverlay` | `kama-shell-settings` | `Overlay` | 4 côtés | `Exclusive` quand visible | défaut |
 | `TrayMenuOverlay` | `kama-shell-tray-menu` | `Overlay` | 4 côtés | `OnDemand` quand visible | défaut |
@@ -119,7 +119,10 @@ Les surfaces qui utilisent `BackgroundEffect.blurRegion`:
 
 - `Ring` fournit une `RingBlurRegion` calculée à partir des segments CPU
   produits par `RingPath.buildInnerSegments`. **Ne jamais** approximer cette
-  région par des rectangles ni ajouter `blur true` côté niri.
+  région par des rectangles ni ajouter `blur true` côté niri. Le ring est sur
+  `WlrLayer.Top` pour rester sous les fenêtres fullscreen niri, et désactive
+  aussi son mask et son blur quand `NiriWorkspaceState` détecte une fenêtre qui
+  couvre l'output actif (cas jeux borderless/fullscreen-like).
 - `AppLauncherOverlay`, `SettingsOverlay`, `TrayMenuOverlay`,
   `SessionActionsOverlay`, `OsdOverlay`
   exposent une `Region` rectangulaire arrondie calée sur la position de leur
@@ -287,10 +290,15 @@ Tous les singletons sont déclarés avec `pragma Singleton` (`RingPath`,
   `query(["windows"])`, puis suit les events `WindowsChanged`,
   `WindowOpenedOrChanged`, `WindowClosed`, `WindowFocusChanged`. Normalise
   chaque fenêtre vers une forme compatible `ToplevelManager` (champs
-  `appId`, `desktopId`, `iconName`, `title`, `activated`, méthode
-  `activate()`). Signature stable pour éviter les rebuilds redondants.
+  `appId`, `desktopId`, `iconName`, `title`, `activated`, `workspaceId`,
+  `isFloating`, `isFullscreen`, `layout`, méthode `activate()`). `layout`
+  expose les tailles `window_size`/`tile_size` et l'offset niri pour détecter
+  les fenêtres qui couvrent un output même quand l'IPC n'expose pas de flag
+  fullscreen explicite. Signature stable pour éviter les rebuilds redondants.
 - `NiriWorkspaceState` — état des outputs et workspaces via `niri msg`
-  ponctuels. Expose `focusWorkspaceUp/Down`, `toggleOverview`,
+  ponctuels, maintenu à jour par l'event stream niri. Expose
+  `fullscreenOutputNames`, `focusedOutputHasFullscreen`,
+  `hasFullscreenOnScreen(screen)`, `focusWorkspaceUp/Down`, `toggleOverview`,
   `focusWindowById`.
 
 ### 5.3 Dock

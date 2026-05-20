@@ -43,7 +43,10 @@ Singleton {
                 title,
                 appId,
                 source.workspace_id !== undefined ? source.workspace_id : null,
-                !!source.is_focused
+                !!source.is_focused,
+                !!source.is_floating,
+                root.fullscreenState(source),
+                root.normalizeLayout(source.layout)
             ))
         }
 
@@ -65,11 +68,55 @@ Singleton {
             title,
             appId,
             item.workspace_id !== undefined ? item.workspace_id : null,
-            !!item.is_focused
+            !!item.is_focused,
+            !!item.is_floating,
+            root.fullscreenState(item),
+            root.normalizeLayout(item.layout)
         )
     }
 
-    function createWindow(id, title, appId, workspaceId, isFocused) {
+    function fullscreenState(source) {
+        const item = source || {}
+
+        if (item.is_fullscreen === true || item.fullscreened === true) {
+            return true
+        }
+
+        if (item.fullscreen !== undefined) {
+            const value = Number(item.fullscreen)
+            return !isNaN(value) && value > 0
+        }
+
+        return false
+    }
+
+    function finiteNumber(value, fallback) {
+        const number = Number(value)
+        return isNaN(number) ? fallback : number
+    }
+
+    function arrayValue(source, index, fallback) {
+        if (!Array.isArray(source) || source.length <= index) {
+            return fallback
+        }
+
+        return root.finiteNumber(source[index], fallback)
+    }
+
+    function normalizeLayout(source) {
+        const item = source || {}
+
+        return {
+            windowWidth: root.arrayValue(item.window_size, 0, 0),
+            windowHeight: root.arrayValue(item.window_size, 1, 0),
+            tileWidth: root.arrayValue(item.tile_size, 0, 0),
+            tileHeight: root.arrayValue(item.tile_size, 1, 0),
+            offsetX: root.arrayValue(item.window_offset_in_tile, 0, 0),
+            offsetY: root.arrayValue(item.window_offset_in_tile, 1, 0)
+        }
+    }
+
+    function createWindow(id, title, appId, workspaceId, isFocused, isFloating, isFullscreen, layout) {
         return {
             niriWindowId: id,
             desktopId: appId,
@@ -79,6 +126,9 @@ Singleton {
             iconName: appId,
             title: title || appId || "?",
             workspaceId: workspaceId,
+            isFloating: isFloating,
+            isFullscreen: isFullscreen,
+            layout: layout || root.normalizeLayout(null),
             parent: null,
             activated: isFocused,
             activate: function() {
@@ -111,11 +161,20 @@ Singleton {
             const window = source[i]
             const appId = String(window.appId || "").trim()
             const titlePart = appId.length ? "" : String(window.title || "").trim()
+            const layout = window.layout || {}
 
             parts.push([
                 String(window.niriWindowId),
                 appId,
                 String(window.workspaceId),
+                window.isFloating ? "f" : "",
+                window.isFullscreen ? "F" : "",
+                String(layout.windowWidth || 0),
+                String(layout.windowHeight || 0),
+                String(layout.tileWidth || 0),
+                String(layout.tileHeight || 0),
+                String(layout.offsetX || 0),
+                String(layout.offsetY || 0),
                 window.activated ? "1" : "0",
                 titlePart
             ].join("|"))
@@ -193,7 +252,10 @@ Singleton {
             window.title,
             window.appId,
             window.workspaceId,
-            focused
+            focused,
+            window.isFloating,
+            window.isFullscreen,
+            window.layout
         )
     }
 

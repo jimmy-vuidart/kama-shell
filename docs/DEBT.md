@@ -141,17 +141,19 @@ Constat:
 
 - `DockState.currentToplevels()` utilise `NiriWindowBackend.windows` sous niri,
   et `ToplevelManager` seulement hors niri.
-- `NiriWorkspaceState` expose workspaces, outputs et focused window via d'autres
-  requetes IPC.
-- Les deux singletons normalisent des formes de fenetre differentes.
+- `NiriWorkspaceState` expose workspaces, outputs, focused window et derive la
+  detection fullscreen par output depuis `NiriWindowBackend.windows`.
+- Les deux singletons normalisent encore des formes de fenetre differentes,
+  meme si `NiriWindowBackend` expose maintenant `workspaceId`, `isFloating`,
+  `isFullscreen` et `layout`.
 - La documentation recommande `ToplevelManager` comme source unique, sauf champ
   manquant.
 
 Risque:
 
 - Divergence entre fenetre active, dock, workspace focus et actions de focus.
-- Ajout de features comme fullscreen retract ou workspace indicators plus couteux
-  que necessaire.
+- Ajout de features comme workspace indicators ou actions de fenetre plus
+  couteux que necessaire.
 - Evenements niri partiellement traites selon le singleton qui les recoit.
 
 Remboursement recommande:
@@ -159,10 +161,10 @@ Remboursement recommande:
 - Clarifier le contrat: soit `NiriWindowBackend` devient la source niri unique et
   documentee, soit on revient a `ToplevelManager` et on reserve l'IPC niri aux
   champs absents.
-- Ajouter `isFullscreen`/`isFloating`/`workspaceId` si disponibles dans l'IPC niri
-  et les exposer via un seul modele.
-- Faire consommer ce modele par `DockState` et par tout futur comportement de
-  retract fullscreen.
+- Continuer a rapprocher `NiriWorkspaceState` et `NiriWindowBackend` vers un
+  modele unique au lieu d'ajouter de nouvelles formes normalisees par feature.
+- Faire consommer ce modele par `DockState` et par les futurs indicateurs de
+  workspace/fenetre.
 
 ### Configuration utilisateur trop artisanale
 
@@ -400,8 +402,8 @@ Priorite recommandee:
 1. Corriger les dettes courtes a risque faible: `OsdPanel` + `Qt.resolvedUrl`,
    shortcut documentaire, logs tray gates, dependances runtime.
 2. Appliquer la passe performance v1 du ring et mesurer.
-3. Clarifier le modele niri des fenetres avant d'ajouter fullscreen retract,
-   workspaces ou nouvelles actions dock.
+3. Clarifier le modele niri des fenetres avant d'ajouter workspaces indicators
+   ou nouvelles actions dock.
 4. Stabiliser `ShellConfig` avec tests avant d'ajouter de nouvelles cles.
 5. Refondre progressivement la geometrie du ring autour d'un modele de slots ou
    d'un renderer exact commun.

@@ -16,14 +16,23 @@ Variants {
                 id: window
 
                 screen: root.modelData
-                WlrLayershell.layer: WlrLayer.Overlay
+                WlrLayershell.layer: WlrLayer.Top
                 WlrLayershell.namespace: "kama-shell-ring"
 
                 readonly property bool backgroundBlurEnabled: ShellTheme.isLiquidGlass
                     && CompositorState.supportsBackgroundEffect
+                readonly property bool fullscreenActive: NiriWorkspaceState.hasFullscreenOnScreen(root.modelData)
 
-                BackgroundEffect.blurRegion: window.backgroundBlurEnabled ? shellBlurRegion : null
-                mask: RingRegions {
+                BackgroundEffect.blurRegion: window.backgroundBlurEnabled && !window.fullscreenActive ? shellBlurRegion : null
+                mask: window.fullscreenActive ? emptyInputRegion : activeInputRegion
+
+                Region {
+                    id: emptyInputRegion
+                }
+
+                RingRegions {
+                    id: activeInputRegion
+
                     panels: ringPanels
                 }
 
@@ -37,27 +46,39 @@ Variants {
                 color: "transparent"
                 surfaceFormat.opaque: false
 
-                RingPanels {
-                    id: ringPanels
-
+                Item {
                     anchors.fill: parent
-                    screen: root.modelData
-                    z: 1
+                    opacity: window.fullscreenActive ? 0 : 1
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+
+                    RingPanels {
+                        id: ringPanels
+
+                        anchors.fill: parent
+                        screen: root.modelData
+                        z: 1
+                    }
+
+                    RingSurfaceRenderer {
+                        anchors.fill: parent
+                        panels: ringPanels
+                        z: 0
+                    }
                 }
 
                 RingBlurRegion {
                     id: shellBlurRegion
 
-                    active: window.backgroundBlurEnabled
+                    active: window.backgroundBlurEnabled && !window.fullscreenActive
                     surfaceWidth: Math.ceil(window.width)
                     surfaceHeight: Math.ceil(window.height)
                     geometry: ringPanels.ringGeometry
-                }
-
-                RingSurfaceRenderer {
-                    anchors.fill: parent
-                    panels: ringPanels
-                    z: 0
                 }
             }
         }

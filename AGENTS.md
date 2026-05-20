@@ -110,7 +110,8 @@ Ne jamais approximer le blur du `kama-shell-ring`: toute évolution géométriqu
 - `src/state/ShellTheme.qml`: thème visuel actif, actuellement `ffxiv` et `liquid-glass`
 - `src/state/CompositorState.qml`: détection du backend (`niri` / `generic-wlr` / `unknown`) et capacités (`hasNativeToplevels`, `hasNiriIpc`, `hasLayerRules`, `supportsBackgroundEffect`); priorité à `KAMA_COMPOSITOR` puis aux heuristiques d'environnement
 - `src/state/NiriIpc.qml`: helper d'IPC vers niri qui wrappe `niri msg --json`, parse la sortie et ignore les champs inconnus
-- `src/state/NiriWorkspaceState.qml`: état normalisé des outputs, workspaces et fenêtre focus exposé via `NiriIpc`; expose aussi des actions (`focusWorkspaceUp`, `toggleOverview`, etc.)
+- `src/state/NiriWindowBackend.qml`: source normalisée des fenêtres sous niri (`niri msg --json windows` + event stream); expose `workspaceId`, `isFloating`, `isFullscreen` et `layout` pour le dock et la détection fullscreen par output
+- `src/state/NiriWorkspaceState.qml`: état normalisé des outputs, workspaces et fenêtre focus exposé via `NiriIpc`; expose aussi la détection fullscreen par écran (`hasFullscreenOnScreen`, `fullscreenOutputNames`) et des actions (`focusWorkspaceUp`, `toggleOverview`, etc.)
 - `src/state/DockState.qml`: état global du dock, apps pinned + running via `DesktopEntries` et `ToplevelManager`
 - `src/state/DockIconResolver.qml`: résolution et cache asynchrones des icônes du dock
 - `src/state/LauncherState.qml`: état global du launcher, filtrage de `DesktopEntries.applications`, sélection et lancement
@@ -133,7 +134,7 @@ Ne jamais approximer le blur du `kama-shell-ring`: toute évolution géométriqu
 
 - Garder la séparation nette entre état (`DockState`, `LauncherState`) et rendu (`AppDock`, `AppDockItem`, `AppLauncher`, `AppLauncherItem`).
 - Préférer `DesktopEntries` pour les métadonnées applicatives et `DesktopEntries.applications` pour le launcher.
-- Utiliser `ToplevelManager` comme source unique des fenêtres ouvertes; n'introduire un `NiriWindowBackend` basé sur `niri msg --json windows` que si `ToplevelManager` ne fournit pas un champ utile.
+- Sous niri, utiliser `NiriWindowBackend` comme source des fenêtres ouvertes; hors niri, conserver le fallback `ToplevelManager`. Ne pas ajouter un second backend fenêtre.
 - Éviter d'introduire de nouveaux fallbacks spécifiques à une application si un fallback générique de résolution d'icônes suffit.
 - Déclencher l'ouverture globale du launcher via `IpcHandler` cible `kama-shell`; le raccourci global est fourni par `config/niri/binds.kdl` ou par la config niri utilisateur.
 - `launcher.shortcut` dans `~/.config/kama-shell/kama.conf` est purement documentaire: garder la clé en sync avec `config/niri/binds.kdl` ou le bind niri utilisateur si elle change, mettre à jour `config/kama.conf.example`
