@@ -183,7 +183,7 @@ input {
 // Sortie
 // ---------------------------------------------------------------------------
 // Inclure la configuration d'ecran specifique a la machine. Ce fichier peut
-// contenir des blocs output定 desperso.
+// contenir des blocs output desires.
 include optional=true "~/.config/kama-shell/screen.kdl"
 //
 // Adapter ces blocs selon votre materiel.
