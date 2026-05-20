@@ -129,12 +129,18 @@ Singleton {
         _service("light", currentlyOn ? "turn_off" : "turn_on", { area_id: areaId })
     }
 
-    function toggleCover(areaId, entityId, currentPosition) {
-        // Open if closed or unknown, close if open
-        const newPos = currentPosition > 0 ? 0 : 100
-        _patch(areaId, { coverPosition: newPos })
-        const service = newPos === 100 ? "open_cover" : "close_cover"
-        _service("cover", service, { entity_id: entityId })
+    function openCover(areaId, entityId) {
+        _patch(areaId, { coverPosition: 100 })
+        _service("cover", "open_cover", { entity_id: entityId })
+    }
+
+    function closeCover(areaId, entityId) {
+        _patch(areaId, { coverPosition: 0 })
+        _service("cover", "close_cover", { entity_id: entityId })
+    }
+
+    function stopCover(areaId, entityId) {
+        _service("cover", "stop_cover", { entity_id: entityId })
     }
 
     function adjustTargetTemperature(areaId, entityId, delta) {

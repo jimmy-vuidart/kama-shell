@@ -26,7 +26,7 @@ Rectangle {
     readonly property bool hasCovers: coverIds.length > 0
     readonly property bool hasClimate: climateIds.length > 0
 
-    height: 114
+    height: 116
     radius: ShellTheme.isFfxiv ? 8 : 18
     antialiasing: true
     color: ShellTheme.isFfxiv
@@ -56,89 +56,105 @@ Rectangle {
             styleColor: ShellTheme.textShadow
         }
 
-        // Device controls row
+        // Device controls row — only visible controls are laid out
         Row {
+            id: controlsRow
+
             width: parent.width
             spacing: 6
-            readonly property real controlsWidth: width - (spacing * 2)
 
-            // Lights
+            // Number of visible device controls
+            readonly property int numVisible:
+                (root.hasLights ? 1 : 0) +
+                (root.hasCovers ? 1 : 0) +
+                (root.hasClimate ? 1 : 0)
+
+            // Available width after spacing between visible controls
+            readonly property real availWidth: width - spacing * Math.max(0, numVisible - 1)
+
+            // Per-control widths based on which are visible (covers need more room for 3 buttons)
+            readonly property real lightsWidth: {
+                if (!root.hasLights) return 0
+                if (root.hasCovers && root.hasClimate)
+                    return Math.floor(availWidth * 0.26)
+                if (root.hasCovers || root.hasClimate)
+                    return Math.floor(availWidth * 0.42)
+                return Math.floor(availWidth)
+            }
+            readonly property real coversWidth: {
+                if (!root.hasCovers) return 0
+                if (root.hasLights && root.hasClimate)
+                    return Math.floor(availWidth * 0.30)
+                if (root.hasLights || root.hasClimate)
+                    return Math.floor(availWidth * 0.50)
+                return Math.floor(availWidth)
+            }
+            readonly property real climateWidth: {
+                if (!root.hasClimate) return 0
+                return Math.floor(availWidth) - lightsWidth - coversWidth
+            }
+
+            // Lights control
             HomeDeviceControl {
-                id: lightControl
-
-                width: Math.floor(parent.controlsWidth * 0.29)
+                visible: root.hasLights
+                width: controlsRow.lightsWidth
                 label: "Lumières"
-                value: root.hasLights
-                    ? (root.lightsOn ? root.lightsOnCount + " ON" : "OFF")
-                    : "—"
+                value: root.lightsOn
+                    ? root.lightsOnCount + " ON"
+                    : "OFF"
                 active: root.lightsOn
-                enabled: root.hasLights
 
                 onClicked: {
-                    if (root.hasLights) {
-                        HomeAssistantState.toggleLights(root.roomId, root.lightsOn)
-                    }
+                    HomeAssistantState.toggleLights(root.roomId, root.lightsOn)
                 }
             }
 
-            // Covers / shutters
+            // Covers / shutters control — Up / Stop / Down buttons
             HomeDeviceControl {
-                id: coverControl
-
-                width: Math.floor(parent.controlsWidth * 0.30)
+                visible: root.hasCovers
+                width: controlsRow.coversWidth
                 label: "Volets"
-                value: root.hasCovers && root.coverPosition >= 0
-                    ? root.coverPosition + "%"
-                    : "—"
+                value: ""
                 active: root.hasCovers && root.coverPosition > 0
-                progress: root.hasCovers && root.coverPosition >= 0
-                    ? root.coverPosition / 100
-                    : -1
-                enabled: root.hasCovers && root.coverPosition >= 0
+                progress: root.coverPosition >= 0 ? root.coverPosition / 100 : -1
+                coverControl: true
 
-                onClicked: {
-                    if (root.hasCovers && root.coverIds.length > 0) {
-                        HomeAssistantState.toggleCover(
-                            root.roomId,
-                            root.coverIds[0],
-                            root.coverPosition
-                        )
-                    }
+                onUpActivated: {
+                    if (root.coverIds.length > 0)
+                        HomeAssistantState.openCover(root.roomId, root.coverIds[0])
+                }
+                onStopActivated: {
+                    if (root.coverIds.length > 0)
+                        HomeAssistantState.stopCover(root.roomId, root.coverIds[0])
+                }
+                onDownActivated: {
+                    if (root.coverIds.length > 0)
+                        HomeAssistantState.closeCover(root.roomId, root.coverIds[0])
                 }
             }
 
-            // Thermostat
+            // Thermostat — target temp + ± buttons
             HomeDeviceControl {
-                width: parent.controlsWidth - lightControl.width - coverControl.width
+                visible: root.hasClimate
+                width: controlsRow.climateWidth
                 label: "Thermostat"
-                value: root.hasClimate && root.targetTemperature >= 0
-                    ? root.targetTemperature.toFixed(1) + "°C"
-                    : "—"
-                secondaryValue: root.hasClimate && root.temperature >= 0
-                    ? root.temperature.toFixed(1) + "°C ambiante"
-                    : ""
+                value: {
+                    const cur = root.temperature >= 0 ? root.temperature.toFixed(1) + "°" : "—"
+                    const tgt = root.targetTemperature >= 0 ? root.targetTemperature.toFixed(1) + "°" : "—"
+                    return cur + " / " + tgt
+                }
                 active: root.hasClimate && root.targetTemperature >= 0
                 adjustable: root.hasClimate && root.targetTemperature >= 0
-                enabled: root.hasClimate
 
                 onDecremented: {
-                    if (root.hasClimate && root.climateIds.length > 0) {
+                    if (root.climateIds.length > 0)
                         HomeAssistantState.adjustTargetTemperature(
-                            root.roomId,
-                            root.climateIds[0],
-                            -0.5
-                        )
-                    }
+                            root.roomId, root.climateIds[0], -0.5)
                 }
-
                 onIncremented: {
-                    if (root.hasClimate && root.climateIds.length > 0) {
+                    if (root.climateIds.length > 0)
                         HomeAssistantState.adjustTargetTemperature(
-                            root.roomId,
-                            root.climateIds[0],
-                            0.5
-                        )
-                    }
+                            root.roomId, root.climateIds[0], 0.5)
                 }
             }
         }

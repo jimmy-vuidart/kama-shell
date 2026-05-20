@@ -10,11 +10,14 @@ Rectangle {
     property bool active: false
     property real progress: -1
     property bool adjustable: false
-    property string secondaryValue: ""
+    property bool coverControl: false
 
     signal clicked
     signal decremented
     signal incremented
+    signal upActivated
+    signal stopActivated
+    signal downActivated
 
     height: 66
     radius: ShellTheme.controlRadius
@@ -33,7 +36,7 @@ Rectangle {
     border.width: ShellTheme.controlBorderWidth
     border.color: root.active ? ShellTheme.controlBorderActive : ShellTheme.controlBorder
 
-    // Progress bar — non-adjustable mode only
+    // Progress bar — standard mode only
     Rectangle {
         anchors {
             left: parent.left
@@ -47,7 +50,7 @@ Rectangle {
         radius: 2
         antialiasing: true
         color: ShellTheme.panelBorderShadow
-        visible: !root.adjustable && root.progress >= 0
+        visible: !root.adjustable && !root.coverControl && root.progress >= 0
 
         Rectangle {
             width: parent.width * Math.max(0, Math.min(1, root.progress))
@@ -58,15 +61,15 @@ Rectangle {
         }
     }
 
-    // Label + value column
+    // Label + value column (full width — buttons are always at the bottom now)
     Column {
         anchors {
             left: parent.left
-            right: root.adjustable ? adjustRow.left : parent.right
+            right: parent.right
             top: parent.top
             topMargin: 10
             leftMargin: 10
-            rightMargin: root.adjustable ? 4 : 10
+            rightMargin: 10
         }
         spacing: 1
 
@@ -86,64 +89,48 @@ Rectangle {
             text: root.value
             color: ShellTheme.textPrimary
             elide: Text.ElideRight
-            font.pixelSize: 15
+            font.pixelSize: 14
             font.weight: Font.Bold
-            style: ShellTheme.controlTextStyle
-            styleColor: ShellTheme.textShadow
-        }
-
-        Text {
-            width: parent.width
-            text: root.secondaryValue
-            color: ShellTheme.textSecondary
-            elide: Text.ElideRight
-            font.pixelSize: 10
-            visible: root.secondaryValue.length > 0
+            visible: root.value.length > 0
             style: ShellTheme.controlTextStyle
             styleColor: ShellTheme.textShadow
         }
     }
 
-    // +/- buttons — adjustable mode only
+    // +/- buttons — adjustable mode, horizontal row at the bottom
     Row {
         id: adjustRow
         visible: root.adjustable
         anchors {
+            left: parent.left
             right: parent.right
+            bottom: parent.bottom
+            leftMargin: 8
             rightMargin: 8
-            top: parent.top
-            topMargin: 10
+            bottomMargin: 6
         }
+        height: 16
         spacing: 4
 
-        // Decrement button
         Rectangle {
-            width: 20
-            height: 20
-            radius: 5
+            width: Math.floor((adjustRow.width - adjustRow.spacing) / 2)
+            height: adjustRow.height
+            radius: 4
             antialiasing: true
-            color: decrHover.hovered
-                ? ShellTheme.controlFillTopActive
-                : Qt.rgba(1, 1, 1, 0.08)
+            color: decrHover.hovered ? ShellTheme.controlFillTopActive : Qt.rgba(1, 1, 1, 0.08)
             border.width: 1
-            border.color: decrHover.hovered
-                ? ShellTheme.controlBorderActive
-                : ShellTheme.controlBorder
+            border.color: decrHover.hovered ? ShellTheme.controlBorderActive : ShellTheme.controlBorder
 
             Text {
                 anchors.centerIn: parent
                 text: "−"
                 color: ShellTheme.textPrimary
-                font.pixelSize: 13
+                font.pixelSize: 11
                 font.weight: Font.Medium
                 style: ShellTheme.controlTextStyle
                 styleColor: ShellTheme.textShadow
             }
-
-            HoverHandler {
-                id: decrHover
-            }
-
+            HoverHandler { id: decrHover }
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
@@ -151,34 +138,25 @@ Rectangle {
             }
         }
 
-        // Increment button
         Rectangle {
-            width: 20
-            height: 20
-            radius: 5
+            width: adjustRow.width - Math.floor((adjustRow.width - adjustRow.spacing) / 2) - adjustRow.spacing
+            height: adjustRow.height
+            radius: 4
             antialiasing: true
-            color: incrHover.hovered
-                ? ShellTheme.controlFillTopActive
-                : Qt.rgba(1, 1, 1, 0.08)
+            color: incrHover.hovered ? ShellTheme.controlFillTopActive : Qt.rgba(1, 1, 1, 0.08)
             border.width: 1
-            border.color: incrHover.hovered
-                ? ShellTheme.controlBorderActive
-                : ShellTheme.controlBorder
+            border.color: incrHover.hovered ? ShellTheme.controlBorderActive : ShellTheme.controlBorder
 
             Text {
                 anchors.centerIn: parent
                 text: "+"
                 color: ShellTheme.textPrimary
-                font.pixelSize: 13
+                font.pixelSize: 11
                 font.weight: Font.Medium
                 style: ShellTheme.controlTextStyle
                 styleColor: ShellTheme.textShadow
             }
-
-            HoverHandler {
-                id: incrHover
-            }
-
+            HoverHandler { id: incrHover }
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
@@ -187,10 +165,103 @@ Rectangle {
         }
     }
 
-    // Click area — non-adjustable mode only
+    // ▲ ■ ▼ buttons — cover mode, horizontal row at the bottom
+    Row {
+        id: coverRow
+        visible: root.coverControl
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+            leftMargin: 8
+            rightMargin: 8
+            bottomMargin: 6
+        }
+        height: 16
+        spacing: 4
+
+        readonly property real btnW: Math.floor((width - spacing * 2) / 3)
+
+        Rectangle {
+            width: coverRow.btnW
+            height: coverRow.height
+            radius: 4
+            antialiasing: true
+            color: upHover.hovered ? ShellTheme.controlFillTopActive : Qt.rgba(1, 1, 1, 0.08)
+            border.width: 1
+            border.color: upHover.hovered ? ShellTheme.controlBorderActive : ShellTheme.controlBorder
+
+            Text {
+                anchors.centerIn: parent
+                text: "▲"
+                color: ShellTheme.textPrimary
+                font.pixelSize: 9
+                style: ShellTheme.controlTextStyle
+                styleColor: ShellTheme.textShadow
+            }
+            HoverHandler { id: upHover }
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.upActivated()
+            }
+        }
+
+        Rectangle {
+            width: coverRow.btnW
+            height: coverRow.height
+            radius: 4
+            antialiasing: true
+            color: stopHover.hovered ? ShellTheme.controlFillTopActive : Qt.rgba(1, 1, 1, 0.08)
+            border.width: 1
+            border.color: stopHover.hovered ? ShellTheme.controlBorderActive : ShellTheme.controlBorder
+
+            Text {
+                anchors.centerIn: parent
+                text: "■"
+                color: ShellTheme.textPrimary
+                font.pixelSize: 9
+                style: ShellTheme.controlTextStyle
+                styleColor: ShellTheme.textShadow
+            }
+            HoverHandler { id: stopHover }
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.stopActivated()
+            }
+        }
+
+        Rectangle {
+            width: coverRow.width - coverRow.btnW * 2 - coverRow.spacing * 2
+            height: coverRow.height
+            radius: 4
+            antialiasing: true
+            color: downHover.hovered ? ShellTheme.controlFillTopActive : Qt.rgba(1, 1, 1, 0.08)
+            border.width: 1
+            border.color: downHover.hovered ? ShellTheme.controlBorderActive : ShellTheme.controlBorder
+
+            Text {
+                anchors.centerIn: parent
+                text: "▼"
+                color: ShellTheme.textPrimary
+                font.pixelSize: 9
+                style: ShellTheme.controlTextStyle
+                styleColor: ShellTheme.textShadow
+            }
+            HoverHandler { id: downHover }
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.downActivated()
+            }
+        }
+    }
+
+    // Click area — standard mode only
     MouseArea {
         anchors.fill: parent
-        enabled: !root.adjustable
+        enabled: !root.adjustable && !root.coverControl
         cursorShape: Qt.PointingHandCursor
         onClicked: root.clicked()
     }
