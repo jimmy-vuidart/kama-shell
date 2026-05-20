@@ -56,6 +56,11 @@ window-rule {
 }
 
 // ---------------------------------------------------------------------------
+// Output
+// ---------------------------------------------------------------------------
+include optional=true "~/.config/kama-shell/screen.kdl"
+
+// ---------------------------------------------------------------------------
 // Layer rules pour les namespaces Kama Shell.
 // Le blur Liquid Glass est demande cote Quickshell avec `BackgroundEffect.blurRegion`.
 // `xray false` force niri a flouter les fenetres derriere le shell au lieu de
