@@ -318,7 +318,9 @@ Tous les singletons sont déclarés avec `pragma Singleton` (`RingPath`,
   pinned → séparateur conditionnel → running non pinned. Une app pinned
   lancée reste un seul item enrichi (`isRunning`, `isActive`, `windowCount`,
   `windows`). Méthodes publiques: `activateItem`, `pinItem`, `unpinItem`,
-  `trackLaunch`, `canChangePinState`.
+  `reorderPinnedItem`, `trackLaunch`, `canChangePinState`. `AppDock` suit le
+  pointeur dans `AppDockItem` pour réordonner uniquement les apps pinned, puis
+  persiste le nouvel ordre via `ShellConfig.savePinnedApps()`.
 - `DockIconResolver` — résolution asynchrone des icônes. Essaie d'abord
   `Quickshell.iconPath(name, true)`, puis fallback `find` dans
   `~/.local/share/icons`, `~/.icons`, `/usr/share/icons`, `/usr/share/pixmaps`.
@@ -459,6 +461,9 @@ Persistance des pinned apps: `ShellConfig.savePinnedApps` instancie un
 `ConfigSaveProcess` (component interne) qui lance
 `python3 $shellDir/../scripts/update-kama-config.py pinned-apps CONFIG_PATH VALUE`.
 Le script garde l'ordre des sections existantes et insère `[dock]` si absent.
+Le même chemin est utilisé par `DockState.pinItem`, `unpinItem` et
+`reorderPinnedItem`, donc le drag-and-drop du dock modifie seulement l'ordre
+de la liste `dock.pinnedApps`.
 La page paramètres Maison persiste `homeAssistant.url` et
 `homeAssistant.token` via la sous-commande `set-keys`, qui applique plusieurs
 clés dans une seule écriture atomique.

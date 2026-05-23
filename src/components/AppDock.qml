@@ -42,8 +42,12 @@ Item {
         bumpWidth + ShellGeometry.dockShapeExtraWidth
     )
     property var contextItem: null
+    property string draggedPinnedDesktopId: ""
+    property string dragTargetDesktopId: ""
+    property bool dragInsertAfterTarget: false
     readonly property bool hovered: dockHoverHandler.hovered
     readonly property bool contextMenuVisible: contextMenu.visible
+    readonly property bool draggingPinnedItem: draggedPinnedDesktopId.length > 0
 
     implicitWidth: Math.max(
         contentWidth + (ShellGeometry.dockSidePadding * 2),
@@ -64,6 +68,110 @@ Item {
     function closeContextMenu() {
         contextMenu.close()
         contextItem = null
+    }
+
+    function appItemCenterX(item) {
+        const point = item.mapToItem(
+            root,
+            (item.width / 2) + item.dragVisualOffsetX,
+            item.height / 2
+        )
+
+        return point.x
+    }
+
+    function updatePinnedDragTarget(sourceDesktopId, centerX) {
+        if (!sourceDesktopId || !dockItemsRepeater) {
+            root.dragTargetDesktopId = ""
+            return
+        }
+
+        const candidates = []
+
+        for (let i = 0; i < dockItemsRepeater.count; i++) {
+            const delegateItem = dockItemsRepeater.itemAt(i)
+
+            if (
+                !delegateItem
+                || !delegateItem.pinnedDesktopId
+                || DockState.desktopIdsMatch(delegateItem.pinnedDesktopId, sourceDesktopId)
+            ) {
+                continue
+            }
+
+            candidates.push({
+                desktopId: delegateItem.pinnedDesktopId,
+                centerX: delegateItem.mapToItem(root, delegateItem.width / 2, delegateItem.height / 2).x
+            })
+        }
+
+        if (candidates.length === 0) {
+            root.dragTargetDesktopId = ""
+            return
+        }
+
+        let desiredIndex = 0
+
+        for (let i = 0; i < candidates.length; i++) {
+            if (centerX > candidates[i].centerX) {
+                desiredIndex += 1
+            }
+        }
+
+        if (desiredIndex <= 0) {
+            root.dragTargetDesktopId = candidates[0].desktopId
+            root.dragInsertAfterTarget = false
+            return
+        }
+
+        if (desiredIndex >= candidates.length) {
+            root.dragTargetDesktopId = candidates[candidates.length - 1].desktopId
+            root.dragInsertAfterTarget = true
+            return
+        }
+
+        root.dragTargetDesktopId = candidates[desiredIndex].desktopId
+        root.dragInsertAfterTarget = false
+    }
+
+    function beginPinnedDrag(sourceDesktopId, item) {
+        root.closeContextMenu()
+        root.draggedPinnedDesktopId = sourceDesktopId
+        root.updatePinnedDragTarget(sourceDesktopId, root.appItemCenterX(item))
+    }
+
+    function updatePinnedDrag(sourceDesktopId, item) {
+        if (!DockState.desktopIdsMatch(root.draggedPinnedDesktopId, sourceDesktopId)) {
+            return
+        }
+
+        root.updatePinnedDragTarget(sourceDesktopId, root.appItemCenterX(item))
+    }
+
+    function finishPinnedDrag(sourceDesktopId, item) {
+        root.updatePinnedDrag(sourceDesktopId, item)
+
+        if (root.dragTargetDesktopId.length > 0) {
+            DockState.reorderPinnedItem(
+                sourceDesktopId,
+                root.dragTargetDesktopId,
+                root.dragInsertAfterTarget
+            )
+        }
+
+        root.draggedPinnedDesktopId = ""
+        root.dragTargetDesktopId = ""
+        root.dragInsertAfterTarget = false
+    }
+
+    function cancelPinnedDrag(sourceDesktopId) {
+        if (!DockState.desktopIdsMatch(root.draggedPinnedDesktopId, sourceDesktopId)) {
+            return
+        }
+
+        root.draggedPinnedDesktopId = ""
+        root.dragTargetDesktopId = ""
+        root.dragInsertAfterTarget = false
     }
 
     Menu {
@@ -124,13 +232,22 @@ Item {
         }
 
         Repeater {
+            id: dockItemsRepeater
+
             model: root.items
 
             delegate: Item {
                 required property var modelData
+                readonly property string pinnedDesktopId: modelData.kind === "app" && modelData.isPinned
+                    ? String(modelData.desktopId || "")
+                    : ""
 
                 width: modelData.kind === "separator" ? ShellGeometry.dockSeparatorWidth : ShellGeometry.dockItemSize
                 height: modelData.kind === "separator" ? ShellGeometry.dockSeparatorHeight : ShellGeometry.dockItemSize
+                z: modelData.kind === "app"
+                    && DockState.desktopIdsMatch(root.draggedPinnedDesktopId, modelData.desktopId)
+                    ? 100
+                    : 0
 
                 DockSeparator {
                     anchors.centerIn: parent
@@ -150,6 +267,8 @@ Item {
                     running: modelData.isRunning || false
                     active: modelData.isActive || false
                     launching: modelData.isLaunching || false
+                    reorderable: modelData.kind === "app" && modelData.isPinned
+                    dragDesktopId: modelData.desktopId || ""
                     onClicked: {
                         root.closeContextMenu()
                         DockState.activateItem(modelData)
@@ -158,6 +277,33 @@ Item {
                         const point = appItem.mapToItem(root, x, y)
                         root.openContextMenu(modelData, point.x, point.y)
                     }
+                    onDragStarted: {
+                        root.beginPinnedDrag(dragDesktopId, appItem)
+                    }
+                    onDragMoved: {
+                        root.updatePinnedDrag(dragDesktopId, appItem)
+                    }
+                    onDragFinished: {
+                        root.finishPinnedDrag(dragDesktopId, appItem)
+                    }
+                    onDragCanceled: {
+                        root.cancelPinnedDrag(dragDesktopId)
+                    }
+                }
+
+                Rectangle {
+                    readonly property bool canDropHere: modelData.kind === "app"
+                        && modelData.isPinned
+                        && DockState.desktopIdsMatch(root.dragTargetDesktopId, modelData.desktopId)
+
+                    x: root.dragInsertAfterTarget ? parent.width - width : 0
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 3
+                    height: parent.height - 10
+                    radius: 1.5
+                    color: ShellTheme.runningIndicatorActive
+                    opacity: 0.95
+                    visible: canDropHere
                 }
             }
         }

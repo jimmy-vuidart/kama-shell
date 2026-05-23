@@ -319,6 +319,70 @@ Singleton {
         ShellConfig.savePinnedApps(root.pinnedApps)
     }
 
+    function reorderPinnedItem(sourceDesktopId, targetDesktopId, insertAfterTarget) {
+        if (!sourceDesktopId || !targetDesktopId || root.desktopIdsMatch(sourceDesktopId, targetDesktopId)) {
+            return false
+        }
+
+        const sourceIndex = root.pinnedIndexForDesktopId(sourceDesktopId)
+        const targetIndex = root.pinnedIndexForDesktopId(targetDesktopId)
+
+        if (sourceIndex < 0 || targetIndex < 0) {
+            return false
+        }
+
+        const nextPinnedApps = ShellConfig.clonePinnedApps(root.pinnedApps)
+        const movedItems = nextPinnedApps.splice(sourceIndex, 1)
+
+        if (movedItems.length !== 1) {
+            return false
+        }
+
+        let insertIndex = targetIndex + (insertAfterTarget ? 1 : 0)
+
+        if (sourceIndex < targetIndex) {
+            insertIndex -= 1
+        }
+
+        insertIndex = Math.max(0, Math.min(nextPinnedApps.length, insertIndex))
+        nextPinnedApps.splice(insertIndex, 0, movedItems[0])
+
+        if (root.pinnedAppsSignature(nextPinnedApps) === root.pinnedAppsSignature(root.pinnedApps)) {
+            return false
+        }
+
+        root.pinnedApps = nextPinnedApps
+        root.queueRebuild()
+        ShellConfig.savePinnedApps(root.pinnedApps)
+        return true
+    }
+
+    function pinnedIndexForDesktopId(desktopId) {
+        for (let i = 0; i < root.pinnedApps.length; i++) {
+            if (root.desktopIdsMatch(root.pinnedApps[i].desktopId, desktopId)) {
+                return i
+            }
+        }
+
+        return -1
+    }
+
+    function pinnedAppsSignature(apps) {
+        const parts = []
+        const source = Array.isArray(apps) ? apps : []
+
+        for (let i = 0; i < source.length; i++) {
+            const app = source[i]
+            parts.push(
+                (app && app.desktopId ? app.desktopId : "")
+                + "|"
+                + (app && app.fallbackLabel ? app.fallbackLabel : "")
+            )
+        }
+
+        return parts.join("\n")
+    }
+
     function isPinnedDesktopId(desktopId) {
         for (let i = 0; i < root.pinnedApps.length; i++) {
             if (root.desktopIdsMatch(root.pinnedApps[i].desktopId, desktopId)) {
