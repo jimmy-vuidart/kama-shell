@@ -105,6 +105,8 @@ Singleton {
 
     function normalizeLayout(source) {
         const item = source || {}
+        const pos = item.pos_in_scrolling_layout
+        const viewPos = item.tile_pos_in_workspace_view
 
         return {
             windowWidth: root.arrayValue(item.window_size, 0, 0),
@@ -112,7 +114,10 @@ Singleton {
             tileWidth: root.arrayValue(item.tile_size, 0, 0),
             tileHeight: root.arrayValue(item.tile_size, 1, 0),
             offsetX: root.arrayValue(item.window_offset_in_tile, 0, 0),
-            offsetY: root.arrayValue(item.window_offset_in_tile, 1, 0)
+            offsetY: root.arrayValue(item.window_offset_in_tile, 1, 0),
+            columnIndex: (Array.isArray(pos) && pos.length >= 1 && typeof pos[0] === "number") ? pos[0] : -1,
+            tileIndex: (Array.isArray(pos) && pos.length >= 2 && typeof pos[1] === "number") ? pos[1] : -1,
+            inView: Array.isArray(viewPos) && viewPos.length >= 2
         }
     }
 
@@ -175,6 +180,9 @@ Singleton {
                 String(layout.tileHeight || 0),
                 String(layout.offsetX || 0),
                 String(layout.offsetY || 0),
+                String(layout.columnIndex !== undefined ? layout.columnIndex : -1),
+                String(layout.tileIndex !== undefined ? layout.tileIndex : -1),
+                layout.inView ? "v" : "",
                 window.activated ? "1" : "0",
                 titlePart
             ].join("|"))
@@ -282,6 +290,21 @@ Singleton {
 
         if (event.WindowFocusChanged !== undefined) {
             root.focusWindow(root.eventWindowId(event.WindowFocusChanged))
+            return
+        }
+
+        if (event.WindowLayoutsChanged !== undefined) {
+            const payload = event.WindowLayoutsChanged
+            // changes is Vec<(u64, WindowLayout)> serialized as [[id, layout], ...]
+            const layoutList = payload && Array.isArray(payload.changes)
+                ? payload.changes
+                : (Array.isArray(payload) ? payload : null)
+
+            if (layoutList) {
+                root.applyLayoutUpdates(layoutList)
+            } else {
+                root.refresh()
+            }
         }
     }
 
@@ -307,6 +330,54 @@ Singleton {
         }
 
         return null
+    }
+
+    function applyLayoutUpdates(layoutList) {
+        if (!Array.isArray(layoutList) || layoutList.length === 0) {
+            return
+        }
+
+        const layoutById = {}
+
+        for (let i = 0; i < layoutList.length; i++) {
+            const item = layoutList[i]
+
+            // format: [id, layoutObject] (Rust tuple serialized as array)
+            if (Array.isArray(item) && item.length >= 2) {
+                layoutById[String(item[0])] = item[1]
+            } else if (item && item.id !== undefined) {
+                layoutById[String(item.id)] = item.layout || item
+            }
+        }
+
+        const next = []
+        let changed = false
+
+        for (let i = 0; i < root.windows.length; i++) {
+            const window = root.windows[i]
+            const update = layoutById[String(window.niriWindowId)]
+
+            if (update) {
+                const newLayout = root.normalizeLayout(update)
+                next.push(root.createWindow(
+                    window.niriWindowId,
+                    window.title,
+                    window.appId,
+                    window.workspaceId,
+                    window.activated,
+                    window.isFloating,
+                    window.isFullscreen,
+                    newLayout
+                ))
+                changed = true
+            } else {
+                next.push(window)
+            }
+        }
+
+        if (changed) {
+            root.commitWindows(next)
+        }
     }
 
     function focusWindowById(id) {

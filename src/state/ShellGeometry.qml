@@ -28,6 +28,14 @@ Singleton {
     readonly property int dockSeparatorWidth: 1
     readonly property int dockSeparatorHeight: 34
 
+    readonly property int minimapMinWidth: 112
+    readonly property int minimapMaxWidth: 420
+    readonly property int minimapPadding: 6
+    readonly property int minimapColumnTargetWidth: 24
+    readonly property int minimapColumnGap: 3
+    readonly property int minimapTileGap: 3
+    readonly property int minimapTileMinHeight: 6
+
     readonly property int clockNotchWidth: 208
     readonly property int clockNotchDepth: 18
     readonly property int clockNotchRadius: 19

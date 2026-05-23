@@ -13,6 +13,7 @@ Item {
 
     readonly property int itemCount: items.length
     readonly property int actionCount: 1
+    readonly property bool showMinimap: CompositorState.hasNiriIpc && minimapItem.hasWindows
     readonly property int contentWidth: {
         var width = ShellGeometry.dockItemSize + ShellGeometry.dockSeparatorWidth
 
@@ -22,14 +23,18 @@ Item {
                 : ShellGeometry.dockItemSize
         }
 
-        // settings separator + settings item
+        // separator after apps + settings item
         width += ShellGeometry.dockSeparatorWidth + ShellGeometry.dockItemSize
 
         if (actionCount > 0) {
             width += ShellGeometry.dockItemSize
         }
 
-        const totalChildren = 2 + itemCount + 2 + actionCount
+        if (showMinimap) {
+            width += minimapItem.totalWidth + ShellGeometry.dockSeparatorWidth
+        }
+
+        const totalChildren = 2 + itemCount + 2 + actionCount + (showMinimap ? 2 : 0)
         width += Math.max(0, totalChildren - 1) * ShellGeometry.dockItemGap
         return width
     }
@@ -311,6 +316,24 @@ Item {
         Item {
             width: ShellGeometry.dockSeparatorWidth
             height: ShellGeometry.dockItemSize
+
+            DockSeparator {
+                anchors.centerIn: parent
+            }
+        }
+
+        DockWindowMinimap {
+            id: minimapItem
+
+            screen: root.screen
+            height: ShellGeometry.dockItemSize
+            visible: root.showMinimap
+        }
+
+        Item {
+            width: ShellGeometry.dockSeparatorWidth
+            height: ShellGeometry.dockItemSize
+            visible: root.showMinimap
 
             DockSeparator {
                 anchors.centerIn: parent

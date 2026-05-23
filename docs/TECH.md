@@ -294,13 +294,17 @@ Tous les singletons sont déclarés avec `pragma Singleton` (`RingPath`,
     `eventStreamRestartTimer` plafonné à 5 s. Émet `eventReceived(event)`.
 - `NiriWindowBackend` — source unique des fenêtres sous niri. Bootstrap via
   `query(["windows"])`, puis suit les events `WindowsChanged`,
-  `WindowOpenedOrChanged`, `WindowClosed`, `WindowFocusChanged`. Normalise
-  chaque fenêtre vers une forme compatible `ToplevelManager` (champs
-  `appId`, `desktopId`, `iconName`, `title`, `activated`, `workspaceId`,
-  `isFloating`, `isFullscreen`, `layout`, méthode `activate()`). `layout`
-  conserve les tailles `window_size`/`tile_size` et l'offset niri pour les
-  usages fenêtre futurs, mais ne doit pas être utilisé seul comme signal
-  fullscreen. Signature stable pour éviter les rebuilds redondants.
+  `WindowOpenedOrChanged`, `WindowClosed`, `WindowFocusChanged`,
+  `WindowLayoutsChanged`. Normalise chaque fenêtre vers une forme compatible
+  `ToplevelManager` (champs `appId`, `desktopId`, `iconName`, `title`,
+  `activated`, `workspaceId`, `isFloating`, `isFullscreen`, `layout`, méthode
+  `activate()`). `layout` conserve les tailles `window_size`/`tile_size`,
+  l'offset niri, et les indices `columnIndex`/`tileIndex` issus de
+  `pos_in_scrolling_layout` (utilisés par `DockWindowMinimap`). `layout` ne
+  doit pas être utilisé seul comme signal fullscreen. `applyLayoutUpdates`
+  met à jour les layouts à la réception de `WindowLayoutsChanged` sans rebuild
+  complet. Signature stable incluant `columnIndex`/`tileIndex` pour déclencher
+  les rebuilds utiles.
 - `NiriWorkspaceState` — état des outputs et workspaces via `niri msg`
   ponctuels, maintenu à jour par l'event stream niri. Expose
   `fullscreenOutputNames`, `focusedOutputHasFullscreen`,
@@ -328,6 +332,19 @@ Tous les singletons sont déclarés avec `pragma Singleton` (`RingPath`,
   `DockState.queueRebuild()`. Pattern à respecter: créer un `Process` éphémère
   avec `Qt.createQmlObject` puis `destroy()` après collecte (cf. lesson sur
   `StdioCollector`).
+- `DockWindowMinimap` — composant visuel (dans `AppDock`) qui dessine la minimap
+  rectangulaire des fenêtres tuilées du workspace actif sur l'écran du dock.
+  Visible uniquement sous niri (`CompositorState.hasNiriIpc`) et quand le
+  workspace actif contient au moins une fenêtre non-flottante. Consomme
+  `NiriWindowBackend.windows` et `NiriWorkspaceState.activeWorkspaceIdForOutput`
+  pour filtrer les fenêtres, groupe par `layout.columnIndex`/`tileIndex`, dessine
+  des `Rectangle` (actif: `ShellTheme.runningIndicatorActive`; inactif:
+  `ShellTheme.runningIndicator`); clic → `NiriWindowBackend.focusWindowById`.
+  Largeur adaptative bornée par `ShellGeometry.minimapMinWidth`/`minimapMaxWidth`.
+  Fenêtres sans `columnIndex` valide (flottantes ignorées, fallback colonne droite).
+  `NiriWindowBackend` traite désormais `WindowLayoutsChanged` via `applyLayoutUpdates`
+  pour mettre à jour les layouts sans refresh complet, et inclut `columnIndex`/`tileIndex`
+  dans sa signature de changement.
 
 ### 5.4 Launcher
 
