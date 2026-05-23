@@ -16,7 +16,7 @@ Singleton {
     // Utilisé pour les coins concaves de la notch d'horloge.
     readonly property real cubicNotchFactor: 0.55
 
-    // Courbes de bosse côté HomePanel, cohérentes avec le dock.
+    // Courbes de bosse côté HomePanel en état compact.
     readonly property real cubicHomeFactor: 0.45
 
     function line(x1, y1, x2, y2) {
@@ -78,7 +78,9 @@ Singleton {
                     topFlatLeft: source.dockTopFlatLeft || 0,
                     topFlatRight: source.dockTopFlatRight || 0,
                     peakY: source.dockPeakY || 0,
-                    curveRun: source.dockCurveRun || 0
+                    curveRun: source.dockCurveRun || 0,
+                    radius: source.dockShapeRadius || 0,
+                    revealProgress: source.dockRevealProgress || 0
                 },
                 home: {
                     left: source.homePanelShapeLeft || 0,
@@ -86,7 +88,8 @@ Singleton {
                     top: source.homePanelShapeTop || 0,
                     bottom: source.homePanelShapeBottom || 0,
                     radius: source.homePanelShapeRadius || 0,
-                    curveRun: source.homePanelCurveRun || 0
+                    curveRun: source.homePanelCurveRun || 0,
+                    revealProgress: source.homePanelRevealProgress || 0
                 }
             }
         }, opts.inset || 0)
@@ -129,7 +132,9 @@ Singleton {
                     topFlatLeft: Number(dock.topFlatLeft || 0) + amount,
                     topFlatRight: Number(dock.topFlatRight || 0) - amount,
                     peakY: Number(dock.peakY || 0) + amount,
-                    curveRun: Number(dock.curveRun || 0)
+                    curveRun: Number(dock.curveRun || 0),
+                    radius: Number(dock.radius || 0),
+                    revealProgress: Number(dock.revealProgress || 0)
                 },
                 home: {
                     left: Number(home.left || 0) + amount,
@@ -137,7 +142,8 @@ Singleton {
                     top: Number(home.top || 0) + amount,
                     bottom: Number(home.bottom || 0) - amount,
                     radius: Number(home.radius || 0),
-                    curveRun: Math.max(1, Number(home.curveRun || home.radius || 1) - amount)
+                    curveRun: Math.max(1, Number(home.curveRun || home.radius || 1) - amount),
+                    revealProgress: Number(home.revealProgress || 0)
                 }
             }
         }
@@ -168,12 +174,15 @@ Singleton {
             dockTopFlatRight: slots.dock.topFlatRight,
             dockPeakY: slots.dock.peakY,
             dockCurveRun: slots.dock.curveRun,
+            dockShapeRadius: slots.dock.radius,
+            dockRevealProgress: Math.min(1, Math.max(0, Number(slots.dock.revealProgress || 0))),
             homePanelShapeLeft: slots.home.left,
             homePanelShapeRight: slots.home.right,
             homePanelShapeTop: slots.home.top,
             homePanelShapeBottom: slots.home.bottom,
             homePanelShapeRadius: slots.home.radius,
-            homePanelCurveRun: slots.home.curveRun
+            homePanelCurveRun: slots.home.curveRun,
+            homePanelRevealProgress: Math.min(1, Math.max(0, Number(slots.home.revealProgress || 0)))
         }
     }
 
@@ -186,8 +195,75 @@ Singleton {
         const r = g.cornerRadius
         const notchK = g.clockNotchRadius * cubicNotchFactor
         const statusK = g.statusNotchRadius * cubicNotchFactor
+        const dockOpen = Math.min(1, Math.max(0, g.dockRevealProgress || 0))
+        const dockRadius = Math.max(
+            1,
+            Math.min(
+                g.dockShapeRadius || g.dockCurveRun || 1,
+                Math.abs(g.dockSlopeStartRight - g.dockSlopeStartLeft) / 2,
+                Math.abs(bottom - g.dockPeakY)
+            )
+        )
+        const dockRectK = dockRadius * cubicNotchFactor
+        const dockBumpK = g.dockCurveRun * cubicNotchFactor
+        const dockRightCornerStartY = root.lerp(bottom, g.dockPeakY + dockRadius, dockOpen)
+        const dockTopRightX = root.lerp(g.dockTopFlatRight, g.dockSlopeStartRight - dockRadius, dockOpen)
+        const dockRightC1X = root.lerp(g.dockSlopeStartRight - g.dockCurveRun, g.dockSlopeStartRight, dockOpen)
+        const dockRightC1Y = root.lerp(bottom, g.dockPeakY + dockRadius - dockRectK, dockOpen)
+        const dockRightC2X = root.lerp(g.dockTopFlatRight + dockBumpK, g.dockSlopeStartRight - dockRadius + dockRectK, dockOpen)
+        const dockTopLeftX = root.lerp(g.dockTopFlatLeft, g.dockSlopeStartLeft + dockRadius, dockOpen)
+        const dockLeftCornerEndY = dockRightCornerStartY
+        const dockLeftC1X = root.lerp(g.dockTopFlatLeft - dockBumpK, g.dockSlopeStartLeft + dockRadius - dockRectK, dockOpen)
+        const dockLeftC2X = root.lerp(g.dockSlopeStartLeft + g.dockCurveRun, g.dockSlopeStartLeft, dockOpen)
+        const dockLeftC2Y = root.lerp(bottom, g.dockPeakY + dockRadius - dockRectK, dockOpen)
+        const homeOpen = Math.min(1, Math.max(0, g.homePanelRevealProgress || 0))
         const homeRun = Math.max(1, g.homePanelCurveRun || g.homePanelShapeRadius)
-        const homeK = homeRun * cubicHomeFactor
+        const homeBumpK = homeRun * cubicHomeFactor
+        const homeRadius = Math.max(
+            1,
+            Math.min(
+                g.homePanelShapeRadius,
+                Math.abs(g.homePanelShapeRight - g.homePanelShapeLeft),
+                Math.abs(g.homePanelShapeBottom - g.homePanelShapeTop) / 2
+            )
+        )
+        const homeRectK = homeRadius * cubicNotchFactor
+        const homeTopStartX = root.lerp(
+            g.homePanelShapeRight,
+            g.homePanelShapeLeft + homeRadius,
+            homeOpen
+        )
+        const homeTopC1X = root.lerp(
+            g.homePanelShapeRight,
+            g.homePanelShapeLeft + homeRadius - homeRectK,
+            homeOpen
+        )
+        const homeTopC1Y = root.lerp(g.homePanelShapeTop + homeBumpK, g.homePanelShapeTop, homeOpen)
+        const homeTopC2X = g.homePanelShapeLeft
+        const homeTopC2Y = root.lerp(
+            g.homePanelShapeTop + homeRun - homeBumpK,
+            g.homePanelShapeTop + homeRadius - homeRectK,
+            homeOpen
+        )
+        const homeTopEndY = root.lerp(g.homePanelShapeTop + homeRun, g.homePanelShapeTop + homeRadius, homeOpen)
+        const homeBottomStartY = root.lerp(
+            g.homePanelShapeBottom - homeRun,
+            g.homePanelShapeBottom - homeRadius,
+            homeOpen
+        )
+        const homeBottomC1X = g.homePanelShapeLeft
+        const homeBottomC1Y = root.lerp(
+            g.homePanelShapeBottom - homeRun + homeBumpK,
+            g.homePanelShapeBottom - homeRadius + homeRectK,
+            homeOpen
+        )
+        const homeBottomC2X = root.lerp(
+            g.homePanelShapeRight,
+            g.homePanelShapeLeft + homeRadius - homeRectK,
+            homeOpen
+        )
+        const homeBottomC2Y = root.lerp(g.homePanelShapeBottom - homeBumpK, g.homePanelShapeBottom, homeOpen)
+        const homeBottomEndX = homeTopStartX
 
         return [
             // Top edge: upper-left arc end → clock notch entry
@@ -239,21 +315,30 @@ Singleton {
             // Right edge: down to home panel top
             line(right, top + r, g.homePanelShapeRight, g.homePanelShapeTop),
 
-            // Bosse du panel maison: même famille visuelle que le dock, tournée à droite.
-            cubic(
+            // Panel maison: petite bosse au repos, tiroir attaché au bord droit
+            // avec coins gauches arrondis pendant l'ouverture.
+            line(
                 g.homePanelShapeRight, g.homePanelShapeTop,
-                g.homePanelShapeRight, g.homePanelShapeTop + homeK,
-                g.homePanelShapeLeft, g.homePanelShapeTop + homeRun - homeK,
-                g.homePanelShapeLeft, g.homePanelShapeTop + homeRun
+                homeTopStartX, g.homePanelShapeTop
+            ),
+            cubic(
+                homeTopStartX, g.homePanelShapeTop,
+                homeTopC1X, homeTopC1Y,
+                homeTopC2X, homeTopC2Y,
+                g.homePanelShapeLeft, homeTopEndY
             ),
             line(
-                g.homePanelShapeLeft, g.homePanelShapeTop + homeRun,
-                g.homePanelShapeLeft, g.homePanelShapeBottom - homeRun
+                g.homePanelShapeLeft, homeTopEndY,
+                g.homePanelShapeLeft, homeBottomStartY
             ),
             cubic(
-                g.homePanelShapeLeft, g.homePanelShapeBottom - homeRun,
-                g.homePanelShapeLeft, g.homePanelShapeBottom - homeRun + homeK,
-                g.homePanelShapeRight, g.homePanelShapeBottom - homeK,
+                g.homePanelShapeLeft, homeBottomStartY,
+                homeBottomC1X, homeBottomC1Y,
+                homeBottomC2X, homeBottomC2Y,
+                homeBottomEndX, g.homePanelShapeBottom
+            ),
+            line(
+                homeBottomEndX, g.homePanelShapeBottom,
                 g.homePanelShapeRight, g.homePanelShapeBottom
             ),
 
@@ -264,18 +349,26 @@ Singleton {
             // Bottom edge: lower-right arc end → dock right slope
             line(right - r, bottom, g.dockSlopeStartRight, bottom),
 
-            // Dock bump (right slope, top flat, left slope)
-            cubic(
+            // Dock: petite bosse au repos, tiroir attaché au bas pendant l'ouverture.
+            line(
                 g.dockSlopeStartRight, bottom,
-                g.dockSlopeStartRight - g.dockCurveRun, bottom,
-                g.dockTopFlatRight + (g.dockCurveRun * cubicNotchFactor), g.dockPeakY,
-                g.dockTopFlatRight, g.dockPeakY
+                g.dockSlopeStartRight, dockRightCornerStartY
             ),
-            line(g.dockTopFlatRight, g.dockPeakY, g.dockTopFlatLeft, g.dockPeakY),
             cubic(
-                g.dockTopFlatLeft, g.dockPeakY,
-                g.dockTopFlatLeft - (g.dockCurveRun * cubicNotchFactor), g.dockPeakY,
-                g.dockSlopeStartLeft + g.dockCurveRun, bottom,
+                g.dockSlopeStartRight, dockRightCornerStartY,
+                dockRightC1X, dockRightC1Y,
+                dockRightC2X, g.dockPeakY,
+                dockTopRightX, g.dockPeakY
+            ),
+            line(dockTopRightX, g.dockPeakY, dockTopLeftX, g.dockPeakY),
+            cubic(
+                dockTopLeftX, g.dockPeakY,
+                dockLeftC1X, g.dockPeakY,
+                dockLeftC2X, dockLeftC2Y,
+                g.dockSlopeStartLeft, dockLeftCornerEndY
+            ),
+            line(
+                g.dockSlopeStartLeft, dockLeftCornerEndY,
                 g.dockSlopeStartLeft, bottom
             ),
 
@@ -348,11 +441,17 @@ Singleton {
             g.statusNotchLeft, g.statusNotchRight, g.statusNotchBottom, g.statusNotchRadius,
             g.dockSlopeStartLeft, g.dockSlopeStartRight, g.dockTopFlatLeft,
             g.dockTopFlatRight, g.dockPeakY, g.dockCurveRun,
+            g.dockShapeRadius, g.dockRevealProgress,
             g.homePanelShapeLeft, g.homePanelShapeRight, g.homePanelShapeTop,
-            g.homePanelShapeBottom, g.homePanelShapeRadius, g.homePanelCurveRun
+            g.homePanelShapeBottom, g.homePanelShapeRadius, g.homePanelCurveRun,
+            g.homePanelRevealProgress
         ].map(function(value) {
             return root.n(value)
         }).join("|")
+    }
+
+    function lerp(from, to, progress) {
+        return from + ((to - from) * progress)
     }
 
     function n(value) {

@@ -118,7 +118,9 @@ QtObject {
                 topFlatLeft: dockTopFlatLeft,
                 topFlatRight: dockTopFlatRight,
                 peakY: dockPeakY,
-                curveRun: dockCurveRun
+                curveRun: dockCurveRun,
+                radius: ShellGeometry.dockShapeRadius,
+                revealProgress: dockRevealProgress
             },
             home: {
                 left: homePanelShapeLeft,
@@ -126,7 +128,8 @@ QtObject {
                 top: homePanelShapeTop,
                 bottom: homePanelShapeBottom,
                 radius: homePanelShapeRadius,
-                curveRun: homePanelCurveRun
+                curveRun: homePanelCurveRun,
+                revealProgress: homeRevealProgress
             }
         }
     })

@@ -121,8 +121,8 @@ Les surfaces qui utilisent `BackgroundEffect.blurRegion`:
   produits par `RingPath.buildInnerSegments`. **Ne jamais** approximer cette
   région par des rectangles ni ajouter `blur true` côté niri. Le ring est sur
   `WlrLayer.Top` pour rester sous les fenêtres fullscreen niri, et désactive
-  aussi son mask et son blur quand `NiriWorkspaceState` détecte une fenêtre qui
-  couvre l'output actif (cas jeux borderless/fullscreen-like).
+  aussi son mask et son blur quand `NiriWorkspaceState` détecte un état
+  fullscreen explicite sur l'output actif.
 - `AppLauncherOverlay`, `SettingsOverlay`, `TrayMenuOverlay`,
   `SessionActionsOverlay`, `OsdOverlay`
   exposent une `Region` rectangulaire arrondie calée sur la position de leur
@@ -145,7 +145,10 @@ augmentée des zones de contenu (`dockContentItem`, `dockHoverItem`,
 
 Le ring est la structure visuelle centrale du shell: un cadre arrondi avec
 une notch horloge en haut au centre, une notch d'indicateurs système en haut
-à droite, une bosse de dock en bas et un panneau maison sur la droite.
+à droite, un dock en bas et un panel Maison sur la droite. Le dock garde sa
+petite bosse en état compact puis devient un tiroir rectangulaire à coins hauts
+arrondis en état ouvert; le panel Maison garde sa petite bosse en état compact,
+puis devient un tiroir rectangulaire à coins gauches arrondis en état ouvert.
 
 ### 4.1 Pipeline du ring (à connaître par coeur)
 
@@ -191,6 +194,9 @@ ExpandableEdgeWidget / HomePanel  ──revealProgress──▶  RingPanels
   - `buildSvgPath(geometry, {inset, withOuterRectangle, outerWidth, outerHeight})`
     — chaîne SVG complète consommée par `RingSilhouettePath` via `PathSvg`.
   - `geometrySignature(geometry)` — clé stable pour invalider un cache.
+  Les slots dock et Maison interpolent selon leur `revealProgress`: la bosse
+  compacte reste inchangée au repos, puis devient un tiroir attaché au bord
+  correspondant avec arêtes droites et coins extérieurs arrondis.
 - `src/components/RingSilhouettePath.qml` — `ShapePath` réutilisable
   alimenté par `RingPath.buildSvgPath`. Supporte `inset`, `withOuterRectangle`
   (OddEvenFill), `outerWidth/Height`, et expose `fillColor`, `fillGradient`,
@@ -292,9 +298,9 @@ Tous les singletons sont déclarés avec `pragma Singleton` (`RingPath`,
   chaque fenêtre vers une forme compatible `ToplevelManager` (champs
   `appId`, `desktopId`, `iconName`, `title`, `activated`, `workspaceId`,
   `isFloating`, `isFullscreen`, `layout`, méthode `activate()`). `layout`
-  expose les tailles `window_size`/`tile_size` et l'offset niri pour détecter
-  les fenêtres qui couvrent un output même quand l'IPC n'expose pas de flag
-  fullscreen explicite. Signature stable pour éviter les rebuilds redondants.
+  conserve les tailles `window_size`/`tile_size` et l'offset niri pour les
+  usages fenêtre futurs, mais ne doit pas être utilisé seul comme signal
+  fullscreen. Signature stable pour éviter les rebuilds redondants.
 - `NiriWorkspaceState` — état des outputs et workspaces via `niri msg`
   ponctuels, maintenu à jour par l'event stream niri. Expose
   `fullscreenOutputNames`, `focusedOutputHasFullscreen`,

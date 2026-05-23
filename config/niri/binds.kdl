@@ -22,7 +22,7 @@ binds {
     Mod+Q { close-window; }
     Mod+Return { spawn "kitty"; }
     Mod+F { maximize-column; }
-    Mod+Shift+F { fullscreen-window; }
+    Mod+Ctrl+F { fullscreen-window; }
 
     Print           { screenshot; }
     Mod+Print       { screenshot-screen; }

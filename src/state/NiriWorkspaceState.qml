@@ -184,7 +184,7 @@ Singleton {
                 continue
             }
 
-            if (window.isFullscreen || root.windowCoversOutput(window, output)) {
+            if (window.isFullscreen) {
                 return true
             }
         }
@@ -218,26 +218,6 @@ Singleton {
         }
 
         return null
-    }
-
-    function windowCoversOutput(window, output) {
-        const layout = window ? (window.layout || {}) : {}
-        const outputWidth = output.logicalWidth > 0 ? output.logicalWidth : output.currentModeWidth
-        const outputHeight = output.logicalHeight > 0 ? output.logicalHeight : output.currentModeHeight
-        const tolerance = 2
-
-        if (outputWidth <= 0 || outputHeight <= 0) {
-            return false
-        }
-
-        if (layout.windowWidth <= 0 || layout.windowHeight <= 0) {
-            return false
-        }
-
-        return layout.windowWidth >= outputWidth - tolerance
-            && layout.windowHeight >= outputHeight - tolerance
-            && Math.abs(layout.offsetX || 0) <= tolerance
-            && Math.abs(layout.offsetY || 0) <= tolerance
     }
 
     function unwrap(parsed, key) {

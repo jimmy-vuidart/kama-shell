@@ -10,10 +10,11 @@ Singleton {
 
     readonly property int dockHeight: 88
     readonly property int dockMinWidth: 232
-    readonly property int dockSidePadding: 28
-    readonly property int dockShapeSidePadding: 72
+    readonly property int dockSidePadding: 0
+    readonly property int dockShapeSidePadding: 0
     readonly property int dockBumpContentPadding: 28
-    readonly property int dockShapeExtraWidth: 232
+    readonly property int dockShapeExtraWidth: 0
+    readonly property int dockShapeRadius: 28
     readonly property int dockBumpHeight: 34
     readonly property int dockRestWidth: 72
     readonly property int dockRestHeight: 24
@@ -57,8 +58,8 @@ Singleton {
     readonly property int homePanelHandleIconSize: dockRestIconSize
     readonly property int homePanelContentLeftMargin: 18
     readonly property int homePanelContentRightMargin: 18
-    readonly property int homePanelContentTopMargin: 42
-    readonly property int homePanelContentBottomMargin: 38
+    readonly property int homePanelContentTopMargin: 8
+    readonly property int homePanelContentBottomMargin: 16
     readonly property int homePanelAnimationDuration: 220
     readonly property int homePanelRoomGap: 10
 
