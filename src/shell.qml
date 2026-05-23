@@ -1,4 +1,4 @@
-//@ pragma IconTheme Yaru-red-dark
+//@ pragma IconTheme hicolor
 
 import Quickshell
 import QtQuick

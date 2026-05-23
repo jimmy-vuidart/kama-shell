@@ -87,10 +87,7 @@ Singleton {
         objects: [root.audioSink]
     }
 
-    onTrayItemsChanged: root.logTrayItems()
     Component.onCompleted: {
-        root.logTrayItems()
-
         if (cpuStatFile.waitForJob()) {
             root.updateCpuLoad(cpuStatFile.text())
         }
@@ -210,28 +207,25 @@ Singleton {
         root.gpuLoadAvailable = true
     }
 
-    function logTrayItems() {
-        console.log(
-            "status-notch tray items changed",
-            "count=" + root.trayItems.length
-        )
+    function normalizeTrayIconSource(rawIcon) {
+        const raw = String(rawIcon || "").trim()
+        if (!raw.length) return ""
 
-        for (let i = 0; i < root.trayItems.length; i++) {
-            const item = root.trayItems[i]
+        const iconPrefix = "image://icon/"
+        const name = raw.startsWith(iconPrefix) ? raw.slice(iconPrefix.length) : raw
 
-            console.log(
-                "status-notch tray item",
-                "index=" + i,
-                "id=" + String(item ? item.id : "<null>"),
-                "title=" + String(item ? item.title : "<null>"),
-                "tooltipTitle=" + String(item ? item.tooltipTitle : "<null>"),
-                "icon=" + String(item ? item.icon : "<null>"),
-                "status=" + String(item ? item.status : "<null>"),
-                "category=" + String(item ? item.category : "<null>"),
-                "hasMenu=" + String(item ? item.hasMenu : "<null>"),
-                "onlyMenu=" + String(item ? item.onlyMenu : "<null>")
-            )
+        const marker = "?path="
+        const idx = name.indexOf(marker)
+
+        if (idx !== -1) {
+            // App provides its own icon theme dir via SNI IconThemePath (e.g. Steam)
+            const iconName = name.slice(0, idx)
+            const path = name.slice(idx + marker.length)
+            const baseName = iconName.slice(iconName.lastIndexOf("/") + 1)
+            return Qt.resolvedUrl(path + "/" + baseName + ".png")
         }
+
+        return Quickshell.iconPath(name) || raw
     }
 
     FileView {

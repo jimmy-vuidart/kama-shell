@@ -1,6 +1,5 @@
 import Quickshell
 import QtQuick
-import QtQuick.Window
 
 import "../state"
 
@@ -9,14 +8,10 @@ Item {
 
     required property var trayItem
     required property var screen
-    readonly property string iconSource: root.trayItem ? String(root.trayItem.icon || "").trim() : ""
+    readonly property string iconSource: StatusNotchState.normalizeTrayIconSource(root.trayItem ? root.trayItem.icon : "")
 
     width: ShellGeometry.statusNotchIconSize
     height: ShellGeometry.statusNotchIconSize
-
-    Component.onCompleted: root.logTrayIcon("completed")
-    onTrayItemChanged: root.logTrayIcon("tray-item-changed")
-    onIconSourceChanged: root.logTrayIcon("icon-source-changed")
 
     Image {
         id: iconImage
@@ -29,10 +24,6 @@ Item {
         smooth: true
         asynchronous: true
         visible: root.iconSource.length > 0 && status === Image.Ready
-
-        onStatusChanged: {
-            root.logTrayIcon("image-status-changed status=" + root.imageStatusName(status))
-        }
     }
 
     Text {
@@ -52,30 +43,8 @@ Item {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
 
-        onPressed: function(mouse) {
-            console.log(
-                "status-notch tray mouse-pressed",
-                "id=" + String(root.trayItem ? root.trayItem.id : "<null>"),
-                "button=" + root.buttonName(mouse.button),
-                "x=" + Math.round(mouse.x),
-                "y=" + Math.round(mouse.y)
-            )
-        }
-
         onClicked: function(mouse) {
-            console.log(
-                "status-notch tray mouse-clicked",
-                "id=" + String(root.trayItem ? root.trayItem.id : "<null>"),
-                "button=" + root.buttonName(mouse.button),
-                "hasItem=" + String(!!root.trayItem),
-                "hasMenu=" + String(root.trayItem ? root.trayItem.hasMenu : "<null>"),
-                "onlyMenu=" + String(root.trayItem ? root.trayItem.onlyMenu : "<null>"),
-                "menu=" + String(root.trayItem ? root.trayItem.menu : "<null>")
-            )
-
-            if (!root.trayItem) {
-                return
-            }
+            if (!root.trayItem) return
 
             if (mouse.button === Qt.RightButton) {
                 root.showMenu(mouse.x, mouse.y)
@@ -90,88 +59,19 @@ Item {
     }
 
     function showMenu(relativeX, relativeY) {
-        const hasItem = !!root.trayItem
-        const hasMenu = hasItem && root.trayItem.hasMenu
-        const menuObj = hasItem ? root.trayItem.menu : null
+        if (!root.trayItem || !root.trayItem.hasMenu) return
 
-        console.log(
-            "status-notch tray show-menu called",
-            "id=" + String(hasItem ? root.trayItem.id : "<null>"),
-            "relativeX=" + Math.round(relativeX),
-            "relativeY=" + Math.round(relativeY),
-            "hasItem=" + hasItem,
-            "hasMenu=" + hasMenu,
-            "menu=" + String(menuObj)
-        )
+        const win = root.QsWindow.window
+        if (!win || !win.contentItem) return
 
-        if (hasItem && hasMenu) {
-            const win = root.QsWindow.window
-            if (!win || !win.contentItem) {
-                return
-            }
-
-            const rect = win.contentItem.mapFromItem(
-                root, 0, root.height, root.width, root.height
-            )
-            const screenName = root.screen ? root.screen.name : ""
-
-            console.log(
-                "status-notch tray open-qml-menu",
-                "id=" + String(root.trayItem.id),
-                "screen=" + screenName,
-                "rect=(" + Math.round(rect.x) + "," + Math.round(rect.y) + "," + Math.round(rect.width) + "," + Math.round(rect.height) + ")"
-            )
-            TrayMenuState.open(menuObj, screenName, rect)
-        }
+        const rect = win.contentItem.mapFromItem(root, 0, root.height, root.width, root.height)
+        TrayMenuState.open(root.trayItem.menu, root.screen ? root.screen.name : "", rect)
     }
 
     function fallbackLabel() {
         const source = root.trayItem
             ? String(root.trayItem.title || root.trayItem.tooltipTitle || root.trayItem.id || "?")
             : "?"
-
         return source.trim().slice(0, 1).toUpperCase() || "?"
-    }
-
-    function logTrayIcon(reason) {
-        console.log(
-            "status-notch tray icon",
-            reason,
-            "id=" + String(root.trayItem ? root.trayItem.id : "<null>"),
-            "title=" + String(root.trayItem ? root.trayItem.title : "<null>"),
-            "tooltipTitle=" + String(root.trayItem ? root.trayItem.tooltipTitle : "<null>"),
-            "iconSource=" + root.iconSource,
-            "imageSource=" + String(iconImage.source),
-            "imageStatus=" + root.imageStatusName(iconImage.status),
-            "imageVisible=" + iconImage.visible,
-            "fallbackLabel=" + root.fallbackLabel()
-        )
-    }
-
-    function buttonName(button) {
-        if (button === Qt.LeftButton) return "Left"
-        if (button === Qt.RightButton) return "Right"
-        if (button === Qt.MiddleButton) return "Middle"
-        return "Unknown(" + button + ")"
-    }
-
-    function imageStatusName(status) {
-        if (status === Image.Null) {
-            return "Null"
-        }
-
-        if (status === Image.Ready) {
-            return "Ready"
-        }
-
-        if (status === Image.Loading) {
-            return "Loading"
-        }
-
-        if (status === Image.Error) {
-            return "Error"
-        }
-
-        return String(status)
     }
 }

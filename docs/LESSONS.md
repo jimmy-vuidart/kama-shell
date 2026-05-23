@@ -61,12 +61,14 @@
 ## Icônes applicatives
 
 - `DesktopEntry.icon` fournit un nom ou un chemin, mais pas forcément une URL directement exploitable.
-- `Quickshell.iconPath()` est la voie normale, mais il peut renvoyer vide si le thème d'icônes Qt/Quickshell n'est pas correctement résolu au démarrage.
-- Le thème d'icônes peut être forcé explicitement via `//@ pragma IconTheme ...` au début de `src/shell.qml`.
+- `Quickshell.iconPath(name)` renvoie toujours une URL `image://icon/<name>` (jamais un chemin `file://`). Cette URL passe par le provider d'icônes Qt, qui utilise le thème configuré via `//@ pragma IconTheme`. Si le thème n'existe pas, le provider renvoie un placeholder magenta 16×16 — `image://icon/` ne tombe pas en erreur, `Image.status` reste `Ready`.
+- Configurer `//@ pragma IconTheme hicolor` dans `src/shell.qml` : `hicolor` est le répertoire de base XDG où toutes les apps installent leurs propres icônes. Il est toujours présent, sans dépendance externe. Un thème stylisé absent (ex. `Yaru-red-dark`) brise silencieusement toutes les icônes.
+- Le thème est lu au démarrage du process Quickshell — un hot-reload QML ne suffit pas pour le changer, il faut relancer la session.
 - Le premier chargement du dock peut arriver avant que `DesktopEntries` soit complètement prêt. Il faut écouter `DesktopEntries.applicationsChanged()` et replanifier un rebuild.
 - La résolution d'icônes doit rester générique. Éviter les fallbacks spécifiques à une application si un lookup standard basé sur `DesktopEntry.icon` et les emplacements freedesktop suffit.
 - Si un lookup asynchrone de chemin est utilisé, ne garder qu'un seul résultat exploitable. Concaténer plusieurs chemins dans une seule `Image.source` produit une URL invalide et donc aucune icône.
 - `Image` standard est plus adapté qu'`IconImage` pour afficher des chemins `file://...` explicites.
+- `SystemTrayItem.icon` peut arriver sous la forme `image://icon/nom?path=/dossier/du/theme` quand une app fournit un `IconThemePath` SNI (ex. Steam). Il faut décomposer : extraire le basename et le joindre au chemin pour obtenir un `file://...` via `Qt.resolvedUrl(path + "/" + baseName + ".png")`. Voir `StatusNotchState.normalizeTrayIconSource`.
 
 ## Niri / Compositeur
 

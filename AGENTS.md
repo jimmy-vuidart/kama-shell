@@ -155,6 +155,14 @@ Ne jamais approximer le blur du `kama-shell-ring`: toute évolution géométriqu
 - Quand un fichier QML, singleton, composant ou script devient un point d'extension durable, mettre à jour la section "Structure actuelle" sans attendre une passe de documentation séparée.
 - Quand une feature est validée (comportement confirmé en session réelle), enregistrer dans `docs/LESSONS.md` les leçons apprises pendant son développement: comportements surprenants d'API, contraintes non documentées, patterns qui ont fonctionné ou échoué, pièges à éviter. Ne pas y recopier ce qui est déjà dans `AGENTS.md`; se concentrer sur le "pourquoi ça a coincé" et "comment l'éviter la prochaine fois". Organiser par thème (ex. "Niri / Compositeur", "Processus / IO"), pas par feature.
 
+## Redémarrage du shell
+
+Certains changements ne prennent pas effet par hot-reload et nécessitent un redémarrage complet de la session Quickshell :
+- `//@ pragma IconTheme` (lu uniquement au démarrage du process)
+- Tout changement dans `src/shell.qml` qui touche des pragmas ou des imports de niveau racine
+
+**Ne pas chercher à contourner ni à masquer ce besoin.** Dès qu'un changement exige un redémarrage, en avertir immédiatement l'utilisateur et attendre qu'il relance la session avant de continuer.
+
 ## Vérification
 
 - Après modification, relire `src/shell.qml` et vérifier que les imports Quickshell sont cohérents avec les types utilisés.
