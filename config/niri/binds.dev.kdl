@@ -11,8 +11,13 @@ binds {
     Mod+D repeat=false { spawn "/usr/bin/qs" "ipc" "--path" "src/shell.qml" "--any-display" "call" "kama-shell" "toggleLauncher"; }
     Mod+Comma repeat=false { spawn "/usr/bin/qs" "ipc" "--path" "src/shell.qml" "--any-display" "call" "kama-shell" "toggleSettings"; }
 
+    Mod+W { toggle-column-tabbed-display; }
+
     Mod+WheelScrollUp     cooldown-ms=150 { focus-column-left; }
     Mod+WheelScrollDown   cooldown-ms=150 { focus-column-right; }
+
+    Mod+Shift+WheelScrollDown cooldown-ms=150 { focus-window-down; }
+    Mod+Shift+WheelScrollUp   cooldown-ms=150 { focus-window-up; }
 
     Mod+Ctrl+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
     Mod+Ctrl+WheelScrollUp   cooldown-ms=150 { focus-workspace-up; }

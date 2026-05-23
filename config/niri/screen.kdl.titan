@@ -8,6 +8,10 @@
 
 output "DP-1" {
   mode "3440x1440@120.000"
+  focus-at-startup
+  layout {
+    default-column-width { proportion 0.33; }
+  }
 }
 
 output "HDMI-A-1" {
